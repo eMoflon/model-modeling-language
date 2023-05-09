@@ -1,0 +1,12 @@
+{
+    "projectName": "ModelModelingLanguage",
+    "languages": [{
+        "id": "model-modeling-language",
+        "grammar": "src/language-server/model-modeling-language.langium",
+        "fileExtensions": [".mml"],
+        "textMate": {
+            "out": "syntaxes/model-modeling-language.tmLanguage.json"
+        }
+    }],
+    "out": "src/language-server/generated"
+}

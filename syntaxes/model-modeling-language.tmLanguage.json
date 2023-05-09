@@ -1,0 +1,61 @@
+{
+  "name": "model-modeling-language",
+  "scopeName": "source.model-modeling-language",
+  "fileTypes": [
+    ".mml"
+  ],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "keyword.control.model-modeling-language",
+      "match": "\\b(abstract|as|attribute|bool|class|derived|double|enum|extends|false|float|id|implements|import|int|interface|ordered|package|readonly|reference|resolve|string|transient|true|unique|unsettable|using|volatile)\\b|\\B(@opposite)\\b"
+    },
+    {
+      "name": "string.quoted.double.model-modeling-language",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "include": "#string-character-escape"
+        }
+      ]
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.model-modeling-language",
+          "begin": "/\\*",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.model-modeling-language"
+            }
+          },
+          "end": "\\*/",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.model-modeling-language"
+            }
+          }
+        },
+        {
+          "begin": "[^:]//",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.whitespace.comment.leading.model-modeling-language"
+            }
+          },
+          "end": "(?=$)",
+          "name": "comment.line.model-modeling-language"
+        }
+      ]
+    },
+    "string-character-escape": {
+      "name": "constant.character.escape.model-modeling-language",
+      "match": "\\\\(x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|u\\{[0-9A-Fa-f]+\\}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.|$)"
+    }
+  }
+}

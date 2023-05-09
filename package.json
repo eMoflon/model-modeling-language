@@ -1,0 +1,73 @@
+{
+    "name": "model-modeling-language",
+    "displayName": "model-modeling-language",
+    "description": "Please enter a brief description here",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.67.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "model-modeling-language",
+                "aliases": [
+                    "Model modeling language",
+                    "model-modeling-language"
+                ],
+                "extensions": [
+                    ".mml"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "model-modeling-language",
+                "scopeName": "source.model-modeling-language",
+                "path": "./syntaxes/model-modeling-language.tmLanguage.json"
+            }
+        ]
+    },
+    "activationEvents": [
+        "onLanguage:model-modeling-language"
+    ],
+    "files": [
+        "bin",
+        "out",
+        "src"
+    ],
+    "bin": {
+        "model-modeling-language-cli": "./bin/cli"
+    },
+    "main": "./out/extension.js",
+    "scripts": {
+        "vscode:prepublish": "npm run build && npm run lint",
+        "build": "tsc -b tsconfig.json",
+        "watch": "tsc -b tsconfig.json --watch",
+        "lint": "eslint src --ext ts",
+        "langium:generate": "langium generate",
+        "langium:watch": "langium generate --watch"
+    },
+    "dependencies": {
+        "chalk": "~4.1.2",
+        "chevrotain": "~10.4.2",
+        "commander": "~10.0.0",
+        "langium": "~1.1.0",
+        "vscode-languageclient": "~8.0.2",
+        "vscode-languageserver": "~8.0.2",
+        "vscode-uri": "~3.0.7"
+    },
+    "devDependencies": {
+        "@types/node": "~16.18.11",
+        "@types/vscode": "~1.67.0",
+        "@typescript-eslint/eslint-plugin": "~5.51.0",
+        "@typescript-eslint/parser": "~5.51.0",
+        "esbuild": "^0.17.18",
+        "eslint": "~8.33.0",
+        "langium-cli": "~1.1.0",
+        "typescript": "~4.9.5"
+    }
+}
