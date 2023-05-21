@@ -6,9 +6,6 @@ entry Model:
 DataType returns string:
     'int' | 'string' | 'bool' | 'double' | 'float';
 
-BoolVal returns boolean:
-    'true' | 'false';
-
 Import:
     'import' target=STRING ('using' aliases+=ImportAlias (',' aliases+=ImportAlias)*)? ';';
 
@@ -61,7 +58,7 @@ AttributeModifiers:
     id?='id';
 
 Attribute:
-    'attribute' type=DataType name=ID ('=' (defaultValue=STRING | defaultValue=NUM | defaultValue=DOUBLE | defaultValue=BoolVal))? ('{'modifiers=AttributeModifiers'}')?';';
+    'attribute' type=DataType name=ID ('=' (defaultValue=STRING | defaultValue=NUM | defaultValue=DOUBLE | defaultValue=BOOL))? ('{'modifiers=AttributeModifiers'}')?';';
 
 ReferenceModifiers:
     readonly?='readonly' &
@@ -81,8 +78,8 @@ CReference:
 
 Enum:
     'enum' name=ID '{'
-        (EnumEntry ',')*
-        EnumEntry
+        entries += EnumEntry
+        (',' entries += EnumEntry)*
     '}';
 
 EnumEntry:
@@ -91,6 +88,7 @@ EnumEntry:
 
 hidden terminal WS: /\s+/;
 terminal MULTIPLICITYSYMBOL: /[\*?+]/;
+terminal BOOL returns boolean: /true|false/;
 terminal DOUBLE returns number: NUM '.' NUM;
 terminal NUM returns number: /[0-9]+/;
 terminal STRING returns string: /"[^"]*"/;
