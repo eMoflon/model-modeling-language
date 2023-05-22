@@ -25,7 +25,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@3"
+                "$ref": "#/rules@6"
               },
               "arguments": []
             }
@@ -37,7 +37,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@6"
+                "$ref": "#/rules@9"
               },
               "arguments": []
             }
@@ -89,14 +89,110 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
     },
     {
       "$type": "ParserRule",
-      "name": "BoolVal",
-      "dataType": "boolean",
+      "name": "ValueExpr",
       "definition": {
         "$type": "Alternatives",
         "elements": [
           {
-            "$type": "Keyword",
-            "value": "true"
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@3"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@4"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@5"
+            },
+            "arguments": []
+          }
+        ]
+      },
+      "definesHiddenTokens": false,
+      "entry": false,
+      "fragment": false,
+      "hiddenTokens": [],
+      "parameters": [],
+      "wildcard": false
+    },
+    {
+      "$type": "ParserRule",
+      "name": "NumberExpr",
+      "definition": {
+        "$type": "Assignment",
+        "feature": "value",
+        "operator": "=",
+        "terminal": {
+          "$type": "Alternatives",
+          "elements": [
+            {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@29"
+              },
+              "arguments": []
+            },
+            {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@28"
+              },
+              "arguments": []
+            }
+          ]
+        }
+      },
+      "definesHiddenTokens": false,
+      "entry": false,
+      "fragment": false,
+      "hiddenTokens": [],
+      "parameters": [],
+      "wildcard": false
+    },
+    {
+      "$type": "ParserRule",
+      "name": "StringExpr",
+      "definition": {
+        "$type": "Assignment",
+        "feature": "value",
+        "operator": "=",
+        "terminal": {
+          "$type": "RuleCall",
+          "rule": {
+            "$ref": "#/rules@30"
+          },
+          "arguments": []
+        }
+      },
+      "definesHiddenTokens": false,
+      "entry": false,
+      "fragment": false,
+      "hiddenTokens": [],
+      "parameters": [],
+      "wildcard": false
+    },
+    {
+      "$type": "ParserRule",
+      "name": "BoolExpr",
+      "definition": {
+        "$type": "Alternatives",
+        "elements": [
+          {
+            "$type": "Assignment",
+            "feature": "value",
+            "operator": "?=",
+            "terminal": {
+              "$type": "Keyword",
+              "value": "true"
+            }
           },
           {
             "$type": "Keyword",
@@ -128,7 +224,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@27"
+                "$ref": "#/rules@30"
               },
               "arguments": []
             }
@@ -147,7 +243,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@4"
+                    "$ref": "#/rules@7"
                   },
                   "arguments": []
                 }
@@ -166,7 +262,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                     "terminal": {
                       "$type": "RuleCall",
                       "rule": {
-                        "$ref": "#/rules@4"
+                        "$ref": "#/rules@7"
                       },
                       "arguments": []
                     }
@@ -203,7 +299,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@29"
+                "$ref": "#/rules@32"
               },
               "arguments": []
             }
@@ -219,7 +315,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@30"
+                "$ref": "#/rules@33"
               },
               "arguments": []
             }
@@ -253,7 +349,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@26"
+                    "$ref": "#/rules@29"
                   },
                   "arguments": []
                 }
@@ -265,7 +361,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@24"
+                    "$ref": "#/rules@27"
                   },
                   "arguments": []
                 }
@@ -289,7 +385,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                     "terminal": {
                       "$type": "RuleCall",
                       "rule": {
-                        "$ref": "#/rules@26"
+                        "$ref": "#/rules@29"
                       },
                       "arguments": []
                     }
@@ -301,7 +397,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                     "terminal": {
                       "$type": "RuleCall",
                       "rule": {
-                        "$ref": "#/rules@24"
+                        "$ref": "#/rules@27"
                       },
                       "arguments": []
                     }
@@ -342,7 +438,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@30"
+                "$ref": "#/rules@33"
               },
               "arguments": []
             }
@@ -361,7 +457,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@6"
+                    "$ref": "#/rules@9"
                   },
                   "arguments": []
                 }
@@ -373,7 +469,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@7"
+                    "$ref": "#/rules@10"
                   },
                   "arguments": []
                 }
@@ -403,21 +499,21 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@13"
+              "$ref": "#/rules@16"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@14"
+              "$ref": "#/rules@17"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@21"
+              "$ref": "#/rules@24"
             },
             "arguments": []
           }
@@ -468,7 +564,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@15"
+                "$ref": "#/rules@18"
               },
               "arguments": []
             },
@@ -507,12 +603,12 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "terminal": {
                   "$type": "CrossReference",
                   "type": {
-                    "$ref": "#/rules@13"
+                    "$ref": "#/rules@16"
                   },
                   "terminal": {
                     "$type": "RuleCall",
                     "rule": {
-                      "$ref": "#/rules@30"
+                      "$ref": "#/rules@33"
                     },
                     "arguments": []
                   },
@@ -526,12 +622,12 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "terminal": {
                   "$type": "CrossReference",
                   "type": {
-                    "$ref": "#/rules@13"
+                    "$ref": "#/rules@16"
                   },
                   "terminal": {
                     "$type": "RuleCall",
                     "rule": {
-                      "$ref": "#/rules@29"
+                      "$ref": "#/rules@32"
                     },
                     "arguments": []
                   },
@@ -557,12 +653,12 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                     "terminal": {
                       "$type": "CrossReference",
                       "type": {
-                        "$ref": "#/rules@13"
+                        "$ref": "#/rules@16"
                       },
                       "terminal": {
                         "$type": "RuleCall",
                         "rule": {
-                          "$ref": "#/rules@30"
+                          "$ref": "#/rules@33"
                         },
                         "arguments": []
                       },
@@ -576,12 +672,12 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                     "terminal": {
                       "$type": "CrossReference",
                       "type": {
-                        "$ref": "#/rules@13"
+                        "$ref": "#/rules@16"
                       },
                       "terminal": {
                         "$type": "RuleCall",
                         "rule": {
-                          "$ref": "#/rules@29"
+                          "$ref": "#/rules@32"
                         },
                         "arguments": []
                       },
@@ -623,12 +719,12 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "terminal": {
                   "$type": "CrossReference",
                   "type": {
-                    "$ref": "#/rules@14"
+                    "$ref": "#/rules@17"
                   },
                   "terminal": {
                     "$type": "RuleCall",
                     "rule": {
-                      "$ref": "#/rules@30"
+                      "$ref": "#/rules@33"
                     },
                     "arguments": []
                   },
@@ -642,12 +738,12 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "terminal": {
                   "$type": "CrossReference",
                   "type": {
-                    "$ref": "#/rules@14"
+                    "$ref": "#/rules@17"
                   },
                   "terminal": {
                     "$type": "RuleCall",
                     "rule": {
-                      "$ref": "#/rules@29"
+                      "$ref": "#/rules@32"
                     },
                     "arguments": []
                   },
@@ -673,12 +769,12 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                     "terminal": {
                       "$type": "CrossReference",
                       "type": {
-                        "$ref": "#/rules@14"
+                        "$ref": "#/rules@17"
                       },
                       "terminal": {
                         "$type": "RuleCall",
                         "rule": {
-                          "$ref": "#/rules@30"
+                          "$ref": "#/rules@33"
                         },
                         "arguments": []
                       },
@@ -692,12 +788,12 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                     "terminal": {
                       "$type": "CrossReference",
                       "type": {
-                        "$ref": "#/rules@14"
+                        "$ref": "#/rules@17"
                       },
                       "terminal": {
                         "$type": "RuleCall",
                         "rule": {
-                          "$ref": "#/rules@29"
+                          "$ref": "#/rules@32"
                         },
                         "arguments": []
                       },
@@ -739,12 +835,12 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "terminal": {
                   "$type": "CrossReference",
                   "type": {
-                    "$ref": "#/rules@14"
+                    "$ref": "#/rules@17"
                   },
                   "terminal": {
                     "$type": "RuleCall",
                     "rule": {
-                      "$ref": "#/rules@30"
+                      "$ref": "#/rules@33"
                     },
                     "arguments": []
                   },
@@ -758,12 +854,12 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "terminal": {
                   "$type": "CrossReference",
                   "type": {
-                    "$ref": "#/rules@14"
+                    "$ref": "#/rules@17"
                   },
                   "terminal": {
                     "$type": "RuleCall",
                     "rule": {
-                      "$ref": "#/rules@29"
+                      "$ref": "#/rules@32"
                     },
                     "arguments": []
                   },
@@ -789,12 +885,12 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                     "terminal": {
                       "$type": "CrossReference",
                       "type": {
-                        "$ref": "#/rules@14"
+                        "$ref": "#/rules@17"
                       },
                       "terminal": {
                         "$type": "RuleCall",
                         "rule": {
-                          "$ref": "#/rules@30"
+                          "$ref": "#/rules@33"
                         },
                         "arguments": []
                       },
@@ -808,12 +904,12 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                     "terminal": {
                       "$type": "CrossReference",
                       "type": {
-                        "$ref": "#/rules@14"
+                        "$ref": "#/rules@17"
                       },
                       "terminal": {
                         "$type": "RuleCall",
                         "rule": {
-                          "$ref": "#/rules@29"
+                          "$ref": "#/rules@32"
                         },
                         "arguments": []
                       },
@@ -843,7 +939,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@8"
+              "$ref": "#/rules@11"
             },
             "arguments": []
           },
@@ -858,7 +954,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@30"
+                "$ref": "#/rules@33"
               },
               "arguments": []
             }
@@ -866,7 +962,14 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@10"
+              "$ref": "#/rules@13"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@15"
             },
             "arguments": []
           },
@@ -874,13 +977,6 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "$type": "RuleCall",
             "rule": {
               "$ref": "#/rules@12"
-            },
-            "arguments": []
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
-              "$ref": "#/rules@9"
             },
             "arguments": []
           }
@@ -902,7 +998,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@8"
+              "$ref": "#/rules@11"
             },
             "arguments": []
           },
@@ -917,7 +1013,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@30"
+                "$ref": "#/rules@33"
               },
               "arguments": []
             }
@@ -925,14 +1021,14 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@11"
+              "$ref": "#/rules@14"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@9"
+              "$ref": "#/rules@12"
             },
             "arguments": []
           }
@@ -954,14 +1050,14 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@17"
+              "$ref": "#/rules@20"
             },
             "arguments": []
           },
           {
             "$type": "RuleCall",
             "rule": {
-              "$ref": "#/rules@20"
+              "$ref": "#/rules@23"
             },
             "arguments": []
           }
@@ -1090,7 +1186,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@30"
+                "$ref": "#/rules@33"
               },
               "arguments": []
             }
@@ -1103,57 +1199,16 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "value": "="
               },
               {
-                "$type": "Alternatives",
-                "elements": [
-                  {
-                    "$type": "Assignment",
-                    "feature": "defaultValue",
-                    "operator": "=",
-                    "terminal": {
-                      "$type": "RuleCall",
-                      "rule": {
-                        "$ref": "#/rules@27"
-                      },
-                      "arguments": []
-                    }
+                "$type": "Assignment",
+                "feature": "defaultValue",
+                "operator": "=",
+                "terminal": {
+                  "$type": "RuleCall",
+                  "rule": {
+                    "$ref": "#/rules@2"
                   },
-                  {
-                    "$type": "Assignment",
-                    "feature": "defaultValue",
-                    "operator": "=",
-                    "terminal": {
-                      "$type": "RuleCall",
-                      "rule": {
-                        "$ref": "#/rules@26"
-                      },
-                      "arguments": []
-                    }
-                  },
-                  {
-                    "$type": "Assignment",
-                    "feature": "defaultValue",
-                    "operator": "=",
-                    "terminal": {
-                      "$type": "RuleCall",
-                      "rule": {
-                        "$ref": "#/rules@25"
-                      },
-                      "arguments": []
-                    }
-                  },
-                  {
-                    "$type": "Assignment",
-                    "feature": "defaultValue",
-                    "operator": "=",
-                    "terminal": {
-                      "$type": "RuleCall",
-                      "rule": {
-                        "$ref": "#/rules@2"
-                      },
-                      "arguments": []
-                    }
-                  }
-                ]
+                  "arguments": []
+                }
               }
             ],
             "cardinality": "?"
@@ -1172,7 +1227,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@16"
+                    "$ref": "#/rules@19"
                   },
                   "arguments": []
                 }
@@ -1301,12 +1356,12 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "terminal": {
               "$type": "CrossReference",
               "type": {
-                "$ref": "#/rules@20"
+                "$ref": "#/rules@23"
               },
               "terminal": {
                 "$type": "RuleCall",
                 "rule": {
-                  "$ref": "#/rules@28"
+                  "$ref": "#/rules@31"
                 },
                 "arguments": []
               },
@@ -1335,7 +1390,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@19"
+                "$ref": "#/rules@22"
               },
               "arguments": []
             },
@@ -1355,12 +1410,12 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "terminal": {
                   "$type": "CrossReference",
                   "type": {
-                    "$ref": "#/rules@13"
+                    "$ref": "#/rules@16"
                   },
                   "terminal": {
                     "$type": "RuleCall",
                     "rule": {
-                      "$ref": "#/rules@29"
+                      "$ref": "#/rules@32"
                     },
                     "arguments": []
                   },
@@ -1374,12 +1429,12 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "terminal": {
                   "$type": "CrossReference",
                   "type": {
-                    "$ref": "#/rules@13"
+                    "$ref": "#/rules@16"
                   },
                   "terminal": {
                     "$type": "RuleCall",
                     "rule": {
-                      "$ref": "#/rules@30"
+                      "$ref": "#/rules@33"
                     },
                     "arguments": []
                   },
@@ -1395,7 +1450,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@5"
+                "$ref": "#/rules@8"
               },
               "arguments": []
             }
@@ -1407,7 +1462,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@30"
+                "$ref": "#/rules@33"
               },
               "arguments": []
             }
@@ -1426,7 +1481,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@18"
+                    "$ref": "#/rules@21"
                   },
                   "arguments": []
                 }
@@ -1468,7 +1523,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@30"
+                "$ref": "#/rules@33"
               },
               "arguments": []
             }
@@ -1478,28 +1533,38 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "value": "{"
           },
           {
+            "$type": "Assignment",
+            "feature": "entries",
+            "operator": "+=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@25"
+              },
+              "arguments": []
+            }
+          },
+          {
             "$type": "Group",
             "elements": [
               {
-                "$type": "RuleCall",
-                "rule": {
-                  "$ref": "#/rules@22"
-                },
-                "arguments": []
-              },
-              {
                 "$type": "Keyword",
                 "value": ","
+              },
+              {
+                "$type": "Assignment",
+                "feature": "entries",
+                "operator": "+=",
+                "terminal": {
+                  "$type": "RuleCall",
+                  "rule": {
+                    "$ref": "#/rules@25"
+                  },
+                  "arguments": []
+                }
               }
             ],
             "cardinality": "*"
-          },
-          {
-            "$type": "RuleCall",
-            "rule": {
-              "$ref": "#/rules@22"
-            },
-            "arguments": []
           },
           {
             "$type": "Keyword",
@@ -1527,7 +1592,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
             "terminal": {
               "$type": "RuleCall",
               "rule": {
-                "$ref": "#/rules@30"
+                "$ref": "#/rules@33"
               },
               "arguments": []
             }
@@ -1542,7 +1607,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
-                    "$ref": "#/rules@30"
+                    "$ref": "#/rules@33"
                   },
                   "arguments": []
                 }
@@ -1552,33 +1617,16 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
                 "value": "="
               },
               {
-                "$type": "Alternatives",
-                "elements": [
-                  {
-                    "$type": "Assignment",
-                    "feature": "value",
-                    "operator": "=",
-                    "terminal": {
-                      "$type": "RuleCall",
-                      "rule": {
-                        "$ref": "#/rules@27"
-                      },
-                      "arguments": []
-                    }
+                "$type": "Assignment",
+                "feature": "value",
+                "operator": "=",
+                "terminal": {
+                  "$type": "RuleCall",
+                  "rule": {
+                    "$ref": "#/rules@2"
                   },
-                  {
-                    "$type": "Assignment",
-                    "feature": "value",
-                    "operator": "=",
-                    "terminal": {
-                      "$type": "RuleCall",
-                      "rule": {
-                        "$ref": "#/rules@26"
-                      },
-                      "arguments": []
-                    }
-                  }
-                ]
+                  "arguments": []
+                }
               }
             ]
           }
@@ -1624,7 +1672,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
           {
             "$type": "TerminalRuleCall",
             "rule": {
-              "$ref": "#/rules@26"
+              "$ref": "#/rules@29"
             }
           },
           {
@@ -1637,7 +1685,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
           {
             "$type": "TerminalRuleCall",
             "rule": {
-              "$ref": "#/rules@26"
+              "$ref": "#/rules@29"
             }
           }
         ]
@@ -1686,7 +1734,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
           {
             "$type": "TerminalRuleCall",
             "rule": {
-              "$ref": "#/rules@29"
+              "$ref": "#/rules@32"
             }
           },
           {
@@ -1699,7 +1747,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
           {
             "$type": "TerminalRuleCall",
             "rule": {
-              "$ref": "#/rules@30"
+              "$ref": "#/rules@33"
             }
           }
         ]
@@ -1720,7 +1768,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
           {
             "$type": "TerminalRuleCall",
             "rule": {
-              "$ref": "#/rules@30"
+              "$ref": "#/rules@33"
             }
           },
           {
@@ -1736,7 +1784,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
               {
                 "$type": "TerminalRuleCall",
                 "rule": {
-                  "$ref": "#/rules@30"
+                  "$ref": "#/rules@33"
                 }
               }
             ],

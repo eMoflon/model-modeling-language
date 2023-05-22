@@ -14,8 +14,6 @@ export function isAbstractElement(item: unknown): item is AbstractElement {
     return reflection.isInstance(item, AbstractElement);
 }
 
-export type BoolVal = boolean;
-
 export type DataType = 'bool' | 'double' | 'float' | 'int' | 'string';
 
 export type Statement = Attribute | CReference;
@@ -26,10 +24,18 @@ export function isStatement(item: unknown): item is Statement {
     return reflection.isInstance(item, Statement);
 }
 
+export type ValueExpr = BoolExpr | NumberExpr | StringExpr;
+
+export const ValueExpr = 'ValueExpr';
+
+export function isValueExpr(item: unknown): item is ValueExpr {
+    return reflection.isInstance(item, ValueExpr);
+}
+
 export interface Attribute extends AstNode {
     readonly $container: Class | Interface;
     readonly $type: 'Attribute';
-    defaultValue?: BoolVal | number | string
+    defaultValue?: ValueExpr
     modifiers?: AttributeModifiers
     name: string
     type: DataType
@@ -58,6 +64,18 @@ export const AttributeModifiers = 'AttributeModifiers';
 
 export function isAttributeModifiers(item: unknown): item is AttributeModifiers {
     return reflection.isInstance(item, AttributeModifiers);
+}
+
+export interface BoolExpr extends AstNode {
+    readonly $container: Attribute | EnumEntry;
+    readonly $type: 'BoolExpr';
+    value: boolean
+}
+
+export const BoolExpr = 'BoolExpr';
+
+export function isBoolExpr(item: unknown): item is BoolExpr {
+    return reflection.isInstance(item, BoolExpr);
 }
 
 export interface Class extends AstNode {
@@ -94,7 +112,8 @@ export function isCReference(item: unknown): item is CReference {
 
 export interface Enum extends AstNode {
     readonly $container: Package;
-    readonly $type: 'Enum' | 'EnumEntry';
+    readonly $type: 'Enum';
+    entries: Array<EnumEntry>
     name: string
 }
 
@@ -102,6 +121,19 @@ export const Enum = 'Enum';
 
 export function isEnum(item: unknown): item is Enum {
     return reflection.isInstance(item, Enum);
+}
+
+export interface EnumEntry extends AstNode {
+    readonly $container: Enum;
+    readonly $type: 'EnumEntry';
+    name: string
+    value?: ValueExpr
+}
+
+export const EnumEntry = 'EnumEntry';
+
+export function isEnumEntry(item: unknown): item is EnumEntry {
+    return reflection.isInstance(item, EnumEntry);
 }
 
 export interface Import extends AstNode {
@@ -170,6 +202,18 @@ export function isMultiplicity(item: unknown): item is Multiplicity {
     return reflection.isInstance(item, Multiplicity);
 }
 
+export interface NumberExpr extends AstNode {
+    readonly $container: Attribute | EnumEntry;
+    readonly $type: 'NumberExpr';
+    value: number
+}
+
+export const NumberExpr = 'NumberExpr';
+
+export function isNumberExpr(item: unknown): item is NumberExpr {
+    return reflection.isInstance(item, NumberExpr);
+}
+
 export interface OppositeAnnotation extends AstNode {
     readonly $container: CReference;
     readonly $type: 'OppositeAnnotation';
@@ -215,23 +259,23 @@ export function isReferenceModifiers(item: unknown): item is ReferenceModifiers 
     return reflection.isInstance(item, ReferenceModifiers);
 }
 
-export interface EnumEntry extends Enum {
-    readonly $container: Package;
-    readonly $type: 'EnumEntry';
-    name: string
-    value?: number | string
+export interface StringExpr extends AstNode {
+    readonly $container: Attribute | EnumEntry;
+    readonly $type: 'StringExpr';
+    value: string
 }
 
-export const EnumEntry = 'EnumEntry';
+export const StringExpr = 'StringExpr';
 
-export function isEnumEntry(item: unknown): item is EnumEntry {
-    return reflection.isInstance(item, EnumEntry);
+export function isStringExpr(item: unknown): item is StringExpr {
+    return reflection.isInstance(item, StringExpr);
 }
 
 export interface ModelModelingLanguageAstType {
     AbstractElement: AbstractElement
     Attribute: Attribute
     AttributeModifiers: AttributeModifiers
+    BoolExpr: BoolExpr
     CReference: CReference
     Class: Class
     Enum: Enum
@@ -241,16 +285,19 @@ export interface ModelModelingLanguageAstType {
     Interface: Interface
     Model: Model
     Multiplicity: Multiplicity
+    NumberExpr: NumberExpr
     OppositeAnnotation: OppositeAnnotation
     Package: Package
     ReferenceModifiers: ReferenceModifiers
     Statement: Statement
+    StringExpr: StringExpr
+    ValueExpr: ValueExpr
 }
 
 export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return ['AbstractElement', 'Attribute', 'AttributeModifiers', 'CReference', 'Class', 'Enum', 'EnumEntry', 'Import', 'ImportAlias', 'Interface', 'Model', 'Multiplicity', 'OppositeAnnotation', 'Package', 'ReferenceModifiers', 'Statement'];
+        return ['AbstractElement', 'Attribute', 'AttributeModifiers', 'BoolExpr', 'CReference', 'Class', 'Enum', 'EnumEntry', 'Import', 'ImportAlias', 'Interface', 'Model', 'Multiplicity', 'NumberExpr', 'OppositeAnnotation', 'Package', 'ReferenceModifiers', 'Statement', 'StringExpr', 'ValueExpr'];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
@@ -259,13 +306,15 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
             case CReference: {
                 return this.isSubtype(Statement, supertype);
             }
+            case BoolExpr:
+            case NumberExpr:
+            case StringExpr: {
+                return this.isSubtype(ValueExpr, supertype);
+            }
             case Class:
             case Enum:
             case Interface: {
                 return this.isSubtype(AbstractElement, supertype);
-            }
-            case EnumEntry: {
-                return this.isSubtype(Enum, supertype);
             }
             default: {
                 return false;
@@ -310,6 +359,14 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
                     ]
                 };
             }
+            case 'BoolExpr': {
+                return {
+                    name: 'BoolExpr',
+                    mandatory: [
+                        { name: 'value', type: 'boolean' }
+                    ]
+                };
+            }
             case 'Class': {
                 return {
                     name: 'Class',
@@ -318,6 +375,14 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
                         { name: 'body', type: 'array' },
                         { name: 'extendedClasses', type: 'array' },
                         { name: 'implementedInterfaces', type: 'array' }
+                    ]
+                };
+            }
+            case 'Enum': {
+                return {
+                    name: 'Enum',
+                    mandatory: [
+                        { name: 'entries', type: 'array' }
                     ]
                 };
             }
