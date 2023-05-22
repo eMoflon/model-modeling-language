@@ -6,6 +6,11 @@ entry Model:
 DataType returns string:
     'int' | 'string' | 'bool' | 'double' | 'float';
 
+ValueExpr: NumberExpr | StringExpr | BoolExpr;
+NumberExpr: value=(NUM | DOUBLE);
+StringExpr: value=STRING;
+BoolExpr: value?='true' | 'false';
+
 Import:
     'import' target=STRING ('using' aliases+=ImportAlias (',' aliases+=ImportAlias)*)? ';';
 
@@ -58,7 +63,7 @@ AttributeModifiers:
     id?='id';
 
 Attribute:
-    'attribute' type=DataType name=ID ('=' (defaultValue=STRING | defaultValue=NUM | defaultValue=DOUBLE | defaultValue=BOOL))? ('{'modifiers=AttributeModifiers'}')?';';
+    'attribute' type=DataType name=ID ('=' defaultValue=ValueExpr)? ('{'modifiers=AttributeModifiers'}')?';';
 
 ReferenceModifiers:
     readonly?='readonly' &
@@ -83,12 +88,11 @@ Enum:
     '}';
 
 EnumEntry:
-    name=ID | name=ID '=' (value=STRING | value=NUM);
+    name=ID | name=ID '=' value=ValueExpr;
 
 
 hidden terminal WS: /\s+/;
 terminal MULTIPLICITYSYMBOL: /[\*?+]/;
-terminal BOOL returns boolean: /true|false/;
 terminal DOUBLE returns number: NUM '.' NUM;
 terminal NUM returns number: /[0-9]+/;
 terminal STRING returns string: /"[^"]*"/;
