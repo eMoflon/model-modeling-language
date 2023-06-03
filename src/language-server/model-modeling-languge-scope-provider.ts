@@ -32,19 +32,19 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
             const importUri = URI.parse(ip.target);
             ip.aliases.forEach(ipa => {
                 globalScope.getAllElements()
-                    .filter(x => x.name == ipa.name || x.name.startsWith(ipa.name))
+                    .filter(x => x.name == ipa.ref.$refText || x.name.startsWith(ipa.ref.$refText))
                     .filter(astNodeDesc => astNodeDesc.documentUri.path == importUri.path)
                     .forEach(targetAstNodeDescription => {
                         if (targetAstNodeDescription != undefined) {
                             const targetAstNode = this.getAstNodeByPath(targetAstNodeDescription);
                             if (targetAstNode != null) {
-                                const updatedName = targetAstNodeDescription.name.replace(ipa.name, ipa.alias);
+                                const updatedName = targetAstNodeDescription.name.replace(ipa.ref.$refText, ipa.alias);
                                 aliasDescriptions.push(this.descriptions.createDescription(targetAstNode, updatedName));
                             } else {
                                 console.warn(`[AliasResolution] TargetAstNode is null!`)
                             }
                         } else {
-                            console.warn(`[AliasResolution] Could not resolve ${ipa.name}!`)
+                            console.warn(`[AliasResolution] Could not resolve ${ipa.ref.$refText}!`)
                         }
                     });
             })

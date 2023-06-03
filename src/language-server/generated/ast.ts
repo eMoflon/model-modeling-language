@@ -153,7 +153,7 @@ export interface ImportAlias extends AstNode {
     readonly $container: Import;
     readonly $type: 'ImportAlias';
     alias: string
-    name: string
+    ref: Reference<Package>
 }
 
 export const ImportAlias = 'ImportAlias';
@@ -332,6 +332,9 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
             case 'Class:implementedInterfaces':
             case 'Interface:extendedInterfaces': {
                 return Interface;
+            }
+            case 'ImportAlias:ref': {
+                return Package;
             }
             case 'OppositeAnnotation:reference': {
                 return CReference;

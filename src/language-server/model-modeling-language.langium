@@ -15,7 +15,7 @@ Import:
     'import' target=STRING ('using' aliases+=ImportAlias (',' aliases+=ImportAlias)*)? ';';
 
 ImportAlias:
-    name=QNAME 'as' alias=ID;
+    (ref=[Package:ID] | ref=[Package:QNAME]) 'as' alias=ID;
 
 Multiplicity:
     ('[' (mult=NUM | mult=MULTIPLICITYSYMBOL) ('..' (upperMult=NUM | upperMult=MULTIPLICITYSYMBOL))? ']')?;
