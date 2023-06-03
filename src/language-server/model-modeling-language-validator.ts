@@ -1,9 +1,10 @@
-import {ValidationAcceptor, ValidationChecks} from 'langium';
+import {getDocument, LangiumDocument, ValidationAcceptor, ValidationChecks} from 'langium';
 import {
     Attribute,
     Class,
     CReference,
     Enum,
+    Import,
     Interface,
     isBoolExpr,
     isModel,
@@ -14,6 +15,7 @@ import {
     Package
 } from './generated/ast';
 import type {ModelModelingLanguageServices} from './model-modeling-language-module';
+import {URI} from "vscode-uri";
 
 /**
  * Register custom validation checks.
@@ -23,7 +25,8 @@ export function registerValidationChecks(services: ModelModelingLanguageServices
     const validator = services.validation.ModelModelingLanguageValidator;
     const checks: ValidationChecks<ModelModelingLanguageAstType> = {
         Package: [
-            validator.checkUniqueElementNames
+            validator.checkUniqueElementNames,
+            validator.checkUniqueSubPackageNames
         ],
         Interface: [
             validator.checkUniqueInterfaceStmtNames,
@@ -37,7 +40,10 @@ export function registerValidationChecks(services: ModelModelingLanguageServices
             validator.checkClassImplements
         ],
         Model: [
-            validator.checkUniqueImports
+            validator.checkUniqueImports,
+            validator.checkUniquePackageNames,
+            validator.checkUniqueAliases,
+            validator.checkPackageShadowing
         ],
         CReference: [
             validator.checkCReferenceImports,
@@ -49,6 +55,9 @@ export function registerValidationChecks(services: ModelModelingLanguageServices
         ],
         Enum: [
             validator.checkUniqueEnumType
+        ],
+        Import: [
+            validator.checkSelfImport
         ]
     };
     registry.register(checks, validator);
@@ -71,6 +80,35 @@ export namespace IssueCodes {
  * Implementation of custom validations.
  */
 export class ModelModelingLanguageValidator {
+    services: ModelModelingLanguageServices;
+
+    constructor(services: ModelModelingLanguageServices) {
+        this.services = services;
+    }
+
+    checkUniquePackageNames(modl: Model, accept: ValidationAcceptor): void {
+        const reportedElements = new Set();
+        modl.packages.forEach(pckg => {
+            if (reportedElements.has(pckg.name)) {
+                accept('error', `${pckg.$type} has non-unique name '${pckg.name}'.`, {node: pckg, property: 'name'})
+            }
+            reportedElements.add(pckg.name);
+        });
+    }
+
+    checkUniqueSubPackageNames(pckg: Package, accept: ValidationAcceptor): void {
+        const reportedElements = new Set();
+        pckg.subPackages.forEach(subPckg => {
+            if (reportedElements.has(subPckg.name)) {
+                accept('error', `${subPckg.$type} has non-unique name '${subPckg.name}'.`, {
+                    node: subPckg,
+                    property: 'name'
+                })
+            }
+            reportedElements.add(subPckg.name);
+        });
+    }
+
     checkUniqueElementNames(pkge: Package, accept: ValidationAcceptor): void {
         const reportedElements = new Set();
         pkge.body.forEach(elmt => {
@@ -85,7 +123,7 @@ export class ModelModelingLanguageValidator {
         const reportedStmt = new Set();
         cls.body.forEach(stmt => {
             if (reportedStmt.has(stmt.name)) {
-                accept('error', `Class has non-unique name '${stmt.name}'.`, {node: stmt, property: 'name'})
+                accept('error', `${stmt.$type} has non-unique name '${stmt.name}'.`, {node: stmt, property: 'name'})
             }
             reportedStmt.add(stmt.name);
         });
@@ -228,31 +266,27 @@ export class ModelModelingLanguageValidator {
     }
 
     checkAttributeTypes(attr: Attribute, accept: ValidationAcceptor) {
-        let targetType = undefined;
-        switch (attr.type) {
-            case "bool":
-                targetType = "boolean";
-                break;
-            case "string":
-                targetType = "string";
-                break;
-            case "double":
-            case "int":
-            case "float":
-                targetType = "number";
-                break;
-        }
-        if (targetType != undefined && attr.defaultValue != undefined) {
-            let defaultValueType = undefined;
-            if (isStringExpr(attr.defaultValue)) {
-                defaultValueType = "string";
-            } else if (isNumberExpr(attr.defaultValue)) {
-                defaultValueType = "number";
-            } else if (isBoolExpr(attr.defaultValue)) {
-                defaultValueType = "boolean";
-            }
-            if (defaultValueType != targetType) {
-                accept('error', `Default value of type ${defaultValueType} does not match specified attribute type (${attr.type})`, {
+        if (attr.defaultValue != undefined) {
+            if (attr.type == "bool" && !isBoolExpr(attr.defaultValue)) {
+                accept('error', `Default value does not match specified attribute type (${attr.type})`, {
+                    node: attr,
+                    property: 'type',
+                    code: IssueCodes.AttributeTypeDoesNotMatch
+                })
+            } else if (attr.type == "string" && !isStringExpr(attr.defaultValue)) {
+                accept('error', `Default value does not match specified attribute type (${attr.type})`, {
+                    node: attr,
+                    property: 'type',
+                    code: IssueCodes.AttributeTypeDoesNotMatch
+                })
+            } else if (attr.type == "int" && (!isNumberExpr(attr.defaultValue) || (isNumberExpr(attr.defaultValue) && attr.defaultValue.value % 1 !== 0))) {
+                accept('error', `Default value does not match specified attribute type (${attr.type})`, {
+                    node: attr,
+                    property: 'type',
+                    code: IssueCodes.AttributeTypeDoesNotMatch
+                })
+            } else if ((attr.type == "double" || attr.type == "float") && !isNumberExpr(attr.defaultValue)) {
+                accept('error', `Default value does not match specified attribute type (${attr.type})`, {
                     node: attr,
                     property: 'type',
                     code: IssueCodes.AttributeTypeDoesNotMatch
@@ -375,6 +409,69 @@ export class ModelModelingLanguageValidator {
             accept('error', `Enum has no unique type. Each enum element must have the same type!`, {
                 node: enm,
                 property: 'name'
+            })
+        }
+    }
+
+    checkUniqueAliases(modl: Model, accept: ValidationAcceptor) {
+        const knownAliases = new Set();
+        const knownSuperPackages = new Set(modl.packages.map(p => p.name));
+        modl.imports.forEach(ip => {
+            ip.aliases.forEach((ipas, idx) => {
+                if (knownAliases.has(ipas.alias)) {
+                    accept('error', `This alias is already in use!`, {
+                        node: ipas,
+                        index: idx,
+                        property: 'alias'
+                    })
+                } else if (knownSuperPackages.has(ipas.alias)) {
+                    accept('error', `This alias shadows a package name in this file!`, {
+                        node: ipas,
+                        index: idx,
+                        property: 'alias'
+                    })
+                } else {
+                    knownAliases.add(ipas.alias);
+                }
+            })
+        })
+    }
+
+    checkPackageShadowing(modl: Model, accept: ValidationAcceptor) {
+        const shadowedPackageNames: Set<string> = new Set(modl.packages.map(p => p.name));
+        modl.imports.forEach(ip => {
+            const importedDocURI: URI = URI.parse(ip.target);
+            const docShadowedPackageNames: Set<string> = new Set();
+            if (this.services.shared.workspace.LangiumDocuments.hasDocument(importedDocURI)) {
+                const importedDocument: LangiumDocument = this.services.shared.workspace.LangiumDocuments.getOrCreateDocument(importedDocURI);
+                const importedRoot: Model = importedDocument.parseResult.value as Model;
+                importedRoot.packages.forEach(pk => {
+                    if (shadowedPackageNames.has(pk.name)) {
+                        docShadowedPackageNames.add(pk.name);
+                    }
+                    shadowedPackageNames.add(pk.name);
+                });
+                if (docShadowedPackageNames.size > 0) {
+                    accept('error', `Imported document shadows the following package names: [${[...docShadowedPackageNames].join(', ')}]`, {
+                        node: ip,
+                        property: 'target'
+                    })
+                }
+            } else {
+                accept('error', `Document currently not managed by langium services`, {
+                    node: ip,
+                    property: 'target'
+                })
+            }
+        })
+    }
+
+    checkSelfImport(ip: Import, accept: ValidationAcceptor) {
+        const targetPath = ip.target;
+        if (targetPath == getDocument(ip).uri.path) {
+            accept('error', `Document imports itself!`, {
+                node: ip,
+                property: 'target'
             })
         }
     }

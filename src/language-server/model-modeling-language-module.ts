@@ -14,6 +14,7 @@ import {ModelModelingLanguageScopeComputation} from "./model-modeling-language-s
 import {ModelModelingLanguageSemanticTokenProvider} from "./model-modeling-language-semantic-token-provider";
 import {ModelModelingLanguageCodeActionProvider} from "./model-modeling-language-code-action-provider";
 import {ModelModelingLanguageFormatter} from "./model-modeling-language-formatter";
+import {ModelModelingLanguageScopeProvider} from "./model-modeling-languge-scope-provider";
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -37,7 +38,7 @@ export type ModelModelingLanguageServices = LangiumServices & ModelModelingLangu
  */
 export const ModelModelingLanguageModule: Module<ModelModelingLanguageServices, PartialLangiumServices & ModelModelingLanguageAddedServices> = {
     validation: {
-        ModelModelingLanguageValidator: () => new ModelModelingLanguageValidator(),
+        ModelModelingLanguageValidator: (services) => new ModelModelingLanguageValidator(services),
     },
     references: {
         ScopeComputation: (services) => new ModelModelingLanguageScopeComputation(services),
