@@ -40,7 +40,8 @@ export const ModelModelingLanguageModule: Module<ModelModelingLanguageServices, 
         ModelModelingLanguageValidator: () => new ModelModelingLanguageValidator(),
     },
     references: {
-        ScopeComputation: (services) => new ModelModelingLanguageScopeComputation(services)
+        ScopeComputation: (services) => new ModelModelingLanguageScopeComputation(services),
+        ScopeProvider: (services) => new ModelModelingLanguageScopeProvider(services),
     },
     lsp: {
         SemanticTokenProvider: (services) => new ModelModelingLanguageSemanticTokenProvider(services),

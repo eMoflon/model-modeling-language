@@ -1,5 +1,5 @@
 import {AstNode} from "langium";
-import {isClass, isInterface, isPackage} from "./generated/ast";
+import {isClass, isPackage} from "./generated/ast";
 
 export class ModelModelingLanguageUtils {
     public static getQualifiedRefName(node: AstNode, name: string): string {
@@ -26,15 +26,5 @@ export class ModelModelingLanguageUtils {
             parent = parent.$container;
         }
         return name;
-    }
-
-    public static getIndentationLevel(node: AstNode): number {
-        let parent: AstNode | undefined = node.$container;
-        let level = 0;
-        while (isPackage(parent) || isClass(parent) || isInterface(parent)) {
-            level += 1;
-            parent = parent.$container;
-        }
-        return level;
     }
 }
