@@ -57,7 +57,8 @@ export function registerValidationChecks(services: ModelModelingLanguageServices
             validator.checkUniqueEnumType
         ],
         Import: [
-            validator.checkSelfImport
+            validator.checkSelfImport,
+            validator.checkImportAliasRefsContained
         ]
     };
     registry.register(checks, validator);
@@ -474,5 +475,24 @@ export class ModelModelingLanguageValidator {
                 property: 'target'
             })
         }
+    }
+
+    checkImportAliasRefsContained(ip: Import, accept: ValidationAcceptor) {
+        const importedDocURI: URI = URI.parse(ip.target);
+        ip.aliases.forEach((ipa, idx) => {
+            if (ipa.ref.$nodeDescription != undefined) {
+                if (ipa.ref.$nodeDescription.documentUri != undefined) {
+                    if (ipa.ref.$nodeDescription.documentUri.path != importedDocURI.path) {
+                        accept('error', `Package ${ipa.ref.$refText} is not defined in this document!`, {
+                            node: ip,
+                            property: 'aliases',
+                            index: idx
+                        })
+                    }
+                } else {
+                    console.error("[AliasRefsCheck] NodeDescription is undefined!");
+                }
+            }
+        });
     }
 }
