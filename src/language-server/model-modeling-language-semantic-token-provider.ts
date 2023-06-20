@@ -8,8 +8,21 @@ import {
     isCReference,
     isEnum,
     isEnumEntry,
+    isFunctionAssignment,
+    isFunctionCall,
+    isFunctionLoop,
+    isFunctionMacroCall,
+    isFunctionReturn,
+    isIFunction,
+    isIInstance,
+    isIMacro,
     isImport,
+    isInstanceLoop,
+    isInstanceVariable,
     isInterface,
+    isMacroAssignStatement,
+    isMacroAttributeStatement,
+    isMacroInstance,
     isMultiplicity,
     isNumberExpr,
     isOppositeAnnotation,
@@ -90,6 +103,64 @@ export class ModelModelingLanguageSemanticTokenProvider extends AbstractSemantic
                     acceptor({node, property: "upperMult", type: SemanticTokenTypes.number})
                 }
             }
+        } else if (isInstanceVariable(node)) {
+            if (node.type != undefined) {
+                acceptor({node, property: "type", type: SemanticTokenTypes.type});
+            }
+            if (node.dtype != undefined) {
+                acceptor({node, property: "dtype", type: SemanticTokenTypes.type});
+            }
+            acceptor({node, property: "name", type: SemanticTokenTypes.property});
+        } else if (isIMacro(node)) {
+            acceptor({node, keyword: "macro", type: SemanticTokenTypes.keyword});
+            acceptor({node, property: "name", type: SemanticTokenTypes.function});
+        } else if (isMacroInstance(node)) {
+            if (node.iVar != undefined) {
+                acceptor({node, property: "iVar", type: SemanticTokenTypes.property});
+            }
+        } else if (isMacroAttributeStatement(node)) {
+            acceptor({node, property: "attr", type: SemanticTokenTypes.property});
+            acceptor({node, keyword: "=", type: SemanticTokenTypes.operator});
+            acceptor({node, property: "value", type: SemanticTokenTypes.property});
+        } else if (isMacroAssignStatement(node)) {
+            acceptor({node, property: "cref", type: SemanticTokenTypes.property});
+            acceptor({node, keyword: "->", type: SemanticTokenTypes.operator});
+            acceptor({node, property: "instance", type: SemanticTokenTypes.property});
+        } else if (isIFunction(node)) {
+            acceptor({node, keyword: "function", type: SemanticTokenTypes.keyword});
+            acceptor({node, property: "name", type: SemanticTokenTypes.function});
+            if (node.dtype != undefined) {
+                acceptor({node, keyword: "returns", type: SemanticTokenTypes.keyword});
+                acceptor({node, property: "dtype", type: SemanticTokenTypes.property});
+            }
+            if (node.type != undefined) {
+                acceptor({node, keyword: "returns", type: SemanticTokenTypes.keyword});
+                acceptor({node, property: "type", type: SemanticTokenTypes.property});
+            }
+        } else if (isFunctionCall(node)) {
+            acceptor({node, property: "func", type: SemanticTokenTypes.function});
+        } else if (isFunctionMacroCall(node)) {
+            acceptor({node, property: "macro", type: SemanticTokenTypes.function});
+        } else if (isFunctionLoop(node)) {
+            acceptor({node, keyword: "for", type: SemanticTokenTypes.keyword});
+            acceptor({node, keyword: "in", type: SemanticTokenTypes.keyword});
+            acceptor({node, property: "lower", type: SemanticTokenTypes.number});
+            acceptor({node, keyword: ":", type: SemanticTokenTypes.operator});
+            acceptor({node, property: "upper", type: SemanticTokenTypes.number});
+        } else if (isFunctionReturn(node)) {
+            acceptor({node, keyword: "return", type: SemanticTokenTypes.keyword});
+            acceptor({node, property: "var", type: SemanticTokenTypes.property});
+        } else if (isFunctionAssignment(node)) {
+            acceptor({node, keyword: "=", type: SemanticTokenTypes.operator});
+        } else if (isIInstance(node)) {
+            acceptor({node, keyword: "instance", type: SemanticTokenTypes.keyword});
+            acceptor({node, property: "name", type: SemanticTokenTypes.function});
+        } else if (isInstanceLoop(node)) {
+            acceptor({node, keyword: "for", type: SemanticTokenTypes.keyword});
+            acceptor({node, property: "var", type: SemanticTokenTypes.property});
+            acceptor({node, keyword: "-", type: SemanticTokenTypes.operator});
+            acceptor({node, property: "ref", type: SemanticTokenTypes.property});
+            acceptor({node, keyword: "->", type: SemanticTokenTypes.operator});
         }
     }
 

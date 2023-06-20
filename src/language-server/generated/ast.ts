@@ -16,6 +16,38 @@ export function isAbstractElement(item: unknown): item is AbstractElement {
 
 export type DataType = 'bool' | 'double' | 'float' | 'int' | 'string';
 
+export type FunctionAssignment = FunctionCall | FunctionMacroCall | InstanceVariable;
+
+export const FunctionAssignment = 'FunctionAssignment';
+
+export function isFunctionAssignment(item: unknown): item is FunctionAssignment {
+    return reflection.isInstance(item, FunctionAssignment);
+}
+
+export type FunctionStatement = FunctionAssignment | FunctionCall | FunctionLoop | FunctionMacroCall;
+
+export const FunctionStatement = 'FunctionStatement';
+
+export function isFunctionStatement(item: unknown): item is FunctionStatement {
+    return reflection.isInstance(item, FunctionStatement);
+}
+
+export type InstanceStatement = FunctionAssignment | FunctionCall | FunctionMacroCall;
+
+export const InstanceStatement = 'InstanceStatement';
+
+export function isInstanceStatement(item: unknown): item is InstanceStatement {
+    return reflection.isInstance(item, InstanceStatement);
+}
+
+export type MacroStatement = MacroAssignStatement | MacroAttributeStatement;
+
+export const MacroStatement = 'MacroStatement';
+
+export function isMacroStatement(item: unknown): item is MacroStatement {
+    return reflection.isInstance(item, MacroStatement);
+}
+
 export type Statement = Attribute | CReference;
 
 export const Statement = 'Statement';
@@ -67,7 +99,7 @@ export function isAttributeModifiers(item: unknown): item is AttributeModifiers 
 }
 
 export interface BoolExpr extends AstNode {
-    readonly $container: Attribute | EnumEntry;
+    readonly $container: Attribute | EnumEntry | MacroAttributeStatement;
     readonly $type: 'BoolExpr';
     value: boolean
 }
@@ -136,6 +168,102 @@ export function isEnumEntry(item: unknown): item is EnumEntry {
     return reflection.isInstance(item, EnumEntry);
 }
 
+export interface FunctionCall extends AstNode {
+    readonly $container: FunctionLoop | IFunction | IInstance | IMacro | InstanceLoop | MacroInstance;
+    readonly $type: 'FunctionCall';
+    args: Array<Reference<InstanceVariable>>
+    func: Reference<IFunction>
+}
+
+export const FunctionCall = 'FunctionCall';
+
+export function isFunctionCall(item: unknown): item is FunctionCall {
+    return reflection.isInstance(item, FunctionCall);
+}
+
+export interface FunctionLoop extends AstNode {
+    readonly $container: FunctionLoop | IFunction | IInstance | IMacro | InstanceLoop | MacroInstance;
+    readonly $type: 'FunctionLoop';
+    lower: number
+    statements: Array<FunctionStatement>
+    upper: number
+    var: InstanceVariable
+}
+
+export const FunctionLoop = 'FunctionLoop';
+
+export function isFunctionLoop(item: unknown): item is FunctionLoop {
+    return reflection.isInstance(item, FunctionLoop);
+}
+
+export interface FunctionMacroCall extends AstNode {
+    readonly $container: FunctionLoop | IFunction | IInstance | IMacro | InstanceLoop | MacroInstance;
+    readonly $type: 'FunctionMacroCall';
+    args: Array<Reference<InstanceVariable>>
+    macro: Reference<IMacro>
+}
+
+export const FunctionMacroCall = 'FunctionMacroCall';
+
+export function isFunctionMacroCall(item: unknown): item is FunctionMacroCall {
+    return reflection.isInstance(item, FunctionMacroCall);
+}
+
+export interface FunctionReturn extends AstNode {
+    readonly $container: IFunction;
+    readonly $type: 'FunctionReturn';
+    var: Reference<InstanceVariable>
+}
+
+export const FunctionReturn = 'FunctionReturn';
+
+export function isFunctionReturn(item: unknown): item is FunctionReturn {
+    return reflection.isInstance(item, FunctionReturn);
+}
+
+export interface IFunction extends AstNode {
+    readonly $container: Model;
+    readonly $type: 'IFunction';
+    dtype?: DataType
+    name: string
+    parameter: Array<InstanceVariable>
+    statements: Array<FunctionReturn> | Array<FunctionStatement>
+    type?: Reference<Class>
+}
+
+export const IFunction = 'IFunction';
+
+export function isIFunction(item: unknown): item is IFunction {
+    return reflection.isInstance(item, IFunction);
+}
+
+export interface IInstance extends AstNode {
+    readonly $container: Model;
+    readonly $type: 'IInstance';
+    name: string
+    statements: Array<InstanceLoop | InstanceStatement>
+}
+
+export const IInstance = 'IInstance';
+
+export function isIInstance(item: unknown): item is IInstance {
+    return reflection.isInstance(item, IInstance);
+}
+
+export interface IMacro extends AstNode {
+    readonly $container: Model;
+    readonly $type: 'IMacro';
+    instances: Array<MacroInstance>
+    name: string
+    parameter: Array<InstanceVariable>
+}
+
+export const IMacro = 'IMacro';
+
+export function isIMacro(item: unknown): item is IMacro {
+    return reflection.isInstance(item, IMacro);
+}
+
 export interface Import extends AstNode {
     readonly $container: Model;
     readonly $type: 'Import';
@@ -162,6 +290,35 @@ export function isImportAlias(item: unknown): item is ImportAlias {
     return reflection.isInstance(item, ImportAlias);
 }
 
+export interface InstanceLoop extends AstNode {
+    readonly $container: IInstance;
+    readonly $type: 'InstanceLoop';
+    ivar: InstanceVariable
+    ref: Reference<CReference>
+    statements: Array<InstanceStatement>
+    var: Reference<InstanceVariable>
+}
+
+export const InstanceLoop = 'InstanceLoop';
+
+export function isInstanceLoop(item: unknown): item is InstanceLoop {
+    return reflection.isInstance(item, InstanceLoop);
+}
+
+export interface InstanceVariable extends AstNode {
+    readonly $container: FunctionLoop | IFunction | IInstance | IMacro | InstanceLoop | MacroInstance;
+    readonly $type: 'InstanceVariable';
+    dtype?: DataType
+    name: string
+    type?: Reference<Class>
+}
+
+export const InstanceVariable = 'InstanceVariable';
+
+export function isInstanceVariable(item: unknown): item is InstanceVariable {
+    return reflection.isInstance(item, InstanceVariable);
+}
+
 export interface Interface extends AstNode {
     readonly $container: Package;
     readonly $type: 'Interface';
@@ -177,9 +334,52 @@ export function isInterface(item: unknown): item is Interface {
     return reflection.isInstance(item, Interface);
 }
 
+export interface MacroAssignStatement extends AstNode {
+    readonly $container: MacroInstance;
+    readonly $type: 'MacroAssignStatement';
+    cref: Reference<CReference>
+    instance: Reference<InstanceVariable>
+}
+
+export const MacroAssignStatement = 'MacroAssignStatement';
+
+export function isMacroAssignStatement(item: unknown): item is MacroAssignStatement {
+    return reflection.isInstance(item, MacroAssignStatement);
+}
+
+export interface MacroAttributeStatement extends AstNode {
+    readonly $container: MacroInstance;
+    readonly $type: 'MacroAttributeStatement';
+    attr: Reference<Attribute>
+    value: ValueExpr
+}
+
+export const MacroAttributeStatement = 'MacroAttributeStatement';
+
+export function isMacroAttributeStatement(item: unknown): item is MacroAttributeStatement {
+    return reflection.isInstance(item, MacroAttributeStatement);
+}
+
+export interface MacroInstance extends AstNode {
+    readonly $container: IMacro;
+    readonly $type: 'MacroInstance';
+    iVar?: Reference<InstanceVariable>
+    nInst?: InstanceVariable
+    statements: Array<MacroStatement>
+}
+
+export const MacroInstance = 'MacroInstance';
+
+export function isMacroInstance(item: unknown): item is MacroInstance {
+    return reflection.isInstance(item, MacroInstance);
+}
+
 export interface Model extends AstNode {
     readonly $type: 'Model';
+    functions: Array<IFunction>
     imports: Array<Import>
+    instances: Array<IInstance>
+    macros: Array<IMacro>
     packages: Array<Package>
 }
 
@@ -203,7 +403,7 @@ export function isMultiplicity(item: unknown): item is Multiplicity {
 }
 
 export interface NumberExpr extends AstNode {
-    readonly $container: Attribute | EnumEntry;
+    readonly $container: Attribute | EnumEntry | MacroAttributeStatement;
     readonly $type: 'NumberExpr';
     value: number
 }
@@ -260,7 +460,7 @@ export function isReferenceModifiers(item: unknown): item is ReferenceModifiers 
 }
 
 export interface StringExpr extends AstNode {
-    readonly $container: Attribute | EnumEntry;
+    readonly $container: Attribute | EnumEntry | MacroAttributeStatement;
     readonly $type: 'StringExpr';
     value: string
 }
@@ -280,9 +480,25 @@ export interface ModelModelingLanguageAstType {
     Class: Class
     Enum: Enum
     EnumEntry: EnumEntry
+    FunctionAssignment: FunctionAssignment
+    FunctionCall: FunctionCall
+    FunctionLoop: FunctionLoop
+    FunctionMacroCall: FunctionMacroCall
+    FunctionReturn: FunctionReturn
+    FunctionStatement: FunctionStatement
+    IFunction: IFunction
+    IInstance: IInstance
+    IMacro: IMacro
     Import: Import
     ImportAlias: ImportAlias
+    InstanceLoop: InstanceLoop
+    InstanceStatement: InstanceStatement
+    InstanceVariable: InstanceVariable
     Interface: Interface
+    MacroAssignStatement: MacroAssignStatement
+    MacroAttributeStatement: MacroAttributeStatement
+    MacroInstance: MacroInstance
+    MacroStatement: MacroStatement
     Model: Model
     Multiplicity: Multiplicity
     NumberExpr: NumberExpr
@@ -297,7 +513,7 @@ export interface ModelModelingLanguageAstType {
 export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return ['AbstractElement', 'Attribute', 'AttributeModifiers', 'BoolExpr', 'CReference', 'Class', 'Enum', 'EnumEntry', 'Import', 'ImportAlias', 'Interface', 'Model', 'Multiplicity', 'NumberExpr', 'OppositeAnnotation', 'Package', 'ReferenceModifiers', 'Statement', 'StringExpr', 'ValueExpr'];
+        return ['AbstractElement', 'Attribute', 'AttributeModifiers', 'BoolExpr', 'CReference', 'Class', 'Enum', 'EnumEntry', 'FunctionAssignment', 'FunctionCall', 'FunctionLoop', 'FunctionMacroCall', 'FunctionReturn', 'FunctionStatement', 'IFunction', 'IInstance', 'IMacro', 'Import', 'ImportAlias', 'InstanceLoop', 'InstanceStatement', 'InstanceVariable', 'Interface', 'MacroAssignStatement', 'MacroAttributeStatement', 'MacroInstance', 'MacroStatement', 'Model', 'Multiplicity', 'NumberExpr', 'OppositeAnnotation', 'Package', 'ReferenceModifiers', 'Statement', 'StringExpr', 'ValueExpr'];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
@@ -316,6 +532,23 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
             case Interface: {
                 return this.isSubtype(AbstractElement, supertype);
             }
+            case FunctionAssignment: {
+                return this.isSubtype(FunctionStatement, supertype) || this.isSubtype(InstanceStatement, supertype);
+            }
+            case FunctionCall:
+            case FunctionMacroCall: {
+                return this.isSubtype(FunctionAssignment, supertype) || this.isSubtype(FunctionStatement, supertype) || this.isSubtype(InstanceStatement, supertype);
+            }
+            case FunctionLoop: {
+                return this.isSubtype(FunctionStatement, supertype);
+            }
+            case InstanceVariable: {
+                return this.isSubtype(FunctionAssignment, supertype);
+            }
+            case MacroAssignStatement:
+            case MacroAttributeStatement: {
+                return this.isSubtype(MacroStatement, supertype);
+            }
             default: {
                 return false;
             }
@@ -326,18 +559,39 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
         const referenceId = `${refInfo.container.$type}:${refInfo.property}`;
         switch (referenceId) {
             case 'Class:extendedClasses':
-            case 'CReference:type': {
+            case 'CReference:type':
+            case 'IFunction:type':
+            case 'InstanceVariable:type': {
                 return Class;
             }
             case 'Class:implementedInterfaces':
             case 'Interface:extendedInterfaces': {
                 return Interface;
             }
+            case 'FunctionCall:args':
+            case 'FunctionMacroCall:args':
+            case 'FunctionReturn:var':
+            case 'InstanceLoop:var':
+            case 'MacroAssignStatement:instance':
+            case 'MacroInstance:iVar': {
+                return InstanceVariable;
+            }
+            case 'FunctionCall:func': {
+                return IFunction;
+            }
+            case 'FunctionMacroCall:macro': {
+                return IMacro;
+            }
             case 'ImportAlias:ref': {
                 return Package;
             }
+            case 'InstanceLoop:ref':
+            case 'MacroAssignStatement:cref':
             case 'OppositeAnnotation:reference': {
                 return CReference;
+            }
+            case 'MacroAttributeStatement:attr': {
+                return Attribute;
             }
             default: {
                 throw new Error(`${referenceId} is not a valid reference id.`);
@@ -389,11 +643,69 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
                     ]
                 };
             }
+            case 'FunctionCall': {
+                return {
+                    name: 'FunctionCall',
+                    mandatory: [
+                        { name: 'args', type: 'array' }
+                    ]
+                };
+            }
+            case 'FunctionLoop': {
+                return {
+                    name: 'FunctionLoop',
+                    mandatory: [
+                        { name: 'statements', type: 'array' }
+                    ]
+                };
+            }
+            case 'FunctionMacroCall': {
+                return {
+                    name: 'FunctionMacroCall',
+                    mandatory: [
+                        { name: 'args', type: 'array' }
+                    ]
+                };
+            }
+            case 'IFunction': {
+                return {
+                    name: 'IFunction',
+                    mandatory: [
+                        { name: 'parameter', type: 'array' },
+                        { name: 'statements', type: 'array' }
+                    ]
+                };
+            }
+            case 'IInstance': {
+                return {
+                    name: 'IInstance',
+                    mandatory: [
+                        { name: 'statements', type: 'array' }
+                    ]
+                };
+            }
+            case 'IMacro': {
+                return {
+                    name: 'IMacro',
+                    mandatory: [
+                        { name: 'instances', type: 'array' },
+                        { name: 'parameter', type: 'array' }
+                    ]
+                };
+            }
             case 'Import': {
                 return {
                     name: 'Import',
                     mandatory: [
                         { name: 'aliases', type: 'array' }
+                    ]
+                };
+            }
+            case 'InstanceLoop': {
+                return {
+                    name: 'InstanceLoop',
+                    mandatory: [
+                        { name: 'statements', type: 'array' }
                     ]
                 };
             }
@@ -407,11 +719,22 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
                     ]
                 };
             }
+            case 'MacroInstance': {
+                return {
+                    name: 'MacroInstance',
+                    mandatory: [
+                        { name: 'statements', type: 'array' }
+                    ]
+                };
+            }
             case 'Model': {
                 return {
                     name: 'Model',
                     mandatory: [
+                        { name: 'functions', type: 'array' },
                         { name: 'imports', type: 'array' },
+                        { name: 'instances', type: 'array' },
+                        { name: 'macros', type: 'array' },
                         { name: 'packages', type: 'array' }
                     ]
                 };

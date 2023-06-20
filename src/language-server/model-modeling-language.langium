@@ -1,7 +1,7 @@
 grammar ModelModelingLanguage
 
 entry Model:
-    (imports+=Import | packages+=Package)*;
+    (imports+=Import | packages+=Package | macros+=IMacro | functions+=IFunction | instances+=IInstance)*;
 
 DataType returns string:
     'int' | 'string' | 'bool' | 'double' | 'float';
@@ -83,13 +83,68 @@ CReference:
 
 Enum:
     'enum' name=ID '{'
-        entries += EnumEntry
-        (',' entries += EnumEntry)*
+        entries += EnumEntry (',' entries += EnumEntry)*
     '}';
 
 EnumEntry:
-    name=ID | name=ID '=' value=ValueExpr;
+    name=ID ('=' value=ValueExpr)?;
 
+fragment InstanceParameters:
+    '(' (parameter+=InstanceVariable (',' parameter+=InstanceVariable)*)? ')';
+
+fragment MacroParameters:
+    '[' (parameter+=InstanceVariable (',' parameter+=InstanceVariable)*)? ']';
+
+fragment InstanceType:
+    ((type=[Class:QNAME] | type=[Class:ID]) | dtype=DataType);
+
+InstanceVariable:
+    InstanceType name=ID;
+
+IMacro:
+    'macro' name=ID MacroParameters '{' (instances+=MacroInstance)* '}';
+
+MacroInstance:
+    (nInst=InstanceVariable | iVar=[InstanceVariable:ID]) '{' (statements+=MacroStatement)* '}';
+
+MacroStatement:
+    MacroAttributeStatement | MacroAssignStatement;
+
+MacroAttributeStatement:
+    attr=[Attribute:ID] '=' value=ValueExpr;
+
+MacroAssignStatement:
+    cref=[CReference:ID] '->' instance=[InstanceVariable:ID];
+
+IFunction:
+    'function' name=ID InstanceParameters ('returns' InstanceType)? '{' (statements+=FunctionStatement)+ (statements+=FunctionReturn)? '}';
+
+FunctionStatement:
+    FunctionCall | FunctionMacroCall | FunctionAssignment | FunctionLoop;
+
+FunctionCall:
+    func=[IFunction:ID] '(' (args+=[InstanceVariable:ID] (',' args+=[InstanceVariable:ID])*)? ')';
+
+FunctionMacroCall:
+    macro=[IMacro:ID] '[' (args+=[InstanceVariable:ID] (',' args+=[InstanceVariable:ID])*)? ']';
+
+FunctionAssignment:
+    InstanceVariable '=' (FunctionCall | FunctionMacroCall);
+
+FunctionReturn:
+    'return' var=[InstanceVariable:ID];
+
+FunctionLoop:
+    'for' var=InstanceVariable 'in' lower=NUM ':' upper=NUM '{' (statements+=FunctionStatement)+ '}';
+
+IInstance:
+    'instance' name=ID '{' (statements+=(InstanceStatement | InstanceLoop))* '}';
+
+InstanceStatement:
+    FunctionCall | FunctionMacroCall | FunctionAssignment;
+
+InstanceLoop:
+    'for' var=[InstanceVariable:ID] '-' ref=[CReference:ID] '->' ivar=InstanceVariable '{' (statements+=InstanceStatement)+ '}';
 
 hidden terminal WS: /\s+/;
 terminal MULTIPLICITYSYMBOL: /[\*?+]/;
