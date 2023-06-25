@@ -82,9 +82,7 @@ CReference:
     (opposite=OppositeAnnotation)? 'reference' (type=[Class:QNAME] | type=[Class:ID]) multiplicity=Multiplicity name=ID ('{' modifiers=ReferenceModifiers '}')?';';
 
 Enum:
-    'enum' name=ID '{'
-        entries += EnumEntry (',' entries += EnumEntry)*
-    '}';
+    'enum' name=ID '{' entries+=EnumEntry (',' entries+=EnumEntry)* '}';
 
 EnumEntry:
     name=ID ('=' value=ValueExpr)?;

@@ -3,8 +3,7 @@ import {
     isAttribute,
     isClass,
     isCReference,
-    isEnum, isEnumEntry,
-    isFunctionAssignment,
+    isEnum, isFunctionAssignment,
     isFunctionCall,
     isFunctionLoop,
     isFunctionMacroCall,
@@ -92,17 +91,16 @@ export class ModelModelingLanguageFormatter extends AbstractFormatter {
             }
         } else if (isEnum(node)) {
             const formatter = this.getNodeFormatter(node);
-            const bracesOpen = formatter.keyword('{');
-            const bracesClose = formatter.keyword('}');
-            formatter.interior(bracesOpen, bracesClose).prepend(Formatting.indent());
-            bracesClose.prepend(Formatting.newLine());
-        } else if (isEnumEntry(node)) {
-            const formatter = this.getNodeFormatter(node);
-            if (node.value != undefined){
-                formatter.keyword('=').surround(Formatting.oneSpace());
-                formatter.keywords(',').prepend(Formatting.noSpace()).append(Formatting.oneSpace());
-            }
-            //formatter.keywords(',').prepend(Formatting.noSpace()).append(Formatting.newLine());
+            formatter.property('name').surround(Formatting.oneSpace());
+            formatter.keyword('}').prepend(Formatting.newLine());
+            formatter.keywords(',').prepend(Formatting.noSpace());
+            node.entries.forEach(entry => {
+                formatter.node(entry).prepend(Formatting.indent());
+                const entryFormatter = this.getNodeFormatter(entry);
+                if (entry.value != undefined){
+                    entryFormatter.keyword('=').surround(Formatting.oneSpace());
+                }
+            });
         } else if (isAttribute(node)) {
             const formatter = this.getNodeFormatter(node);
             formatter.property('type').surround(Formatting.oneSpace());
