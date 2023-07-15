@@ -1,9 +1,11 @@
 import {AbstractFormatter, AstNode, Formatting} from "langium";
 import {
     isAttribute,
+    isBinaryExpression,
     isClass,
     isCReference,
-    isEnum, isFunctionAssignment,
+    isEnum,
+    isFunctionAssignment,
     isFunctionCall,
     isFunctionLoop,
     isFunctionMacroCall,
@@ -97,7 +99,7 @@ export class ModelModelingLanguageFormatter extends AbstractFormatter {
             node.entries.forEach(entry => {
                 formatter.node(entry).prepend(Formatting.indent());
                 const entryFormatter = this.getNodeFormatter(entry);
-                if (entry.value != undefined){
+                if (entry.value != undefined) {
                     entryFormatter.keyword('=').surround(Formatting.oneSpace());
                 }
             });
@@ -122,11 +124,13 @@ export class ModelModelingLanguageFormatter extends AbstractFormatter {
 
             formatter.property('type').prepend(Formatting.oneSpace()).append(Formatting.noSpace());
 
-            const multiFormatter = this.getNodeFormatter(node.multiplicity);
-            multiFormatter.keyword('[').append(Formatting.noSpace());
-            multiFormatter.keyword(']').prepend(Formatting.noSpace());
-            if (node.multiplicity.upperMult != undefined) {
-                multiFormatter.keyword('..').surround(Formatting.noSpace());
+            if (node.multiplicity != undefined) {
+                const multiFormatter = this.getNodeFormatter(node.multiplicity);
+                multiFormatter.keyword('[').append(Formatting.noSpace());
+                multiFormatter.keyword(']').prepend(Formatting.noSpace());
+                if (node.multiplicity.upperMult != undefined) {
+                    multiFormatter.keyword('..').surround(Formatting.noSpace());
+                }
             }
 
             formatter.property('name').prepend(Formatting.oneSpace());
@@ -214,6 +218,9 @@ export class ModelModelingLanguageFormatter extends AbstractFormatter {
             formatter.property('var').surround(Formatting.oneSpace());
             formatter.property('ref').surround(Formatting.noSpace());
             formatter.property('ivar').surround(Formatting.oneSpace());
+        } else if (isBinaryExpression(node)) {
+            const formatter = this.getNodeFormatter(node);
+            formatter.keyword('operator').surround(Formatting.oneSpace());
         }
     }
 

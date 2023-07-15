@@ -2,12 +2,36 @@ import {
     AstNode,
     AstNodeDescription,
     DefaultScopeProvider,
+    EMPTY_SCOPE,
     getContainerOfType,
+    getDocument,
     LangiumDocument,
     ReferenceInfo,
-    Scope
+    Scope,
+    stream,
+    Stream
 } from "langium";
-import {isModel} from "./generated/ast";
+import {
+    Class,
+    FunctionAssignment,
+    IMacro,
+    InstanceVariable,
+    isAttribute,
+    isClass,
+    isCReference,
+    isFunctionAssignment,
+    isFunctionLoop,
+    isFunctionMacroCall,
+    isFunctionReturn,
+    isIFunction,
+    isIInstance,
+    isIMacro,
+    isInstanceLoop,
+    isInstanceVariable,
+    isMacroAssignStatement,
+    isMacroAttributeStatement,
+    isModel
+} from "./generated/ast";
 import {URI} from "vscode-uri";
 import {ModelModelingLanguageServices} from "./model-modeling-language-module";
 
@@ -19,11 +43,222 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
         this.services = services;
     }
 
+
+    override getScope(context: ReferenceInfo): Scope {
+        if (isMacroAttributeStatement(context.container)) {
+            const attr = context.container;
+            const macroInst = attr.$container;
+            let refInstVar;
+            if (macroInst.nInst != undefined) {
+                //console.log("[MAS] nInst != undefined");
+                refInstVar = macroInst.nInst;
+            } else if (macroInst.iVar != undefined && macroInst.iVar.ref != undefined) {
+                refInstVar = macroInst.iVar.ref;
+                //console.log("[MAS] iVar != undefined");
+            } else {
+                //console.log("[MAS] Wat? both undefined!");
+                return EMPTY_SCOPE;
+            }
+            if (refInstVar.dtype != undefined) {
+                //console.log("[MAS] dType != undefined");
+                return EMPTY_SCOPE;
+            }
+            if (refInstVar.type != undefined && refInstVar.type.ref != undefined && isClass(refInstVar.type.ref)) {
+                const containerClass: Class = refInstVar.type.ref;
+                //console.log(`-> Found container class: ${containerClass.name}`);
+                const precomputed = getDocument(containerClass).precomputedScopes;
+                //console.log("[MAS] Retrieving precomputed scopes!");
+                if (precomputed) {
+                    //console.log("[MAS] Retrieved precomputed scopes");
+                    const scopes: Array<Stream<AstNodeDescription>> = [];
+                    const allDescriptions = precomputed.get(containerClass);
+                    if (allDescriptions.length > 0) {
+                        //console.log(`[MAS] Found ${allDescriptions.length} descriptions`);
+                        scopes.push(stream(allDescriptions).filter(
+                            desc => isAttribute(desc.node)));
+                    } else {
+                        //console.log("[MAS] No descriptions found!!");
+                    }
+                    let result: Scope = EMPTY_SCOPE;
+                    //console.log("[MAS] Building scope!");
+                    for (let i = scopes.length - 1; i >= 0; i--) {
+                        result = this.createScope(scopes[i], result);
+                    }
+                    return result;
+                }
+            }
+            console.log(`[getScope] ${context.property} | ${context.index}`)
+        } else if (isMacroAssignStatement(context.container)) {
+            const attr = context.container;
+            const macroInst = attr.$container;
+            let refInstVar;
+            //console.log(`[MAS] >> ${context.property} <<`);
+            if (macroInst.nInst != undefined) {
+                //console.log("[MAS] nInst != undefined");
+                refInstVar = macroInst.nInst;
+            } else if (macroInst.iVar != undefined && macroInst.iVar.ref != undefined) {
+                refInstVar = macroInst.iVar.ref;
+                //console.log("[MAS] iVar != undefined");
+            } else {
+                //console.log("[MAS] Wat? both undefined!");
+                return EMPTY_SCOPE;
+            }
+            if (refInstVar.dtype != undefined) {
+                //console.log("[MAS] dType != undefined");
+                return EMPTY_SCOPE;
+            }
+            if (refInstVar.type != undefined && refInstVar.type.ref != undefined && isClass(refInstVar.type.ref)) {
+                const containerClass: Class = refInstVar.type.ref;
+                //console.log(`-> Found container class: ${containerClass.name}`);
+                //console.log("[MAS] Retrieving precomputed scopes!");
+                const precomputed = getDocument(containerClass).precomputedScopes;
+                //console.log("[MAS] Retrieved precomputed scopes");
+                const scopes: Array<Stream<AstNodeDescription>> = [];
+                if (precomputed) {
+                    if (context.property === "cref") {
+                        const allDescriptions = precomputed.get(containerClass);
+                        if (allDescriptions.length > 0) {
+                            //console.log(`[MAS] Found ${allDescriptions.length} descriptions`);
+                            scopes.push(stream(allDescriptions).filter(
+                                desc => isCReference(desc.node)));
+                        } else {
+                            //console.log("[MAS] No descriptions found!!");
+                        }
+                    } else if (context.property === "instance") {
+                        const iMacro: IMacro = macroInst.$container;
+                        const allDescriptions = precomputed.get(iMacro);
+                        if (allDescriptions.length > 0) {
+                            //console.log(`[MAS] Found ${allDescriptions.length} descriptions`);
+                            scopes.push(stream(allDescriptions).filter(
+                                desc => isInstanceVariable(desc.node)));
+                        } else {
+                            //console.log("[MAS] No descriptions found!!");
+                        }
+                        scopes.push(stream(iMacro.instances).filter(e => e != undefined && e.nInst != undefined && e.iVar == undefined).map(e => e.nInst as InstanceVariable).map(v => {
+                            if (v != undefined) {
+                                const name = this.nameProvider.getName(v);
+                                if (name != undefined) {
+                                    return this.descriptions.createDescription(v, name);
+                                }
+                            }
+                            return undefined;
+                        }).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                    }
+                }
+                let result = EMPTY_SCOPE;
+                //console.log("[MAS] Building scope!");
+                for (let i = scopes.length - 1; i >= 0; i--) {
+                    result = this.createScope(scopes[i], result);
+                }
+                return result;
+            }
+            //console.log(`[getScope] ${context.property} | ${context.index}`)
+        } else if (isFunctionAssignment(context.container)) {
+            const assgnmt = context.container;
+            if (isFunctionMacroCall(assgnmt.call)) {
+                const mcrCll = assgnmt.call;
+                const scopes: Array<Stream<AstNodeDescription>> = [];
+                if (mcrCll.macro.ref != undefined) {
+                    const mcr = mcrCll.macro.ref;
+                    if (context.property === "select") {
+                        scopes.push(stream(mcr.instances).map(
+                            inst => {
+                                if (inst.nInst != undefined && inst.iVar == undefined) {
+                                    return inst.nInst;
+                                } else if (inst.nInst == undefined && inst.iVar != undefined && inst.iVar.ref != undefined) {
+                                    return inst.iVar.ref;
+                                }
+                                return undefined;
+                            }
+                        ).map(v => {
+                            if (v != undefined) {
+                                const name = this.nameProvider.getName(v);
+                                if (name != undefined) {
+                                    return this.descriptions.createDescription(v, name);
+                                }
+                            }
+                            return undefined;
+                        }).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                    }
+                }
+                let result = EMPTY_SCOPE;
+                for (let i = scopes.length - 1; i >= 0; i--) {
+                    result = this.createScope(scopes[i], result);
+                }
+                return result;
+            }
+        } else if (isInstanceLoop(context.container)) {
+            const instLoop = context.container;
+            if (context.property === "var") {
+                const scopes: Array<Stream<AstNodeDescription>> = [];
+                const inst = context.container.$container;
+                scopes.push(stream(inst.statements).filter(x => isFunctionAssignment(x)).map(x => (x as FunctionAssignment).var).map(v => {
+                    if (v != undefined) {
+                        const name = this.nameProvider.getName(v);
+                        if (name != undefined) {
+                            return this.descriptions.createDescription(v, name);
+                        }
+                    }
+                    return undefined;
+                }).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                let result = EMPTY_SCOPE;
+                for (let i = scopes.length - 1; i >= 0; i--) {
+                    result = this.createScope(scopes[i], result);
+                }
+                return result;
+            } else if (context.property === "ref") {
+                const scopes: Array<Stream<AstNodeDescription>> = [];
+                if (instLoop.var.ref != undefined && instLoop.var.ref.type != undefined && instLoop.var.ref.type.ref != undefined) {
+                    const sourceClass = instLoop.var.ref.type.ref;
+                    scopes.push(stream(sourceClass.body).filter(x => isCReference(x)).map(v => {
+                        if (v != undefined) {
+                            const name = this.nameProvider.getName(v);
+                            if (name != undefined) {
+                                return this.descriptions.createDescription(v, name);
+                            }
+                        }
+                        return undefined;
+                    }).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                }
+                let result = EMPTY_SCOPE;
+                for (let i = scopes.length - 1; i >= 0; i--) {
+                    result = this.createScope(scopes[i], result);
+                }
+                return result;
+            }
+        } else if (isFunctionReturn(context.container)) {
+            if (context.property === "var") {
+                const scopes: Array<Stream<AstNodeDescription>> = [];
+                scopes.push(stream(this.getLocalInstanceVariablesInScope(context.container).map(v => {
+                    if (v != undefined) {
+                        const name = this.nameProvider.getName(v);
+                        if (name != undefined) {
+                            return this.descriptions.createDescription(v, name);
+                        }
+                    }
+                    return undefined;
+                })).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                let result = EMPTY_SCOPE;
+                for (let i = scopes.length - 1; i >= 0; i--) {
+                    result = this.createScope(scopes[i], result);
+                }
+                return result;
+            }
+        }
+        console.log("[GetScope] Return super scope");
+        return super.getScope(context);
+    }
+
     protected override getGlobalScope(referenceType: string, _context: ReferenceInfo): Scope {
         const modl = getContainerOfType(_context.container, isModel);
         if (!modl) {
             return super.getGlobalScope(referenceType, _context);
         }
+
+        if (isMacroAttributeStatement(_context.container)) {
+            console.log(`[MacroInstanceGlobalScope] ${referenceType} | ${_context.container.$type} | ${_context.property}`);
+        }
+
 
         const globalScope: Scope = super.getGlobalScope(referenceType, _context);
 
@@ -61,5 +296,70 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
         }
         const targetDoc: LangiumDocument = this.services.shared.workspace.LangiumDocuments.getOrCreateDocument(targetDocUri);
         return this.services.workspace.AstNodeLocator.getAstNode(targetDoc.parseResult.value, nodeDescription.path);
+    }
+
+    getLocalInstanceVariablesInScope(node: AstNode): InstanceVariable[] {
+        return this._getLocalInstanceVariables(node, undefined)
+    }
+
+    private _getLocalInstanceVariables(node: AstNode, containerIdx: number | undefined): InstanceVariable[] {
+        let scopedInstanceVariables: InstanceVariable[] = [];
+        if (node == undefined) {
+            return scopedInstanceVariables;
+        }
+        if (!(isIFunction(node) || isIMacro(node) || isIInstance(node))) {
+            if (node.$container == undefined) {
+                return scopedInstanceVariables;
+            } else {
+                if (isFunctionLoop(node)) {
+                    node.statements.forEach((statement, idx) => {
+                        if (containerIdx == undefined || containerIdx < idx) {
+                            if (isFunctionAssignment(statement)) {
+                                scopedInstanceVariables.push(statement.var);
+                            }
+                        }
+                    });
+                    scopedInstanceVariables.push(node.var);
+                } else if (isInstanceLoop(node)) {
+                    node.statements.forEach((statement, idx) => {
+                        if (containerIdx == undefined || containerIdx < idx) {
+                            if (isFunctionAssignment(statement)) {
+                                scopedInstanceVariables.push(statement.var);
+                            }
+                        }
+                    });
+                    scopedInstanceVariables.push(node.ivar);
+                }
+                scopedInstanceVariables.push(...this._getLocalInstanceVariables(node.$container, node.$containerIndex));
+            }
+        }
+
+        if (isIFunction(node)) {
+            node.statements.forEach((statement, idx) => {
+                if (containerIdx == undefined || idx < containerIdx) {
+                    if (isFunctionAssignment(statement)) {
+                        scopedInstanceVariables.push(statement.var);
+                    }
+                }
+            });
+        } else if (isIMacro(node)) {
+            node.instances.forEach((instance, idx) => {
+                if (containerIdx == undefined || idx < containerIdx) {
+                    if (instance.nInst != undefined) {
+                        scopedInstanceVariables.push(instance.nInst);
+                    }
+                }
+            });
+            scopedInstanceVariables.push(...node.parameter);
+        } else if (isIInstance(node)) {
+            node.statements.forEach((statement, idx) => {
+                if (containerIdx == undefined || idx < containerIdx) {
+                    if (isFunctionAssignment(statement)) {
+                        scopedInstanceVariables.push(statement.var);
+                    }
+                }
+            });
+        }
+        return scopedInstanceVariables;
     }
 }

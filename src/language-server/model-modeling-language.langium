@@ -17,8 +17,12 @@ Import:
 ImportAlias:
     (ref=[Package:ID] | ref=[Package:QNAME]) 'as' alias=ID;
 
+MultiplicitySpec:
+    num=NUM | n_0?='*' | n?='+';
+
+
 Multiplicity:
-    ('[' (mult=NUM | mult=MULTIPLICITYSYMBOL) ('..' (upperMult=NUM | upperMult=MULTIPLICITYSYMBOL))? ']')?;
+    '[' mult=MultiplicitySpec ('..' upperMult=MultiplicitySpec)? ']';
 
 Package:
     'package' name=ID '{' (subPackages+=Package | body+=AbstractElement)* '}';
@@ -63,7 +67,7 @@ AttributeModifiers:
     id?='id';
 
 Attribute:
-    'attribute' type=DataType name=ID ('=' defaultValue=ValueExpr)? ('{'modifiers=AttributeModifiers'}')?';';
+    'attribute' type=DataType name=ID ('=' defaultValue=ArithExpr)? ('{'modifiers=AttributeModifiers'}')?';';
 
 ReferenceModifiers:
     readonly?='readonly' &
@@ -79,7 +83,7 @@ OppositeAnnotation:
     '@opposite' reference=[CReference:FQNAME];
 
 CReference:
-    (opposite=OppositeAnnotation)? 'reference' (type=[Class:QNAME] | type=[Class:ID]) multiplicity=Multiplicity name=ID ('{' modifiers=ReferenceModifiers '}')?';';
+    (opposite=OppositeAnnotation)? 'reference' (type=[Class:QNAME] | type=[Class:ID]) (multiplicity=Multiplicity)? name=ID ('{' modifiers=ReferenceModifiers '}')?';';
 
 Enum:
     'enum' name=ID '{' entries+=EnumEntry (',' entries+=EnumEntry)* '}';
@@ -94,10 +98,13 @@ fragment MacroParameters:
     '[' (parameter+=InstanceVariable (',' parameter+=InstanceVariable)*)? ']';
 
 fragment InstanceType:
-    ((type=[Class:QNAME] | type=[Class:ID]) | dtype=DataType);
+    type=[Class:QNAME] | dtype=DataType;
 
 InstanceVariable:
     InstanceType name=ID;
+
+FunctionVariable infers InstanceVariable:
+    dtype='tuple' name=ID;
 
 IMacro:
     'macro' name=ID MacroParameters '{' (instances+=MacroInstance)* '}';
@@ -109,28 +116,34 @@ MacroStatement:
     MacroAttributeStatement | MacroAssignStatement;
 
 MacroAttributeStatement:
-    attr=[Attribute:ID] '=' value=ValueExpr;
+    attr=[Attribute:ID] '=' value=ArithExpr;
 
 MacroAssignStatement:
     cref=[CReference:ID] '->' instance=[InstanceVariable:ID];
 
 IFunction:
-    'function' name=ID InstanceParameters ('returns' InstanceType)? '{' (statements+=FunctionStatement)+ (statements+=FunctionReturn)? '}';
+    'function' name=ID InstanceParameters (returnsVar?='returns' InstanceType)? '{' (statements+=FunctionStatement)+ (statements+=FunctionReturn)? '}';
 
 FunctionStatement:
     FunctionCall | FunctionMacroCall | FunctionAssignment | FunctionLoop;
 
+FunctionArgument:
+    ref=[InstanceVariable:ID] | value=ArithExpr;
+
 FunctionCall:
-    func=[IFunction:ID] '(' (args+=[InstanceVariable:ID] (',' args+=[InstanceVariable:ID])*)? ')';
+    func=[IFunction:ID] '(' (args+=FunctionArgument (',' args+=FunctionArgument)*)? ')';
 
 FunctionMacroCall:
-    macro=[IMacro:ID] '[' (args+=[InstanceVariable:ID] (',' args+=[InstanceVariable:ID])*)? ']';
+    macro=[IMacro:ID] '[' (args+=FunctionArgument (',' args+=FunctionArgument)*)? ']';
 
 FunctionAssignment:
-    InstanceVariable '=' (FunctionCall | FunctionMacroCall);
+    var=(InstanceVariable | FunctionVariable) '=' call=(FunctionCall | FunctionMacroCall) ('.' select=[InstanceVariable:ID])?;
+
+ImplicitlyTypedValue:
+    val=ArithExpr;
 
 FunctionReturn:
-    'return' var=[InstanceVariable:ID];
+    'return' (var=[InstanceVariable:ID]|val=ImplicitlyTypedValue);
 
 FunctionLoop:
     'for' var=InstanceVariable 'in' lower=NUM ':' upper=NUM '{' (statements+=FunctionStatement)+ '}';
@@ -144,8 +157,26 @@ InstanceStatement:
 InstanceLoop:
     'for' var=[InstanceVariable:ID] '-' ref=[CReference:ID] '->' ivar=InstanceVariable '{' (statements+=InstanceStatement)+ '}';
 
+ArithExpr:
+    Addition;
+
+Addition infers ArithExpr:
+    Multiplication ({infer BinaryExpression.left=current} operator=('+' | '-') right=Multiplication)*;
+
+Multiplication infers ArithExpr:
+    Exponentiation ({infer BinaryExpression.left=current} operator=('*' | '/') right=Exponentiation)*;
+
+Exponentiation infers ArithExpr:
+    Modulo ({infer BinaryExpression.left=current} operator='^' right=Modulo)*;
+
+Modulo infers ArithExpr:
+    PrimaryArithExpr ({infer BinaryExpression.left=current} operator='%' right=PrimaryArithExpr)*;
+
+PrimaryArithExpr infers ArithExpr:
+    '(' ArithExpr ')' | ValueExpr;
+
+
 hidden terminal WS: /\s+/;
-terminal MULTIPLICITYSYMBOL: /[\*?+]/;
 terminal DOUBLE returns number: NUM '.' NUM;
 terminal NUM returns number: /[0-9]+/;
 terminal STRING returns string: /"[^"]*"/;

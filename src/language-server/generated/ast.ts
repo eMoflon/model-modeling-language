@@ -14,15 +14,15 @@ export function isAbstractElement(item: unknown): item is AbstractElement {
     return reflection.isInstance(item, AbstractElement);
 }
 
-export type DataType = 'bool' | 'double' | 'float' | 'int' | 'string';
+export type ArithExpr = BinaryExpression | ValueExpr;
 
-export type FunctionAssignment = FunctionCall | FunctionMacroCall | InstanceVariable;
+export const ArithExpr = 'ArithExpr';
 
-export const FunctionAssignment = 'FunctionAssignment';
-
-export function isFunctionAssignment(item: unknown): item is FunctionAssignment {
-    return reflection.isInstance(item, FunctionAssignment);
+export function isArithExpr(item: unknown): item is ArithExpr {
+    return reflection.isInstance(item, ArithExpr);
 }
+
+export type DataType = 'bool' | 'double' | 'float' | 'int' | 'string';
 
 export type FunctionStatement = FunctionAssignment | FunctionCall | FunctionLoop | FunctionMacroCall;
 
@@ -67,7 +67,7 @@ export function isValueExpr(item: unknown): item is ValueExpr {
 export interface Attribute extends AstNode {
     readonly $container: Class | Interface;
     readonly $type: 'Attribute';
-    defaultValue?: ValueExpr
+    defaultValue?: ArithExpr
     modifiers?: AttributeModifiers
     name: string
     type: DataType
@@ -98,8 +98,22 @@ export function isAttributeModifiers(item: unknown): item is AttributeModifiers 
     return reflection.isInstance(item, AttributeModifiers);
 }
 
+export interface BinaryExpression extends AstNode {
+    readonly $container: Attribute | BinaryExpression | EnumEntry | FunctionArgument | ImplicitlyTypedValue | MacroAttributeStatement;
+    readonly $type: 'BinaryExpression';
+    left: ArithExpr
+    operator: '%' | '*' | '+' | '-' | '/' | '^'
+    right: ArithExpr
+}
+
+export const BinaryExpression = 'BinaryExpression';
+
+export function isBinaryExpression(item: unknown): item is BinaryExpression {
+    return reflection.isInstance(item, BinaryExpression);
+}
+
 export interface BoolExpr extends AstNode {
-    readonly $container: Attribute | EnumEntry | MacroAttributeStatement;
+    readonly $container: Attribute | BinaryExpression | EnumEntry | FunctionArgument | ImplicitlyTypedValue | MacroAttributeStatement;
     readonly $type: 'BoolExpr';
     value: boolean
 }
@@ -130,7 +144,7 @@ export interface CReference extends AstNode {
     readonly $container: Class | Interface;
     readonly $type: 'CReference';
     modifiers?: ReferenceModifiers
-    multiplicity: Multiplicity
+    multiplicity?: Multiplicity
     name: string
     opposite?: OppositeAnnotation
     type: Reference<Class>
@@ -168,10 +182,37 @@ export function isEnumEntry(item: unknown): item is EnumEntry {
     return reflection.isInstance(item, EnumEntry);
 }
 
+export interface FunctionArgument extends AstNode {
+    readonly $container: FunctionCall | FunctionMacroCall;
+    readonly $type: 'FunctionArgument';
+    ref?: Reference<InstanceVariable>
+    value?: ArithExpr
+}
+
+export const FunctionArgument = 'FunctionArgument';
+
+export function isFunctionArgument(item: unknown): item is FunctionArgument {
+    return reflection.isInstance(item, FunctionArgument);
+}
+
+export interface FunctionAssignment extends AstNode {
+    readonly $container: FunctionAssignment | FunctionLoop | IFunction | IInstance | InstanceLoop;
+    readonly $type: 'FunctionAssignment';
+    call: FunctionCall | FunctionMacroCall
+    select?: Reference<InstanceVariable>
+    var: InstanceVariable
+}
+
+export const FunctionAssignment = 'FunctionAssignment';
+
+export function isFunctionAssignment(item: unknown): item is FunctionAssignment {
+    return reflection.isInstance(item, FunctionAssignment);
+}
+
 export interface FunctionCall extends AstNode {
-    readonly $container: FunctionLoop | IFunction | IInstance | IMacro | InstanceLoop | MacroInstance;
+    readonly $container: FunctionAssignment | FunctionLoop | IFunction | IInstance | InstanceLoop;
     readonly $type: 'FunctionCall';
-    args: Array<Reference<InstanceVariable>>
+    args: Array<FunctionArgument>
     func: Reference<IFunction>
 }
 
@@ -182,7 +223,7 @@ export function isFunctionCall(item: unknown): item is FunctionCall {
 }
 
 export interface FunctionLoop extends AstNode {
-    readonly $container: FunctionLoop | IFunction | IInstance | IMacro | InstanceLoop | MacroInstance;
+    readonly $container: FunctionAssignment | FunctionLoop | IFunction | IInstance | InstanceLoop;
     readonly $type: 'FunctionLoop';
     lower: number
     statements: Array<FunctionStatement>
@@ -197,9 +238,9 @@ export function isFunctionLoop(item: unknown): item is FunctionLoop {
 }
 
 export interface FunctionMacroCall extends AstNode {
-    readonly $container: FunctionLoop | IFunction | IInstance | IMacro | InstanceLoop | MacroInstance;
+    readonly $container: FunctionAssignment | FunctionLoop | IFunction | IInstance | InstanceLoop;
     readonly $type: 'FunctionMacroCall';
-    args: Array<Reference<InstanceVariable>>
+    args: Array<FunctionArgument>
     macro: Reference<IMacro>
 }
 
@@ -212,7 +253,8 @@ export function isFunctionMacroCall(item: unknown): item is FunctionMacroCall {
 export interface FunctionReturn extends AstNode {
     readonly $container: IFunction;
     readonly $type: 'FunctionReturn';
-    var: Reference<InstanceVariable>
+    val?: ImplicitlyTypedValue
+    var?: Reference<InstanceVariable>
 }
 
 export const FunctionReturn = 'FunctionReturn';
@@ -227,6 +269,7 @@ export interface IFunction extends AstNode {
     dtype?: DataType
     name: string
     parameter: Array<InstanceVariable>
+    returnsVar: boolean
     statements: Array<FunctionReturn> | Array<FunctionStatement>
     type?: Reference<Class>
 }
@@ -262,6 +305,18 @@ export const IMacro = 'IMacro';
 
 export function isIMacro(item: unknown): item is IMacro {
     return reflection.isInstance(item, IMacro);
+}
+
+export interface ImplicitlyTypedValue extends AstNode {
+    readonly $container: FunctionReturn;
+    readonly $type: 'ImplicitlyTypedValue';
+    val: ArithExpr
+}
+
+export const ImplicitlyTypedValue = 'ImplicitlyTypedValue';
+
+export function isImplicitlyTypedValue(item: unknown): item is ImplicitlyTypedValue {
+    return reflection.isInstance(item, ImplicitlyTypedValue);
 }
 
 export interface Import extends AstNode {
@@ -306,9 +361,9 @@ export function isInstanceLoop(item: unknown): item is InstanceLoop {
 }
 
 export interface InstanceVariable extends AstNode {
-    readonly $container: FunctionLoop | IFunction | IInstance | IMacro | InstanceLoop | MacroInstance;
+    readonly $container: FunctionAssignment | FunctionLoop | IFunction | IMacro | InstanceLoop | MacroInstance;
     readonly $type: 'InstanceVariable';
-    dtype?: DataType
+    dtype?: 'tuple' | DataType
     name: string
     type?: Reference<Class>
 }
@@ -351,7 +406,7 @@ export interface MacroAttributeStatement extends AstNode {
     readonly $container: MacroInstance;
     readonly $type: 'MacroAttributeStatement';
     attr: Reference<Attribute>
-    value: ValueExpr
+    value: ArithExpr
 }
 
 export const MacroAttributeStatement = 'MacroAttributeStatement';
@@ -392,8 +447,8 @@ export function isModel(item: unknown): item is Model {
 export interface Multiplicity extends AstNode {
     readonly $container: CReference;
     readonly $type: 'Multiplicity';
-    mult?: number | string
-    upperMult?: number | string
+    mult: MultiplicitySpec
+    upperMult?: MultiplicitySpec
 }
 
 export const Multiplicity = 'Multiplicity';
@@ -402,8 +457,22 @@ export function isMultiplicity(item: unknown): item is Multiplicity {
     return reflection.isInstance(item, Multiplicity);
 }
 
+export interface MultiplicitySpec extends AstNode {
+    readonly $container: Multiplicity;
+    readonly $type: 'MultiplicitySpec';
+    n: boolean
+    n_0: boolean
+    num?: number
+}
+
+export const MultiplicitySpec = 'MultiplicitySpec';
+
+export function isMultiplicitySpec(item: unknown): item is MultiplicitySpec {
+    return reflection.isInstance(item, MultiplicitySpec);
+}
+
 export interface NumberExpr extends AstNode {
-    readonly $container: Attribute | EnumEntry | MacroAttributeStatement;
+    readonly $container: Attribute | BinaryExpression | EnumEntry | FunctionArgument | ImplicitlyTypedValue | MacroAttributeStatement;
     readonly $type: 'NumberExpr';
     value: number
 }
@@ -460,7 +529,7 @@ export function isReferenceModifiers(item: unknown): item is ReferenceModifiers 
 }
 
 export interface StringExpr extends AstNode {
-    readonly $container: Attribute | EnumEntry | MacroAttributeStatement;
+    readonly $container: Attribute | BinaryExpression | EnumEntry | FunctionArgument | ImplicitlyTypedValue | MacroAttributeStatement;
     readonly $type: 'StringExpr';
     value: string
 }
@@ -473,13 +542,16 @@ export function isStringExpr(item: unknown): item is StringExpr {
 
 export interface ModelModelingLanguageAstType {
     AbstractElement: AbstractElement
+    ArithExpr: ArithExpr
     Attribute: Attribute
     AttributeModifiers: AttributeModifiers
+    BinaryExpression: BinaryExpression
     BoolExpr: BoolExpr
     CReference: CReference
     Class: Class
     Enum: Enum
     EnumEntry: EnumEntry
+    FunctionArgument: FunctionArgument
     FunctionAssignment: FunctionAssignment
     FunctionCall: FunctionCall
     FunctionLoop: FunctionLoop
@@ -489,6 +561,7 @@ export interface ModelModelingLanguageAstType {
     IFunction: IFunction
     IInstance: IInstance
     IMacro: IMacro
+    ImplicitlyTypedValue: ImplicitlyTypedValue
     Import: Import
     ImportAlias: ImportAlias
     InstanceLoop: InstanceLoop
@@ -501,6 +574,7 @@ export interface ModelModelingLanguageAstType {
     MacroStatement: MacroStatement
     Model: Model
     Multiplicity: Multiplicity
+    MultiplicitySpec: MultiplicitySpec
     NumberExpr: NumberExpr
     OppositeAnnotation: OppositeAnnotation
     Package: Package
@@ -513,7 +587,7 @@ export interface ModelModelingLanguageAstType {
 export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return ['AbstractElement', 'Attribute', 'AttributeModifiers', 'BoolExpr', 'CReference', 'Class', 'Enum', 'EnumEntry', 'FunctionAssignment', 'FunctionCall', 'FunctionLoop', 'FunctionMacroCall', 'FunctionReturn', 'FunctionStatement', 'IFunction', 'IInstance', 'IMacro', 'Import', 'ImportAlias', 'InstanceLoop', 'InstanceStatement', 'InstanceVariable', 'Interface', 'MacroAssignStatement', 'MacroAttributeStatement', 'MacroInstance', 'MacroStatement', 'Model', 'Multiplicity', 'NumberExpr', 'OppositeAnnotation', 'Package', 'ReferenceModifiers', 'Statement', 'StringExpr', 'ValueExpr'];
+        return ['AbstractElement', 'ArithExpr', 'Attribute', 'AttributeModifiers', 'BinaryExpression', 'BoolExpr', 'CReference', 'Class', 'Enum', 'EnumEntry', 'FunctionArgument', 'FunctionAssignment', 'FunctionCall', 'FunctionLoop', 'FunctionMacroCall', 'FunctionReturn', 'FunctionStatement', 'IFunction', 'IInstance', 'IMacro', 'ImplicitlyTypedValue', 'Import', 'ImportAlias', 'InstanceLoop', 'InstanceStatement', 'InstanceVariable', 'Interface', 'MacroAssignStatement', 'MacroAttributeStatement', 'MacroInstance', 'MacroStatement', 'Model', 'Multiplicity', 'MultiplicitySpec', 'NumberExpr', 'OppositeAnnotation', 'Package', 'ReferenceModifiers', 'Statement', 'StringExpr', 'ValueExpr'];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
@@ -521,6 +595,10 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
             case Attribute:
             case CReference: {
                 return this.isSubtype(Statement, supertype);
+            }
+            case BinaryExpression:
+            case ValueExpr: {
+                return this.isSubtype(ArithExpr, supertype);
             }
             case BoolExpr:
             case NumberExpr:
@@ -532,18 +610,13 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
             case Interface: {
                 return this.isSubtype(AbstractElement, supertype);
             }
-            case FunctionAssignment: {
-                return this.isSubtype(FunctionStatement, supertype) || this.isSubtype(InstanceStatement, supertype);
-            }
+            case FunctionAssignment:
             case FunctionCall:
             case FunctionMacroCall: {
-                return this.isSubtype(FunctionAssignment, supertype) || this.isSubtype(FunctionStatement, supertype) || this.isSubtype(InstanceStatement, supertype);
+                return this.isSubtype(FunctionStatement, supertype) || this.isSubtype(InstanceStatement, supertype);
             }
             case FunctionLoop: {
                 return this.isSubtype(FunctionStatement, supertype);
-            }
-            case InstanceVariable: {
-                return this.isSubtype(FunctionAssignment, supertype);
             }
             case MacroAssignStatement:
             case MacroAttributeStatement: {
@@ -568,8 +641,8 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
             case 'Interface:extendedInterfaces': {
                 return Interface;
             }
-            case 'FunctionCall:args':
-            case 'FunctionMacroCall:args':
+            case 'FunctionArgument:ref':
+            case 'FunctionAssignment:select':
             case 'FunctionReturn:var':
             case 'InstanceLoop:var':
             case 'MacroAssignStatement:instance':
@@ -672,6 +745,7 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
                     name: 'IFunction',
                     mandatory: [
                         { name: 'parameter', type: 'array' },
+                        { name: 'returnsVar', type: 'boolean' },
                         { name: 'statements', type: 'array' }
                     ]
                 };
@@ -736,6 +810,15 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
                         { name: 'instances', type: 'array' },
                         { name: 'macros', type: 'array' },
                         { name: 'packages', type: 'array' }
+                    ]
+                };
+            }
+            case 'MultiplicitySpec': {
+                return {
+                    name: 'MultiplicitySpec',
+                    mandatory: [
+                        { name: 'n', type: 'boolean' },
+                        { name: 'n_0', type: 'boolean' }
                     ]
                 };
             }

@@ -1,8 +1,8 @@
 import {AbstractSemanticTokenProvider, AstNode, SemanticTokenAcceptor} from "langium";
 import {
-    Attribute,
     EnumEntry,
     isAttribute,
+    isBinaryExpression,
     isBoolExpr,
     isClass,
     isCReference,
@@ -61,15 +61,6 @@ export class ModelModelingLanguageSemanticTokenProvider extends AbstractSemantic
             acceptor({node, property: "name", type: SemanticTokenTypes.property})
             acceptor({node, property: "modifiers", type: SemanticTokenTypes.modifier})
             acceptor({node, keyword: "=", type: SemanticTokenTypes.operator})
-            if ((node as Attribute).defaultValue != undefined) {
-                if (isStringExpr(node.defaultValue)) {
-                    acceptor({node, property: "defaultValue", type: SemanticTokenTypes.string})
-                } else if (isNumberExpr(node.defaultValue)) {
-                    acceptor({node, property: "defaultValue", type: SemanticTokenTypes.number})
-                } else if (isBoolExpr(node.defaultValue)) {
-                    acceptor({node, property: "defaultValue", type: SemanticTokenTypes.variable})
-                }
-            }
         } else if (isEnum(node)) {
             acceptor({node, keyword: "enum", type: SemanticTokenTypes.keyword})
             acceptor({node, property: "name", type: SemanticTokenTypes.enum})
@@ -90,14 +81,14 @@ export class ModelModelingLanguageSemanticTokenProvider extends AbstractSemantic
             acceptor({node, property: "modifiers", type: SemanticTokenTypes.modifier})
         } else if (isMultiplicity(node)) {
             if (node.mult != undefined) {
-                if (typeof node.mult == "string") {
+                if (node.mult.n_0 || node.mult.n) {
                     acceptor({node, property: "mult", type: SemanticTokenTypes.string})
                 } else {
                     acceptor({node, property: "mult", type: SemanticTokenTypes.number})
                 }
             }
             if (node.upperMult != undefined) {
-                if (typeof node.upperMult == "string") {
+                if (node.upperMult.n_0 || node.upperMult.n) {
                     acceptor({node, property: "upperMult", type: SemanticTokenTypes.string})
                 } else {
                     acceptor({node, property: "upperMult", type: SemanticTokenTypes.number})
@@ -161,6 +152,14 @@ export class ModelModelingLanguageSemanticTokenProvider extends AbstractSemantic
             acceptor({node, keyword: "-", type: SemanticTokenTypes.operator});
             acceptor({node, property: "ref", type: SemanticTokenTypes.property});
             acceptor({node, keyword: "->", type: SemanticTokenTypes.operator});
+        } else if (isBoolExpr(node)) {
+            acceptor({node, property: "value", type: SemanticTokenTypes.variable})
+        } else if (isStringExpr(node)) {
+            acceptor({node, property: "value", type: SemanticTokenTypes.string})
+        } else if (isNumberExpr(node)) {
+            acceptor({node, property: "value", type: SemanticTokenTypes.number})
+        } else if (isBinaryExpression(node)) {
+            acceptor({node, keyword: "operator", type: SemanticTokenTypes.operator})
         }
     }
 

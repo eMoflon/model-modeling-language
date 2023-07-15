@@ -1,21 +1,39 @@
 import {getDocument, LangiumDocument, ValidationAcceptor, ValidationChecks} from 'langium';
 import {
+    ArithExpr,
     Attribute,
     Class,
     CReference,
     Enum,
+    FunctionAssignment,
+    FunctionLoop,
+    FunctionMacroCall,
+    IFunction,
+    IMacro,
     Import,
+    InstanceLoop,
+    InstanceVariable,
     Interface,
+    isBinaryExpression,
     isBoolExpr,
+    isFunctionAssignment,
+    isFunctionCall,
+    isFunctionLoop,
+    isFunctionMacroCall,
+    isFunctionReturn,
     isModel,
     isNumberExpr,
     isStringExpr,
+    MacroAssignStatement,
+    MacroAttributeStatement,
     Model,
     ModelModelingLanguageAstType,
+    Multiplicity,
     Package
 } from './generated/ast';
 import type {ModelModelingLanguageServices} from './model-modeling-language-module';
 import {URI} from "vscode-uri";
+import {ModelModelingLanguageUtils} from "./model-modeling-language-utils";
 
 /**
  * Register custom validation checks.
@@ -43,7 +61,13 @@ export function registerValidationChecks(services: ModelModelingLanguageServices
             validator.checkUniqueImports,
             validator.checkUniquePackageNames,
             validator.checkUniqueAliases,
-            validator.checkPackageShadowing
+            validator.checkPackageShadowing,
+            validator.checkUniqueMacroNames,
+            validator.checkUniqueFunctionNames,
+            validator.checkUniqueInstanceNames
+        ],
+        Multiplicity: [
+            validator.checkMultiplicities
         ],
         CReference: [
             validator.checkCReferenceImports,
@@ -59,6 +83,34 @@ export function registerValidationChecks(services: ModelModelingLanguageServices
         Import: [
             validator.checkSelfImport,
             validator.checkImportAliasRefsContained
+        ],
+        IMacro: [
+            validator.checkUniqueMacroVariableNames
+        ],
+        MacroAttributeStatement: [
+            validator.checkMacroAttributeStatementType
+        ],
+        MacroAssignStatement: [
+            validator.checkMacroAssignStatementType
+        ],
+        IFunction: [
+            validator.checkUniqueFunctionVariableNames,
+            validator.checkFunctionReturnConfiguration
+        ],
+        FunctionMacroCall: [
+            validator.checkFunctionMacroCallArguments
+        ],
+        FunctionAssignment: [
+            validator.checkFunctionAssignment
+        ],
+        FunctionLoop: [
+            validator.checkFunctionLoops
+        ],
+        InstanceLoop: [
+            validator.checkInstanceLoops
+        ],
+        ArithExpr: [
+            validator.checkArithExprOperations
         ]
     };
     registry.register(checks, validator);
@@ -266,27 +318,47 @@ export class ModelModelingLanguageValidator {
         }
     }
 
+    checkMultiplicities(mult: Multiplicity, accept: ValidationAcceptor) {
+        if (mult != undefined) {
+            const lowerSpec = mult.mult;
+            if (mult.upperMult != undefined) {
+                const upperSpec = mult.upperMult;
+                if (lowerSpec.n_0 || lowerSpec.n) {
+                    accept('error', `Lower bound cannot be unspecified when upper bound given`, {
+                        node: mult.mult
+                    })
+                }
+                if (!lowerSpec.n_0 && !lowerSpec.n && !upperSpec.n_0 && !upperSpec.n && lowerSpec.num != undefined && upperSpec.num && lowerSpec.num > upperSpec.num) {
+                    accept('error', `Lower bound cannot be greater then upper bound (${lowerSpec.num} > ${upperSpec.num})`, {
+                        node: mult.mult
+                    })
+                }
+            }
+        }
+
+    }
+
     checkAttributeTypes(attr: Attribute, accept: ValidationAcceptor) {
         if (attr.defaultValue != undefined) {
-            if (attr.type == "bool" && !isBoolExpr(attr.defaultValue)) {
+            if (attr.type == "bool" && !ModelModelingLanguageUtils.isBoolArithExpr(attr.defaultValue)) {
                 accept('error', `Default value does not match specified attribute type (${attr.type})`, {
                     node: attr,
                     property: 'type',
                     code: IssueCodes.AttributeTypeDoesNotMatch
                 })
-            } else if (attr.type == "string" && !isStringExpr(attr.defaultValue)) {
+            } else if (attr.type == "string" && !ModelModelingLanguageUtils.isStringArithExpr(attr.defaultValue)) {
                 accept('error', `Default value does not match specified attribute type (${attr.type})`, {
                     node: attr,
                     property: 'type',
                     code: IssueCodes.AttributeTypeDoesNotMatch
                 })
-            } else if (attr.type == "int" && (!isNumberExpr(attr.defaultValue) || (isNumberExpr(attr.defaultValue) && attr.defaultValue.value % 1 !== 0))) {
+            } else if (attr.type == "int" && !ModelModelingLanguageUtils.isIntArithExpr(attr.defaultValue)) {
                 accept('error', `Default value does not match specified attribute type (${attr.type})`, {
                     node: attr,
                     property: 'type',
                     code: IssueCodes.AttributeTypeDoesNotMatch
                 })
-            } else if ((attr.type == "double" || attr.type == "float") && !isNumberExpr(attr.defaultValue)) {
+            } else if ((attr.type == "double" || attr.type == "float") && !ModelModelingLanguageUtils.isNumberArithExpr(attr.defaultValue)) {
                 accept('error', `Default value does not match specified attribute type (${attr.type})`, {
                     node: attr,
                     property: 'type',
@@ -494,5 +566,372 @@ export class ModelModelingLanguageValidator {
                 }
             }
         });
+    }
+
+    checkMacroAttributeStatementType(mas: MacroAttributeStatement, accept: ValidationAcceptor) {
+        const attr = mas.attr.ref;
+        if (attr != undefined) {
+            if (attr.type == "bool" && !isBoolExpr(mas.value)) {
+                accept('error', `Default value does not match specified attribute type (${attr.type})`, {
+                    node: mas,
+                    property: "value"
+                });
+            } else if (attr.type == "string" && !isStringExpr(mas.value)) {
+                accept('error', `Default value does not match specified attribute type (${attr.type})`, {
+                    node: mas,
+                    property: "value"
+                });
+            } else if (attr.type == "int" && (!isNumberExpr(mas.value) || (isNumberExpr(mas.value) && mas.value.value % 1 !== 0))) {
+                accept('error', `Default value does not match specified attribute type (${attr.type})`, {
+                    node: mas,
+                    property: "value"
+                });
+            } else if ((attr.type == "double" || attr.type == "float") && !isNumberExpr(mas.value)) {
+                accept('error', `Default value does not match specified attribute type (${attr.type})`, {
+                    node: mas,
+                    property: "value"
+                });
+            }
+        }
+    }
+
+    checkMacroAssignStatementType(mas: MacroAssignStatement, accept: ValidationAcceptor) {
+        const targetReference: CReference | undefined = mas.cref.ref;
+        const instVar: InstanceVariable | undefined = mas.instance.ref;
+        if (targetReference != undefined && instVar != undefined) {
+            if (instVar.dtype != undefined && instVar.type == undefined) {
+                accept('error', `A reference cannot point to a variable of type "${instVar.dtype}"!`, {
+                    node: mas,
+                    property: "instance"
+                });
+            } else if (instVar.type != undefined) {
+                const instVarClss = instVar.type.ref;
+                const targetRefTypeClss = targetReference.type.ref;
+                if (instVarClss != undefined && targetRefTypeClss != undefined) {
+                    if (targetRefTypeClss != instVarClss) {
+                        const qcn1 = ModelModelingLanguageUtils.getQualifiedClassName(targetRefTypeClss, targetRefTypeClss.name);
+                        const qcn2 = ModelModelingLanguageUtils.getQualifiedClassName(instVarClss, instVarClss.name);
+                        accept('error', `Non-matching types, a reference of type "${qcn1}" cannot have a class of type "${qcn2}"!`, {
+                            node: mas,
+                            property: "instance"
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    checkUniqueMacroNames(mdl: Model, accept: ValidationAcceptor) {
+        const reportedMacros = new Set();
+        mdl.macros.forEach(mcr => {
+            if (reportedMacros.has(mcr.name)) {
+                accept('error', `Macro has non-unique name '${mcr.name}'.`, {node: mcr, property: 'name'});
+            }
+            reportedMacros.add(mcr.name);
+        });
+    }
+
+    checkUniqueMacroVariableNames(macro: IMacro, accept: ValidationAcceptor): void {
+        const reportedVars = new Set();
+        const reportedInstNames = new Set();
+        macro.parameter.forEach(param => {
+            if (reportedVars.has(param.name)) {
+                accept('error', `Macro parameter has non-unique name '${param.name}'.`, {node: param, property: 'name'})
+            }
+            reportedVars.add(param.name);
+        });
+        macro.instances.forEach(inst => {
+            if (inst.iVar == undefined && inst.nInst != undefined) {
+                if (reportedVars.has(inst.nInst.name)) {
+                    accept('error', `Macro instance defines non-unique name '${inst.nInst.name}'.`, {
+                        node: inst.nInst,
+                        property: 'name'
+                    })
+                }
+                reportedVars.add(inst.nInst.name);
+
+                if (reportedInstNames.has(inst.nInst.name)) {
+                    accept('error', `Macro instance has already been defined '${inst.nInst.name}'.`, {
+                        node: inst.nInst,
+                        property: 'name'
+                    })
+                }
+                reportedInstNames.add(inst.nInst.name);
+            } else if (inst.iVar != undefined && inst.iVar.ref != undefined && inst.nInst == undefined) {
+                if (reportedInstNames.has(inst.iVar.ref.name)) {
+                    accept('error', `Macro instance has already been defined '${inst.iVar.ref.name}'.`, {
+                        node: inst,
+                        property: 'iVar'
+                    })
+                }
+                reportedInstNames.add(inst.iVar.ref.name);
+            }
+        })
+    }
+
+    checkUniqueFunctionNames(mdl: Model, accept: ValidationAcceptor) {
+        const reportedFunctions = new Set();
+        mdl.functions.forEach(fct => {
+            if (reportedFunctions.has(fct.name)) {
+                accept('error', `Function has non-unique name '${fct.name}'.`, {node: fct, property: 'name'});
+            }
+            reportedFunctions.add(fct.name);
+        });
+    }
+
+    checkUniqueFunctionVariableNames(fct: IFunction, accept: ValidationAcceptor): void {
+        const reportedVars = new Set();
+        fct.parameter.forEach(param => {
+            if (reportedVars.has(param.name)) {
+                accept('error', `Function parameter has non-unique name '${param.name}'.`, {
+                    node: param,
+                    property: 'name'
+                })
+            }
+            reportedVars.add(param.name);
+        });
+        fct.statements.forEach(stmt => {
+            if (isFunctionAssignment(stmt) || isFunctionLoop(stmt)) {
+                if (reportedVars.has(stmt.var.name)) {
+                    accept('error', `Iterator has non-unique name '${stmt.var.name}'.`, {
+                        node: stmt.var,
+                        property: 'name'
+                    })
+                }
+                reportedVars.add(stmt.var.name);
+            }
+        });
+    }
+
+    checkFunctionMacroCallArguments(fmc: FunctionMacroCall, accept: ValidationAcceptor) {
+        if (fmc.macro.ref != undefined) {
+            const calledMacro = fmc.macro.ref;
+            if (fmc.args.length < calledMacro.parameter.length) {
+                const missingArgs = calledMacro.parameter.slice(fmc.args.length, calledMacro.parameter.length).map(ma => ma.dtype != undefined ? ma.dtype : ma.type != undefined && ma.type.ref != undefined ? ModelModelingLanguageUtils.getQualifiedClassName(ma.type.ref, ma.type.ref.name) : "unknown parameter").join(', ');
+                accept('error', `Missing arguments ${fmc.macro.ref.name}(${missingArgs})`, {
+                    node: fmc
+                })
+            } else if (fmc.args.length > calledMacro.parameter.length) {
+                accept('error', `Expected ${calledMacro.parameter.length} arguments, found ${fmc.args.length}`, {
+                    node: fmc
+                })
+            } else {
+                fmc.args.forEach((arg, idx) => {
+                    const macroParamVarInst = calledMacro.parameter.at(idx);
+                    if (macroParamVarInst == undefined) {
+                        return;
+                    }
+                    if ((arg.value != undefined && arg.ref == undefined) || (arg.ref != undefined && arg.ref.ref != undefined && arg.ref.ref.dtype != undefined && arg.ref.ref.type == undefined)) {
+                        if (macroParamVarInst.dtype != undefined && macroParamVarInst.type == undefined) {
+                            if (arg.value != undefined && arg.ref == undefined) {
+                                if (!ModelModelingLanguageUtils.doesValueExpTypeMatch(macroParamVarInst.dtype, arg.value)) {
+                                    accept('error', `Invalid argument type - Expected type "${macroParamVarInst.dtype}"`, {
+                                        node: fmc,
+                                        property: "args",
+                                        index: idx
+                                    })
+                                }
+                            } else if (arg.value == undefined && arg.ref != undefined && arg.ref.ref != undefined) {
+                                if (arg.ref.ref.dtype != macroParamVarInst.dtype) {
+                                    accept('error', `Invalid argument type - Expected type "${macroParamVarInst.dtype}"`, {
+                                        node: fmc,
+                                        property: "args",
+                                        index: idx
+                                    })
+                                }
+                            }
+                        } else if (macroParamVarInst.dtype == undefined && macroParamVarInst.type != undefined) {
+                            if (macroParamVarInst.type.ref != undefined) {
+                                accept('error', `Macro expects reference to class of type "${ModelModelingLanguageUtils.getQualifiedClassName(macroParamVarInst.type.ref, macroParamVarInst.type.ref.name)}"`, {
+                                    node: fmc,
+                                    property: "args",
+                                    index: idx
+                                })
+                            }
+                        }
+
+                    } else if ((arg.value == undefined && arg.ref != undefined) && (arg.ref.ref != undefined && arg.ref.ref.dtype == undefined && arg.ref.ref.type != undefined && arg.ref.ref.type.ref != undefined)) {
+                        if (macroParamVarInst.dtype != undefined && macroParamVarInst.type == undefined) {
+                            accept('error', `Incorrect type - macro expects parameters of type ${macroParamVarInst.dtype}`, {
+                                node: fmc,
+                                property: "args",
+                                index: idx
+                            })
+                        } else if (macroParamVarInst.dtype == undefined && macroParamVarInst.type != undefined && macroParamVarInst.type.ref != undefined) {
+                            const paramClass = macroParamVarInst.type.ref;
+                            const argClass = arg.ref.ref.type.ref;
+                            if (paramClass != argClass) {
+                                accept('error', `Incorrect type - macro expects reference to class of type "${paramClass.name}"`, {
+                                    node: fmc,
+                                    property: "args",
+                                    index: idx
+                                })
+                            }
+                        }
+                    }
+                });
+            }
+
+        }
+    }
+
+    checkFunctionReturnConfiguration(func: IFunction, accept: ValidationAcceptor) {
+        if (func.returnsVar) {
+            const lastElement = func.statements.at(-1);
+            if (lastElement != undefined && isFunctionReturn(lastElement)) {
+                const functionType = ModelModelingLanguageUtils.getFunctionReturnStatementType(lastElement);
+                const functionSignatureType = ModelModelingLanguageUtils.getFunctionSignatureReturnType(func);
+                if (functionType != functionSignatureType) {
+                    accept('error', `Mismatching types - The function returns a value of type ${functionType}, but the signature declares the type as ${functionSignatureType}`, {
+                        node: func,
+                        property: "statements",
+                        index: func.statements.length - 1
+                    })
+                }
+            } else if (lastElement != undefined && !isFunctionReturn(lastElement)) {
+                accept('error', `The function does not contain a return statement`, {
+                    node: func,
+                    keyword: "returns"
+                })
+            }
+        } else {
+            const lastElement = func.statements.at(-1);
+            if (lastElement != undefined && isFunctionReturn(lastElement)) {
+                accept('error', `No return type is defined in the function signature`, {
+                    node: func,
+                    property: "statements",
+                    index: func.statements.length - 1
+                })
+            }
+        }
+    }
+
+    checkFunctionAssignment(fa: FunctionAssignment, accept: ValidationAcceptor) {
+        if (isFunctionMacroCall(fa.call)) {
+            if (fa.select == undefined) {
+                if (fa.var.dtype != "tuple") {
+                    accept('error', `Macro calls return a tuple! Change the variable type to "tuple" or select an element.`, {
+                        node: fa,
+                        property: "var"
+                    })
+                }
+            } else {
+                if (fa.var.dtype != undefined && fa.var.type == undefined) {
+                    accept('error', `Class type expected`, {
+                        node: fa,
+                        property: "var"
+                    })
+                } else if (fa.var.dtype == undefined && fa.var.type != undefined) {
+                    if (fa.var.type.ref != undefined && fa.select.ref != undefined && fa.select.ref.type != undefined && fa.select.ref.type.ref != undefined) {
+                        const varRefClass = fa.var.type.ref;
+                        const selRefClass = fa.select.ref.type.ref;
+                        if (varRefClass != selRefClass) {
+                            accept('error', `Incorrect variable type. Tuple variable ${fa.select.ref.name} has type "${selRefClass.name}", not "${varRefClass.name}"!`, {
+                                node: fa,
+                                property: "var"
+                            })
+                        }
+                    }
+                }
+            }
+        } else if (isFunctionCall(fa.call)) {
+            if (fa.select != undefined) {
+                accept('error', `Selectors are not allowed for function calls - functions return concrete values`, {
+                    node: fa,
+                    property: "select"
+                })
+            }
+            if (fa.call.func.ref != undefined) {
+                if (!fa.call.func.ref.returnsVar) {
+                    accept('error', `Function does not return anything`, {
+                        node: fa,
+                        property: "var"
+                    })
+                } else {
+                    const varType = ModelModelingLanguageUtils.getInstanceVariableType(fa.var);
+                    const functionReturnType = ModelModelingLanguageUtils.getFunctionSignatureReturnType(fa.call.func.ref);
+                    if (varType != functionReturnType) {
+                        if (fa.call.func.ref.dtype != undefined && fa.call.func.ref.type == undefined) {
+                            accept('error', `Type mismatch: Function returns value of type "${functionReturnType}"`, {
+                                node: fa.var,
+                                property: "dtype"
+                            })
+                        } else if (fa.call.func.ref.dtype == undefined && fa.call.func.ref.type != undefined && fa.call.func.ref.type.ref != undefined) {
+                            accept('error', `Type mismatch: Function returns value of type "${functionReturnType}"`, {
+                                node: fa.var,
+                                property: "type"
+                            })
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    checkFunctionLoops(fl: FunctionLoop, accept: ValidationAcceptor) {
+        if (fl.lower > fl.upper) {
+            accept('error', `Start value can not be greater than the finish value`, {
+                node: fl
+            })
+        }
+    }
+
+    checkUniqueInstanceNames(mdl: Model, accept: ValidationAcceptor) {
+        const reportedInstances = new Set();
+        mdl.instances.forEach(inst => {
+            if (reportedInstances.has(inst.name)) {
+                accept('error', `Instance has non-unique name '${inst.name}'.`, {node: inst, property: 'name'});
+            }
+            reportedInstances.add(inst.name);
+        });
+    }
+
+    checkInstanceLoops(instLoop: InstanceLoop, accept: ValidationAcceptor) {
+        if (instLoop.var.ref != undefined && instLoop.var.ref.dtype != undefined && instLoop.var.ref.type == undefined) {
+            accept('error', `No class type - instance loops iterate over the elements of a reference of a class`, {
+                node: instLoop,
+                property: "var"
+            })
+        }
+        if (instLoop.ref.ref != undefined) {
+            const linkingReference = instLoop.ref.ref;
+            if (instLoop.ivar.dtype != undefined && instLoop.ivar.type == undefined && linkingReference.type.ref != undefined) {
+                accept('error', `Type error - loop variable must have type ${linkingReference.type.ref.name} (derived from reference ${linkingReference.name})`, {
+                    node: instLoop,
+                    property: "var"
+                })
+            } else if (instLoop.ivar.dtype == undefined && instLoop.ivar.type != undefined && instLoop.ivar.type.ref && linkingReference.type.ref != undefined) {
+                if (linkingReference.type.ref != instLoop.ivar.type.ref) {
+                    accept('error', `Type error - loop variable must have type ${linkingReference.type.ref.name} (derived from reference ${linkingReference.name})`, {
+                        node: instLoop,
+                        property: "var"
+                    })
+                }
+            }
+        }
+    }
+
+    checkArithExprOperations(expr: ArithExpr, accept: ValidationAcceptor) {
+        if (isBinaryExpression(expr)) {
+            if (!(ModelModelingLanguageUtils.isNumberArithExpr(expr.left) && ModelModelingLanguageUtils.isNumberArithExpr(expr.right))) {
+                if ((ModelModelingLanguageUtils.isNumberArithExpr(expr.left) && ModelModelingLanguageUtils.isStringArithExpr(expr.right)) || (ModelModelingLanguageUtils.isStringArithExpr(expr.left) && ModelModelingLanguageUtils.isNumberArithExpr(expr.right))) {
+                    if (!(expr.operator == "*" || expr.operator == "+")) {
+                        accept('error', `Invalid arithmetic operation | Allowed operations for strings and numbers are: ["*", "+"]`, {
+                            node: expr
+                        })
+                    }
+                } else if (ModelModelingLanguageUtils.isStringArithExpr(expr.left) && ModelModelingLanguageUtils.isStringArithExpr(expr.right)) {
+                    if (expr.operator != "+") {
+                        accept('error', `Invalid arithmetic operation | Only string concatenation with operator "+" allowed`, {
+                            node: expr
+                        })
+                    }
+                } else {
+                    accept('error', `Invalid arithmetic operation`, {
+                        node: expr
+                    })
+                }
+            }
+        }
     }
 }

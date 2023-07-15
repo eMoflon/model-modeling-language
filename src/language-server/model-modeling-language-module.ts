@@ -15,6 +15,8 @@ import {ModelModelingLanguageSemanticTokenProvider} from "./model-modeling-langu
 import {ModelModelingLanguageCodeActionProvider} from "./model-modeling-language-code-action-provider";
 import {ModelModelingLanguageFormatter} from "./model-modeling-language-formatter";
 import {ModelModelingLanguageScopeProvider} from "./model-modeling-languge-scope-provider";
+import {ModelModelingLanguageLinker} from "./model-modeling-language-linker";
+import {ModelModelingLanguageCompletionProvider} from "./model-modeling-language-completion-provider";
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -43,11 +45,13 @@ export const ModelModelingLanguageModule: Module<ModelModelingLanguageServices, 
     references: {
         ScopeComputation: (services) => new ModelModelingLanguageScopeComputation(services),
         ScopeProvider: (services) => new ModelModelingLanguageScopeProvider(services),
+        Linker: (services) => new ModelModelingLanguageLinker(services)
     },
     lsp: {
         SemanticTokenProvider: (services) => new ModelModelingLanguageSemanticTokenProvider(services),
         CodeActionProvider: (services) => new ModelModelingLanguageCodeActionProvider(services),
-        Formatter: () => new ModelModelingLanguageFormatter()
+        Formatter: () => new ModelModelingLanguageFormatter(),
+        CompletionProvider: (services) => new ModelModelingLanguageCompletionProvider(services)
     }
 };
 
