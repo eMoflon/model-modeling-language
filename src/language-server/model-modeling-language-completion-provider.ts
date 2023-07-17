@@ -4,7 +4,7 @@ import {
     CompletionItemKind,
     CompletionList,
     CompletionParams,
-    InsertTextFormat
+    InsertTextFormat,
 } from 'vscode-languageserver';
 
 type Suggestions = Promise<CompletionList | undefined>;
@@ -15,6 +15,13 @@ export class ModelModelingLanguageCompletionProvider extends DefaultCompletionPr
         const list = await super.getCompletion(document, params);
         if (list !== undefined) {
             const snippets: CompletionItem[] = [
+                {
+                    label: 'import',
+                    kind: CompletionItemKind.Snippet,
+                    insertText: 'import "${1:uri}";',
+                    documentation: 'Define a new import',
+                    insertTextFormat: InsertTextFormat.Snippet
+                },
                 {
                     label: 'package',
                     kind: CompletionItemKind.Snippet,
@@ -46,7 +53,7 @@ export class ModelModelingLanguageCompletionProvider extends DefaultCompletionPr
                 {
                     label: 'enum',
                     kind: CompletionItemKind.Snippet,
-                    insertText: 'enum $\{1:name} {${2:entry}}',
+                    insertText: 'enum ${1:name} {\n    ${2:entry}\n}',
                     documentation: 'Define a new enum',
                     insertTextFormat: InsertTextFormat.Snippet
                 },
@@ -90,6 +97,27 @@ export class ModelModelingLanguageCompletionProvider extends DefaultCompletionPr
                     kind: CompletionItemKind.Snippet,
                     insertText: 'for ${1:container}-${2:ref}->${3:name} {\n}',
                     documentation: 'Define a new loop over class references',
+                    insertTextFormat: InsertTextFormat.Snippet
+                },
+                {
+                    label: 'attribute',
+                    kind: CompletionItemKind.Snippet,
+                    insertText: 'attribute ${1:type} ${2:name};',
+                    documentation: 'Define a new attribute',
+                    insertTextFormat: InsertTextFormat.Snippet
+                },
+                {
+                    label: 'reference',
+                    kind: CompletionItemKind.Snippet,
+                    insertText: 'reference ${1:type} ${2:name};',
+                    documentation: 'Define a new reference',
+                    insertTextFormat: InsertTextFormat.Snippet
+                },
+                {
+                    label: 'oreference',
+                    kind: CompletionItemKind.Snippet,
+                    insertText: '@opposite ${1:type}::${2:ref}\nreference ${1:type} ${3:name};',
+                    documentation: 'Define a new reference with opposite',
                     insertTextFormat: InsertTextFormat.Snippet
                 }
             ];
