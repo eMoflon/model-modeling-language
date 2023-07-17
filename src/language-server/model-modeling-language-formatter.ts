@@ -220,7 +220,7 @@ export class ModelModelingLanguageFormatter extends AbstractFormatter {
             formatter.property('ivar').surround(Formatting.oneSpace());
         } else if (isBinaryExpression(node)) {
             const formatter = this.getNodeFormatter(node);
-            formatter.keyword('operator').surround(Formatting.oneSpace());
+            formatter.property('operator').surround(Formatting.oneSpace());
         }
     }
 

@@ -159,7 +159,7 @@ export class ModelModelingLanguageSemanticTokenProvider extends AbstractSemantic
         } else if (isNumberExpr(node)) {
             acceptor({node, property: "value", type: SemanticTokenTypes.number})
         } else if (isBinaryExpression(node)) {
-            acceptor({node, keyword: "operator", type: SemanticTokenTypes.operator})
+            acceptor({node, property: "operator", type: SemanticTokenTypes.operator})
         }
     }
 
