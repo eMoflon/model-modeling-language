@@ -898,13 +898,13 @@ export class ModelModelingLanguageValidator {
             if (instLoop.ivar.dtype != undefined && instLoop.ivar.type == undefined && linkingReference.type.ref != undefined) {
                 accept('error', `Type error - loop variable must have type ${linkingReference.type.ref.name} (derived from reference ${linkingReference.name})`, {
                     node: instLoop,
-                    property: "var"
+                    property: "ivar"
                 })
             } else if (instLoop.ivar.dtype == undefined && instLoop.ivar.type != undefined && instLoop.ivar.type.ref && linkingReference.type.ref != undefined) {
                 if (linkingReference.type.ref != instLoop.ivar.type.ref) {
-                    accept('error', `Type error - loop variable must have type ${linkingReference.type.ref.name} (derived from reference ${linkingReference.name})`, {
+                    accept('error', `Type error - loop variable must have type ${ModelModelingLanguageUtils.getQualifiedClassName(linkingReference.type.ref, linkingReference.type.ref.name)} (derived from reference ${linkingReference.name})`, {
                         node: instLoop,
-                        property: "var"
+                        property: "ivar"
                     })
                 }
             }
