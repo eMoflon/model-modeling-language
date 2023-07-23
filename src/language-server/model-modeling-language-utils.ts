@@ -1,15 +1,22 @@
 import {AstNode} from "langium";
 import {
     ArithExpr,
+    Class,
     FunctionReturn,
     IFunction,
     ImplicitlyTypedValue,
-    InstanceVariable,
     isBoolExpr,
     isClass,
+    isFunctionLoop,
+    isFunctionVariable,
+    isInstanceLoop,
     isNumberExpr,
     isPackage,
-    isStringExpr
+    isStringExpr,
+    isTypedVariable,
+    isUntypedVariable,
+    TypedVariable,
+    Variable
 } from "./generated/ast";
 import {InvalidArgumentError} from "commander";
 
@@ -88,12 +95,12 @@ export class ModelModelingLanguageUtils {
         return isStringExpr(expr) || this.getArithExprType(expr) == "StringExpr";
     }
 
-    public static getInstanceVariableType(instVar: InstanceVariable): string {
-        if (instVar.type == undefined && instVar.dtype != undefined) {
-            return instVar.dtype;
+    public static getInstanceVariableType(instVar: TypedVariable): string {
+        if (instVar.typing.type == undefined && instVar.typing.dtype != undefined) {
+            return instVar.typing.dtype;
         }
-        if (instVar.type != undefined && instVar.dtype == undefined && instVar.type.ref != undefined) {
-            return this.getQualifiedClassName(instVar.type.ref, instVar.type.ref.name);
+        if (instVar.typing.type != undefined && instVar.typing.dtype == undefined && instVar.typing.type.ref != undefined) {
+            return this.getQualifiedClassName(instVar.typing.type.ref, instVar.typing.type.ref.name);
         }
         return "unknown";
     }
@@ -115,21 +122,38 @@ export class ModelModelingLanguageUtils {
         if (fr.val != undefined && fr.var == undefined) {
             return this.getImplicitlyTypedValue(fr.val);
         } else if (fr.val == undefined && fr.var != undefined && fr.var.ref != undefined) {
-            if (fr.var.ref.dtype != undefined && fr.var.ref.type == undefined) {
-                return fr.var.ref.dtype;
-            } else if (fr.var.ref.dtype == undefined && fr.var.ref.type != undefined && fr.var.ref.type.ref != undefined) {
-                return this.getQualifiedClassName(fr.var.ref.type.ref, fr.var.ref.type.ref.name);
+            if (fr.var.ref.typing.dtype != undefined && fr.var.ref.typing.type == undefined) {
+                return fr.var.ref.typing.dtype;
+            } else if (fr.var.ref.typing.dtype == undefined && fr.var.ref.typing.type != undefined && fr.var.ref.typing.type.ref != undefined) {
+                return this.getQualifiedClassName(fr.var.ref.typing.type.ref, fr.var.ref.typing.type.ref.name);
             }
         }
         throw new InvalidArgumentError("Invalid return statement configuration");
     }
 
     public static getFunctionSignatureReturnType(func: IFunction): string {
-        if (func.dtype != undefined && func.type == undefined) {
-            return func.dtype;
-        } else if (func.dtype == undefined && func.type != undefined && func.type.ref != undefined) {
-            return this.getQualifiedClassName(func.type.ref, func.type.ref.name);
+        if (func.typing != undefined && func.typing.dtype != undefined && func.typing.type == undefined) {
+            return func.typing.dtype;
+        } else if (func.typing != undefined && func.typing.dtype == undefined && func.typing.type != undefined && func.typing.type.ref != undefined) {
+            return this.getQualifiedClassName(func.typing.type.ref, func.typing.type.ref.name);
         }
         return "";
+    }
+
+    public static getVariableTyping(v: Variable): { dtype: string | undefined, type: Class | undefined } {
+        if (isTypedVariable(v)) {
+            return {dtype: v.typing.dtype, type: v.typing.type?.ref};
+        } else if (isFunctionVariable(v)) {
+            return {dtype: "tuple", type: undefined};
+        } else if (isUntypedVariable(v)) {
+            if (isFunctionLoop(v.$container)) {
+                return {dtype: "int", type: undefined};
+            } else if (isInstanceLoop(v.$container)) {
+                if (v.$container.ref.ref != undefined && v.$container.ref.ref.type.ref != undefined) {
+                    return {dtype: undefined, type: v.$container.ref.ref.type.ref};
+                }
+            }
+        }
+        return {dtype: "unknown", type: undefined};
     }
 }

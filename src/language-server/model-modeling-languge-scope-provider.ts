@@ -15,10 +15,10 @@ import {
     Class,
     FunctionAssignment,
     IMacro,
-    InstanceVariable,
     isAttribute,
     isClass,
     isCReference,
+    isFunctionArgument,
     isFunctionAssignment,
     isFunctionLoop,
     isFunctionMacroCall,
@@ -27,10 +27,12 @@ import {
     isIInstance,
     isIMacro,
     isInstanceLoop,
-    isInstanceVariable,
     isMacroAssignStatement,
     isMacroAttributeStatement,
-    isModel
+    isModel,
+    isTypedVariable,
+    TypedVariable,
+    Variable
 } from "./generated/ast";
 import {URI} from "vscode-uri";
 import {ModelModelingLanguageServices} from "./model-modeling-language-module";
@@ -59,12 +61,12 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                 //console.log("[MAS] Wat? both undefined!");
                 return EMPTY_SCOPE;
             }
-            if (refInstVar.dtype != undefined) {
+            if (refInstVar.typing.dtype != undefined) {
                 //console.log("[MAS] dType != undefined");
                 return EMPTY_SCOPE;
             }
-            if (refInstVar.type != undefined && refInstVar.type.ref != undefined && isClass(refInstVar.type.ref)) {
-                const containerClass: Class = refInstVar.type.ref;
+            if (refInstVar.typing.type != undefined && refInstVar.typing.type.ref != undefined && isClass(refInstVar.typing.type.ref)) {
+                const containerClass: Class = refInstVar.typing.type.ref;
                 //console.log(`-> Found container class: ${containerClass.name}`);
                 const precomputed = getDocument(containerClass).precomputedScopes;
                 //console.log("[MAS] Retrieving precomputed scopes!");
@@ -103,12 +105,12 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                 //console.log("[MAS] Wat? both undefined!");
                 return EMPTY_SCOPE;
             }
-            if (refInstVar.dtype != undefined) {
+            if (refInstVar.typing.dtype != undefined) {
                 //console.log("[MAS] dType != undefined");
                 return EMPTY_SCOPE;
             }
-            if (refInstVar.type != undefined && refInstVar.type.ref != undefined && isClass(refInstVar.type.ref)) {
-                const containerClass: Class = refInstVar.type.ref;
+            if (refInstVar.typing.type != undefined && refInstVar.typing.type.ref != undefined && isClass(refInstVar.typing.type.ref)) {
+                const containerClass: Class = refInstVar.typing.type.ref;
                 //console.log(`-> Found container class: ${containerClass.name}`);
                 //console.log("[MAS] Retrieving precomputed scopes!");
                 const precomputed = getDocument(containerClass).precomputedScopes;
@@ -130,11 +132,11 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                         if (allDescriptions.length > 0) {
                             //console.log(`[MAS] Found ${allDescriptions.length} descriptions`);
                             scopes.push(stream(allDescriptions).filter(
-                                desc => isInstanceVariable(desc.node)));
+                                desc => isTypedVariable(desc.node)));
                         } else {
                             //console.log("[MAS] No descriptions found!!");
                         }
-                        scopes.push(stream(iMacro.instances).filter(e => e != undefined && e.nInst != undefined && e.iVar == undefined).map(e => e.nInst as InstanceVariable).map(v => {
+                        scopes.push(stream(iMacro.instances).filter(e => e != undefined && e.nInst != undefined && e.iVar == undefined).map(e => e.nInst as TypedVariable).map(v => {
                             if (v != undefined) {
                                 const name = this.nameProvider.getName(v);
                                 if (name != undefined) {
@@ -208,8 +210,8 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                 return result;
             } else if (context.property === "ref") {
                 const scopes: Array<Stream<AstNodeDescription>> = [];
-                if (instLoop.var.ref != undefined && instLoop.var.ref.type != undefined && instLoop.var.ref.type.ref != undefined) {
-                    const sourceClass = instLoop.var.ref.type.ref;
+                if (instLoop.var.ref != undefined && instLoop.var.ref.typing.type != undefined && instLoop.var.ref.typing.type.ref != undefined) {
+                    const sourceClass = instLoop.var.ref.typing.type.ref;
                     scopes.push(stream(sourceClass.body).filter(x => isCReference(x)).map(v => {
                         if (v != undefined) {
                             const name = this.nameProvider.getName(v);
@@ -228,6 +230,24 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
             }
         } else if (isFunctionReturn(context.container)) {
             if (context.property === "var") {
+                const scopes: Array<Stream<AstNodeDescription>> = [];
+                scopes.push(stream(this.getLocalInstanceVariablesInScope(context.container).map(v => {
+                    if (v != undefined) {
+                        const name = this.nameProvider.getName(v);
+                        if (name != undefined) {
+                            return this.descriptions.createDescription(v, name);
+                        }
+                    }
+                    return undefined;
+                })).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                let result = EMPTY_SCOPE;
+                for (let i = scopes.length - 1; i >= 0; i--) {
+                    result = this.createScope(scopes[i], result);
+                }
+                return result;
+            }
+        } else if (isFunctionArgument(context.container)) {
+            if (context.property === "ref") {
                 const scopes: Array<Stream<AstNodeDescription>> = [];
                 scopes.push(stream(this.getLocalInstanceVariablesInScope(context.container).map(v => {
                     if (v != undefined) {
@@ -298,12 +318,12 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
         return this.services.workspace.AstNodeLocator.getAstNode(targetDoc.parseResult.value, nodeDescription.path);
     }
 
-    getLocalInstanceVariablesInScope(node: AstNode): InstanceVariable[] {
+    getLocalInstanceVariablesInScope(node: AstNode): Variable[] {
         return this._getLocalInstanceVariables(node, undefined)
     }
 
-    private _getLocalInstanceVariables(node: AstNode, containerIdx: number | undefined): InstanceVariable[] {
-        let scopedInstanceVariables: InstanceVariable[] = [];
+    private _getLocalInstanceVariables(node: AstNode, containerIdx: number | undefined): Variable[] {
+        let scopedInstanceVariables: Variable[] = [];
         if (node == undefined) {
             return scopedInstanceVariables;
         }
@@ -342,6 +362,7 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                     }
                 }
             });
+            scopedInstanceVariables.push(...node.parameter);
         } else if (isIMacro(node)) {
             node.instances.forEach((instance, idx) => {
                 if (containerIdx == undefined || idx < containerIdx) {

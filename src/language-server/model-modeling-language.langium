@@ -92,25 +92,31 @@ EnumEntry:
     name=ID ('=' value=ValueExpr)?;
 
 fragment InstanceParameters:
-    '(' (parameter+=InstanceVariable (',' parameter+=InstanceVariable)*)? ')';
+    '(' (parameter+=TypedVariable (',' parameter+=TypedVariable)*)? ')';
 
 fragment MacroParameters:
-    '[' (parameter+=InstanceVariable (',' parameter+=InstanceVariable)*)? ']';
+    '[' (parameter+=TypedVariable (',' parameter+=TypedVariable)*)? ']';
 
-fragment InstanceType:
+VariableType:
     type=[Class:QNAME] | dtype=DataType;
 
-InstanceVariable:
-    InstanceType name=ID;
+Variable:
+    UntypedVariable | TypedVariable | FunctionVariable;
+    
+UntypedVariable:
+    name=ID;
 
-FunctionVariable infers InstanceVariable:
-    dtype='tuple' name=ID;
+TypedVariable:
+    typing=VariableType name=ID;
+
+FunctionVariable:
+    'tuple' name=ID;
 
 IMacro:
     'macro' name=ID MacroParameters '{' (instances+=MacroInstance)* '}';
 
 MacroInstance:
-    (nInst=InstanceVariable | iVar=[InstanceVariable:ID]) '{' (statements+=MacroStatement)* '}';
+    (nInst=TypedVariable | iVar=[TypedVariable:ID]) '{' (statements+=MacroStatement)* '}';
 
 MacroStatement:
     MacroAttributeStatement | MacroAssignStatement;
@@ -119,16 +125,16 @@ MacroAttributeStatement:
     attr=[Attribute:ID] '=' value=ArithExpr;
 
 MacroAssignStatement:
-    cref=[CReference:ID] '->' instance=[InstanceVariable:ID];
+    cref=[CReference:ID] '->' instance=[TypedVariable:ID];
 
 IFunction:
-    'function' name=ID InstanceParameters (returnsVar?='returns' InstanceType)? '{' (statements+=FunctionStatement)+ (statements+=FunctionReturn)? '}';
+    'function' name=ID InstanceParameters (returnsVar?='returns' typing=VariableType)? '{' (statements+=FunctionStatement)+ (statements+=FunctionReturn)? '}';
 
 FunctionStatement:
     FunctionCall | FunctionMacroCall | FunctionAssignment | FunctionLoop;
 
 FunctionArgument:
-    ref=[InstanceVariable:ID] | value=ArithExpr;
+    ref=[Variable:ID] | value=ArithExpr;
 
 FunctionCall:
     func=[IFunction:ID] '(' (args+=FunctionArgument (',' args+=FunctionArgument)*)? ')';
@@ -137,16 +143,16 @@ FunctionMacroCall:
     macro=[IMacro:ID] '[' (args+=FunctionArgument (',' args+=FunctionArgument)*)? ']';
 
 FunctionAssignment:
-    var=(InstanceVariable | FunctionVariable) '=' call=(FunctionCall | FunctionMacroCall) ('.' select=[InstanceVariable:ID])?;
+    var=(TypedVariable | FunctionVariable) '=' call=(FunctionCall | FunctionMacroCall) ('.' select=[TypedVariable:ID])?;
 
 ImplicitlyTypedValue:
     val=ArithExpr;
 
 FunctionReturn:
-    'return' (var=[InstanceVariable:ID]|val=ImplicitlyTypedValue);
+    'return' (var=[TypedVariable:ID]|val=ImplicitlyTypedValue);
 
 FunctionLoop:
-    'for' var=InstanceVariable 'in' lower=NUM ':' upper=NUM '{' (statements+=FunctionStatement)+ '}';
+    'for' var=UntypedVariable 'in' lower=NUM ':' upper=NUM '{' (statements+=FunctionStatement)+ '}';
 
 IInstance:
     'instance' name=ID '{' (statements+=(InstanceStatement | InstanceLoop))* '}';
@@ -155,7 +161,7 @@ InstanceStatement:
     FunctionCall | FunctionMacroCall | FunctionAssignment;
 
 InstanceLoop:
-    'for' var=[InstanceVariable:ID] '-' ref=[CReference:ID] '->' ivar=InstanceVariable '{' (statements+=InstanceStatement)+ '}';
+    'for' var=[TypedVariable:ID] '-' ref=[CReference:ID] '->' ivar=UntypedVariable '{' (statements+=InstanceStatement)+ '}';
 
 ArithExpr:
     Addition;

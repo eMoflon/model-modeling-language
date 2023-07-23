@@ -18,7 +18,6 @@ import {
     isIMacro,
     isImport,
     isInstanceLoop,
-    isInstanceVariable,
     isInterface,
     isMacroAssignStatement,
     isMacroAttributeStatement,
@@ -27,7 +26,8 @@ import {
     isNumberExpr,
     isOppositeAnnotation,
     isPackage,
-    isStringExpr
+    isStringExpr,
+    isTypedVariable
 } from "./generated/ast";
 import {SemanticTokenTypes} from "vscode-languageserver";
 
@@ -94,13 +94,8 @@ export class ModelModelingLanguageSemanticTokenProvider extends AbstractSemantic
                     acceptor({node, property: "upperMult", type: SemanticTokenTypes.number})
                 }
             }
-        } else if (isInstanceVariable(node)) {
-            if (node.type != undefined) {
-                acceptor({node, property: "type", type: SemanticTokenTypes.type});
-            }
-            if (node.dtype != undefined) {
-                acceptor({node, property: "dtype", type: SemanticTokenTypes.type});
-            }
+        } else if (isTypedVariable(node)) {
+            acceptor({node, property: "typing", type: SemanticTokenTypes.type});
             acceptor({node, property: "name", type: SemanticTokenTypes.property});
         } else if (isIMacro(node)) {
             acceptor({node, keyword: "macro", type: SemanticTokenTypes.keyword});
@@ -120,13 +115,9 @@ export class ModelModelingLanguageSemanticTokenProvider extends AbstractSemantic
         } else if (isIFunction(node)) {
             acceptor({node, keyword: "function", type: SemanticTokenTypes.keyword});
             acceptor({node, property: "name", type: SemanticTokenTypes.function});
-            if (node.dtype != undefined) {
+            if (node.typing != undefined) {
                 acceptor({node, keyword: "returns", type: SemanticTokenTypes.keyword});
-                acceptor({node, property: "dtype", type: SemanticTokenTypes.property});
-            }
-            if (node.type != undefined) {
-                acceptor({node, keyword: "returns", type: SemanticTokenTypes.keyword});
-                acceptor({node, property: "type", type: SemanticTokenTypes.property});
+                acceptor({node, property: "typing", type: SemanticTokenTypes.property});
             }
         } else if (isFunctionCall(node)) {
             acceptor({node, property: "func", type: SemanticTokenTypes.function});

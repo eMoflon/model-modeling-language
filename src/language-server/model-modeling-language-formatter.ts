@@ -15,13 +15,12 @@ import {
     isIMacro,
     isImport,
     isInstanceLoop,
-    isInstanceVariable,
     isInterface,
     isMacroAssignStatement,
     isMacroAttributeStatement,
     isMacroInstance,
     isModel,
-    isPackage
+    isPackage, isTypedVariable
 } from "./generated/ast";
 
 export class ModelModelingLanguageFormatter extends AbstractFormatter {
@@ -150,7 +149,7 @@ export class ModelModelingLanguageFormatter extends AbstractFormatter {
 
             formatter.property('name').prepend(Formatting.oneSpace()).append(Formatting.noSpace());
             formatter.keywords(',').prepend(Formatting.noSpace()).append(Formatting.oneSpace());
-        } else if (isInstanceVariable(node)) {
+        } else if (isTypedVariable(node)) {
             const formatter = this.getNodeFormatter(node);
             formatter.property('name').prepend(Formatting.oneSpace());
         } else if (isMacroInstance(node)) {
@@ -174,7 +173,7 @@ export class ModelModelingLanguageFormatter extends AbstractFormatter {
             bracesOpen.prepend(Formatting.oneSpace());
             bracesClose.prepend(Formatting.newLine());
             formatter.property('name').surround(Formatting.oneSpace());
-            if (node.type != undefined || node.dtype != undefined) {
+            if (node.typing != undefined) {
                 formatter.keyword('returns').surround(Formatting.oneSpace());
             }
         } else if (isFunctionCall(node)) {

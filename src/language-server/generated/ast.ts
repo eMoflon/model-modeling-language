@@ -64,6 +64,14 @@ export function isValueExpr(item: unknown): item is ValueExpr {
     return reflection.isInstance(item, ValueExpr);
 }
 
+export type Variable = FunctionVariable | TypedVariable | UntypedVariable;
+
+export const Variable = 'Variable';
+
+export function isVariable(item: unknown): item is Variable {
+    return reflection.isInstance(item, Variable);
+}
+
 export interface Attribute extends AstNode {
     readonly $container: Class | Interface;
     readonly $type: 'Attribute';
@@ -185,7 +193,7 @@ export function isEnumEntry(item: unknown): item is EnumEntry {
 export interface FunctionArgument extends AstNode {
     readonly $container: FunctionCall | FunctionMacroCall;
     readonly $type: 'FunctionArgument';
-    ref?: Reference<InstanceVariable>
+    ref?: Reference<Variable>
     value?: ArithExpr
 }
 
@@ -199,8 +207,8 @@ export interface FunctionAssignment extends AstNode {
     readonly $container: FunctionAssignment | FunctionLoop | IFunction | IInstance | InstanceLoop;
     readonly $type: 'FunctionAssignment';
     call: FunctionCall | FunctionMacroCall
-    select?: Reference<InstanceVariable>
-    var: InstanceVariable
+    select?: Reference<TypedVariable>
+    var: FunctionVariable | TypedVariable
 }
 
 export const FunctionAssignment = 'FunctionAssignment';
@@ -228,7 +236,7 @@ export interface FunctionLoop extends AstNode {
     lower: number
     statements: Array<FunctionStatement>
     upper: number
-    var: InstanceVariable
+    var: UntypedVariable
 }
 
 export const FunctionLoop = 'FunctionLoop';
@@ -254,7 +262,7 @@ export interface FunctionReturn extends AstNode {
     readonly $container: IFunction;
     readonly $type: 'FunctionReturn';
     val?: ImplicitlyTypedValue
-    var?: Reference<InstanceVariable>
+    var?: Reference<TypedVariable>
 }
 
 export const FunctionReturn = 'FunctionReturn';
@@ -263,15 +271,26 @@ export function isFunctionReturn(item: unknown): item is FunctionReturn {
     return reflection.isInstance(item, FunctionReturn);
 }
 
+export interface FunctionVariable extends AstNode {
+    readonly $container: FunctionAssignment | FunctionLoop | IFunction | IMacro | InstanceLoop | MacroInstance;
+    readonly $type: 'FunctionVariable';
+    name: string
+}
+
+export const FunctionVariable = 'FunctionVariable';
+
+export function isFunctionVariable(item: unknown): item is FunctionVariable {
+    return reflection.isInstance(item, FunctionVariable);
+}
+
 export interface IFunction extends AstNode {
     readonly $container: Model;
     readonly $type: 'IFunction';
-    dtype?: DataType
     name: string
-    parameter: Array<InstanceVariable>
+    parameter: Array<TypedVariable>
     returnsVar: boolean
     statements: Array<FunctionReturn> | Array<FunctionStatement>
-    type?: Reference<Class>
+    typing?: VariableType
 }
 
 export const IFunction = 'IFunction';
@@ -298,7 +317,7 @@ export interface IMacro extends AstNode {
     readonly $type: 'IMacro';
     instances: Array<MacroInstance>
     name: string
-    parameter: Array<InstanceVariable>
+    parameter: Array<TypedVariable>
 }
 
 export const IMacro = 'IMacro';
@@ -348,30 +367,16 @@ export function isImportAlias(item: unknown): item is ImportAlias {
 export interface InstanceLoop extends AstNode {
     readonly $container: IInstance;
     readonly $type: 'InstanceLoop';
-    ivar: InstanceVariable
+    ivar: UntypedVariable
     ref: Reference<CReference>
     statements: Array<InstanceStatement>
-    var: Reference<InstanceVariable>
+    var: Reference<TypedVariable>
 }
 
 export const InstanceLoop = 'InstanceLoop';
 
 export function isInstanceLoop(item: unknown): item is InstanceLoop {
     return reflection.isInstance(item, InstanceLoop);
-}
-
-export interface InstanceVariable extends AstNode {
-    readonly $container: FunctionAssignment | FunctionLoop | IFunction | IMacro | InstanceLoop | MacroInstance;
-    readonly $type: 'InstanceVariable';
-    dtype?: 'tuple' | DataType
-    name: string
-    type?: Reference<Class>
-}
-
-export const InstanceVariable = 'InstanceVariable';
-
-export function isInstanceVariable(item: unknown): item is InstanceVariable {
-    return reflection.isInstance(item, InstanceVariable);
 }
 
 export interface Interface extends AstNode {
@@ -393,7 +398,7 @@ export interface MacroAssignStatement extends AstNode {
     readonly $container: MacroInstance;
     readonly $type: 'MacroAssignStatement';
     cref: Reference<CReference>
-    instance: Reference<InstanceVariable>
+    instance: Reference<TypedVariable>
 }
 
 export const MacroAssignStatement = 'MacroAssignStatement';
@@ -418,8 +423,8 @@ export function isMacroAttributeStatement(item: unknown): item is MacroAttribute
 export interface MacroInstance extends AstNode {
     readonly $container: IMacro;
     readonly $type: 'MacroInstance';
-    iVar?: Reference<InstanceVariable>
-    nInst?: InstanceVariable
+    iVar?: Reference<TypedVariable>
+    nInst?: TypedVariable
     statements: Array<MacroStatement>
 }
 
@@ -540,6 +545,44 @@ export function isStringExpr(item: unknown): item is StringExpr {
     return reflection.isInstance(item, StringExpr);
 }
 
+export interface TypedVariable extends AstNode {
+    readonly $container: FunctionAssignment | FunctionLoop | IFunction | IMacro | InstanceLoop | MacroInstance;
+    readonly $type: 'TypedVariable';
+    name: string
+    typing: VariableType
+}
+
+export const TypedVariable = 'TypedVariable';
+
+export function isTypedVariable(item: unknown): item is TypedVariable {
+    return reflection.isInstance(item, TypedVariable);
+}
+
+export interface UntypedVariable extends AstNode {
+    readonly $container: FunctionAssignment | FunctionLoop | IFunction | IMacro | InstanceLoop | MacroInstance;
+    readonly $type: 'UntypedVariable';
+    name: string
+}
+
+export const UntypedVariable = 'UntypedVariable';
+
+export function isUntypedVariable(item: unknown): item is UntypedVariable {
+    return reflection.isInstance(item, UntypedVariable);
+}
+
+export interface VariableType extends AstNode {
+    readonly $container: IFunction | TypedVariable;
+    readonly $type: 'VariableType';
+    dtype?: DataType
+    type?: Reference<Class>
+}
+
+export const VariableType = 'VariableType';
+
+export function isVariableType(item: unknown): item is VariableType {
+    return reflection.isInstance(item, VariableType);
+}
+
 export interface ModelModelingLanguageAstType {
     AbstractElement: AbstractElement
     ArithExpr: ArithExpr
@@ -558,6 +601,7 @@ export interface ModelModelingLanguageAstType {
     FunctionMacroCall: FunctionMacroCall
     FunctionReturn: FunctionReturn
     FunctionStatement: FunctionStatement
+    FunctionVariable: FunctionVariable
     IFunction: IFunction
     IInstance: IInstance
     IMacro: IMacro
@@ -566,7 +610,6 @@ export interface ModelModelingLanguageAstType {
     ImportAlias: ImportAlias
     InstanceLoop: InstanceLoop
     InstanceStatement: InstanceStatement
-    InstanceVariable: InstanceVariable
     Interface: Interface
     MacroAssignStatement: MacroAssignStatement
     MacroAttributeStatement: MacroAttributeStatement
@@ -581,13 +624,17 @@ export interface ModelModelingLanguageAstType {
     ReferenceModifiers: ReferenceModifiers
     Statement: Statement
     StringExpr: StringExpr
+    TypedVariable: TypedVariable
+    UntypedVariable: UntypedVariable
     ValueExpr: ValueExpr
+    Variable: Variable
+    VariableType: VariableType
 }
 
 export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return ['AbstractElement', 'ArithExpr', 'Attribute', 'AttributeModifiers', 'BinaryExpression', 'BoolExpr', 'CReference', 'Class', 'Enum', 'EnumEntry', 'FunctionArgument', 'FunctionAssignment', 'FunctionCall', 'FunctionLoop', 'FunctionMacroCall', 'FunctionReturn', 'FunctionStatement', 'IFunction', 'IInstance', 'IMacro', 'ImplicitlyTypedValue', 'Import', 'ImportAlias', 'InstanceLoop', 'InstanceStatement', 'InstanceVariable', 'Interface', 'MacroAssignStatement', 'MacroAttributeStatement', 'MacroInstance', 'MacroStatement', 'Model', 'Multiplicity', 'MultiplicitySpec', 'NumberExpr', 'OppositeAnnotation', 'Package', 'ReferenceModifiers', 'Statement', 'StringExpr', 'ValueExpr'];
+        return ['AbstractElement', 'ArithExpr', 'Attribute', 'AttributeModifiers', 'BinaryExpression', 'BoolExpr', 'CReference', 'Class', 'Enum', 'EnumEntry', 'FunctionArgument', 'FunctionAssignment', 'FunctionCall', 'FunctionLoop', 'FunctionMacroCall', 'FunctionReturn', 'FunctionStatement', 'FunctionVariable', 'IFunction', 'IInstance', 'IMacro', 'ImplicitlyTypedValue', 'Import', 'ImportAlias', 'InstanceLoop', 'InstanceStatement', 'Interface', 'MacroAssignStatement', 'MacroAttributeStatement', 'MacroInstance', 'MacroStatement', 'Model', 'Multiplicity', 'MultiplicitySpec', 'NumberExpr', 'OppositeAnnotation', 'Package', 'ReferenceModifiers', 'Statement', 'StringExpr', 'TypedVariable', 'UntypedVariable', 'ValueExpr', 'Variable', 'VariableType'];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
@@ -618,6 +665,11 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
             case FunctionLoop: {
                 return this.isSubtype(FunctionStatement, supertype);
             }
+            case FunctionVariable:
+            case TypedVariable:
+            case UntypedVariable: {
+                return this.isSubtype(Variable, supertype);
+            }
             case MacroAssignStatement:
             case MacroAttributeStatement: {
                 return this.isSubtype(MacroStatement, supertype);
@@ -633,21 +685,22 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
         switch (referenceId) {
             case 'Class:extendedClasses':
             case 'CReference:type':
-            case 'IFunction:type':
-            case 'InstanceVariable:type': {
+            case 'VariableType:type': {
                 return Class;
             }
             case 'Class:implementedInterfaces':
             case 'Interface:extendedInterfaces': {
                 return Interface;
             }
-            case 'FunctionArgument:ref':
+            case 'FunctionArgument:ref': {
+                return Variable;
+            }
             case 'FunctionAssignment:select':
             case 'FunctionReturn:var':
             case 'InstanceLoop:var':
             case 'MacroAssignStatement:instance':
             case 'MacroInstance:iVar': {
-                return InstanceVariable;
+                return TypedVariable;
             }
             case 'FunctionCall:func': {
                 return IFunction;
