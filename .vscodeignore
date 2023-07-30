@@ -2,3 +2,7 @@
 .vscode-test/**
 .gitignore
 langium-quickstart.md
+src
+tsconfig.json
+build.sh
+bin
