@@ -66,8 +66,11 @@ AttributeModifiers:
     ordered?='ordered' &
     id?='id';
 
+AttributeType:
+    ptype=DataType | etype=[Enum:QNAME];
+
 Attribute:
-    'attribute' type=DataType name=ID ('=' defaultValue=ArithExpr)? ('{'modifiers=AttributeModifiers'}')?';';
+    'attribute' type=AttributeType name=ID ('=' defaultValue=ArithExpr)? ('{'modifiers=AttributeModifiers'}')?';';
 
 ReferenceModifiers:
     readonly?='readonly' &
@@ -98,7 +101,7 @@ fragment MacroParameters:
     '[' (parameter+=TypedVariable (',' parameter+=TypedVariable)*)? ']';
 
 VariableType:
-    type=[Class:QNAME] | dtype=DataType;
+    type=[AbstractElement:QNAME] | dtype=DataType;
 
 Variable:
     UntypedVariable | TypedVariable | FunctionVariable;
@@ -128,7 +131,7 @@ MacroAssignStatement:
     cref=[CReference:ID] '->' instance=[TypedVariable:ID];
 
 IFunction:
-    'function' name=ID InstanceParameters (returnsVar?='returns' typing=VariableType)? '{' (statements+=FunctionStatement)+ (statements+=FunctionReturn)? '}';
+    'function' name=ID InstanceParameters (returnsVar?='returns' typing=VariableType)? '{' (statements+=FunctionStatement)* (statements+=FunctionReturn)? '}';
 
 FunctionStatement:
     FunctionCall | FunctionMacroCall | FunctionAssignment | FunctionLoop;
@@ -178,8 +181,14 @@ Exponentiation infers ArithExpr:
 Modulo infers ArithExpr:
     PrimaryArithExpr ({infer BinaryExpression.left=current} operator='%' right=PrimaryArithExpr)*;
 
+EnumValueExpr:
+    val=[EnumEntry:FQNAME];
+
+VariableValueExpr:
+    val=[Variable:ID];
+
 PrimaryArithExpr infers ArithExpr:
-    '(' ArithExpr ')' | ValueExpr;
+    '(' ArithExpr ')' | ValueExpr | EnumValueExpr | VariableValueExpr;
 
 
 hidden terminal WS: /\s+/;

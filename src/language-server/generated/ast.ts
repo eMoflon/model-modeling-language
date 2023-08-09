@@ -14,7 +14,7 @@ export function isAbstractElement(item: unknown): item is AbstractElement {
     return reflection.isInstance(item, AbstractElement);
 }
 
-export type ArithExpr = BinaryExpression | ValueExpr;
+export type ArithExpr = BinaryExpression | EnumValueExpr | ValueExpr | VariableValueExpr;
 
 export const ArithExpr = 'ArithExpr';
 
@@ -78,7 +78,7 @@ export interface Attribute extends AstNode {
     defaultValue?: ArithExpr
     modifiers?: AttributeModifiers
     name: string
-    type: DataType
+    type: AttributeType
 }
 
 export const Attribute = 'Attribute';
@@ -104,6 +104,19 @@ export const AttributeModifiers = 'AttributeModifiers';
 
 export function isAttributeModifiers(item: unknown): item is AttributeModifiers {
     return reflection.isInstance(item, AttributeModifiers);
+}
+
+export interface AttributeType extends AstNode {
+    readonly $container: Attribute;
+    readonly $type: 'AttributeType';
+    etype?: Reference<Enum>
+    ptype?: DataType
+}
+
+export const AttributeType = 'AttributeType';
+
+export function isAttributeType(item: unknown): item is AttributeType {
+    return reflection.isInstance(item, AttributeType);
 }
 
 export interface BinaryExpression extends AstNode {
@@ -188,6 +201,18 @@ export const EnumEntry = 'EnumEntry';
 
 export function isEnumEntry(item: unknown): item is EnumEntry {
     return reflection.isInstance(item, EnumEntry);
+}
+
+export interface EnumValueExpr extends AstNode {
+    readonly $container: Attribute | BinaryExpression | EnumEntry | FunctionArgument | ImplicitlyTypedValue | MacroAttributeStatement;
+    readonly $type: 'EnumValueExpr';
+    val: Reference<EnumEntry>
+}
+
+export const EnumValueExpr = 'EnumValueExpr';
+
+export function isEnumValueExpr(item: unknown): item is EnumValueExpr {
+    return reflection.isInstance(item, EnumValueExpr);
 }
 
 export interface FunctionArgument extends AstNode {
@@ -574,7 +599,7 @@ export interface VariableType extends AstNode {
     readonly $container: IFunction | TypedVariable;
     readonly $type: 'VariableType';
     dtype?: DataType
-    type?: Reference<Class>
+    type?: Reference<AbstractElement>
 }
 
 export const VariableType = 'VariableType';
@@ -583,17 +608,31 @@ export function isVariableType(item: unknown): item is VariableType {
     return reflection.isInstance(item, VariableType);
 }
 
+export interface VariableValueExpr extends AstNode {
+    readonly $container: Attribute | BinaryExpression | EnumEntry | FunctionArgument | ImplicitlyTypedValue | MacroAttributeStatement;
+    readonly $type: 'VariableValueExpr';
+    val: Reference<Variable>
+}
+
+export const VariableValueExpr = 'VariableValueExpr';
+
+export function isVariableValueExpr(item: unknown): item is VariableValueExpr {
+    return reflection.isInstance(item, VariableValueExpr);
+}
+
 export interface ModelModelingLanguageAstType {
     AbstractElement: AbstractElement
     ArithExpr: ArithExpr
     Attribute: Attribute
     AttributeModifiers: AttributeModifiers
+    AttributeType: AttributeType
     BinaryExpression: BinaryExpression
     BoolExpr: BoolExpr
     CReference: CReference
     Class: Class
     Enum: Enum
     EnumEntry: EnumEntry
+    EnumValueExpr: EnumValueExpr
     FunctionArgument: FunctionArgument
     FunctionAssignment: FunctionAssignment
     FunctionCall: FunctionCall
@@ -629,12 +668,13 @@ export interface ModelModelingLanguageAstType {
     ValueExpr: ValueExpr
     Variable: Variable
     VariableType: VariableType
+    VariableValueExpr: VariableValueExpr
 }
 
 export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return ['AbstractElement', 'ArithExpr', 'Attribute', 'AttributeModifiers', 'BinaryExpression', 'BoolExpr', 'CReference', 'Class', 'Enum', 'EnumEntry', 'FunctionArgument', 'FunctionAssignment', 'FunctionCall', 'FunctionLoop', 'FunctionMacroCall', 'FunctionReturn', 'FunctionStatement', 'FunctionVariable', 'IFunction', 'IInstance', 'IMacro', 'ImplicitlyTypedValue', 'Import', 'ImportAlias', 'InstanceLoop', 'InstanceStatement', 'Interface', 'MacroAssignStatement', 'MacroAttributeStatement', 'MacroInstance', 'MacroStatement', 'Model', 'Multiplicity', 'MultiplicitySpec', 'NumberExpr', 'OppositeAnnotation', 'Package', 'ReferenceModifiers', 'Statement', 'StringExpr', 'TypedVariable', 'UntypedVariable', 'ValueExpr', 'Variable', 'VariableType'];
+        return ['AbstractElement', 'ArithExpr', 'Attribute', 'AttributeModifiers', 'AttributeType', 'BinaryExpression', 'BoolExpr', 'CReference', 'Class', 'Enum', 'EnumEntry', 'EnumValueExpr', 'FunctionArgument', 'FunctionAssignment', 'FunctionCall', 'FunctionLoop', 'FunctionMacroCall', 'FunctionReturn', 'FunctionStatement', 'FunctionVariable', 'IFunction', 'IInstance', 'IMacro', 'ImplicitlyTypedValue', 'Import', 'ImportAlias', 'InstanceLoop', 'InstanceStatement', 'Interface', 'MacroAssignStatement', 'MacroAttributeStatement', 'MacroInstance', 'MacroStatement', 'Model', 'Multiplicity', 'MultiplicitySpec', 'NumberExpr', 'OppositeAnnotation', 'Package', 'ReferenceModifiers', 'Statement', 'StringExpr', 'TypedVariable', 'UntypedVariable', 'ValueExpr', 'Variable', 'VariableType', 'VariableValueExpr'];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
@@ -644,7 +684,9 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
                 return this.isSubtype(Statement, supertype);
             }
             case BinaryExpression:
-            case ValueExpr: {
+            case EnumValueExpr:
+            case ValueExpr:
+            case VariableValueExpr: {
                 return this.isSubtype(ArithExpr, supertype);
             }
             case BoolExpr:
@@ -683,16 +725,22 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
     getReferenceType(refInfo: ReferenceInfo): string {
         const referenceId = `${refInfo.container.$type}:${refInfo.property}`;
         switch (referenceId) {
+            case 'AttributeType:etype': {
+                return Enum;
+            }
             case 'Class:extendedClasses':
-            case 'CReference:type':
-            case 'VariableType:type': {
+            case 'CReference:type': {
                 return Class;
             }
             case 'Class:implementedInterfaces':
             case 'Interface:extendedInterfaces': {
                 return Interface;
             }
-            case 'FunctionArgument:ref': {
+            case 'EnumValueExpr:val': {
+                return EnumEntry;
+            }
+            case 'FunctionArgument:ref':
+            case 'VariableValueExpr:val': {
                 return Variable;
             }
             case 'FunctionAssignment:select':
@@ -718,6 +766,9 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
             }
             case 'MacroAttributeStatement:attr': {
                 return Attribute;
+            }
+            case 'VariableType:type': {
+                return AbstractElement;
             }
             default: {
                 throw new Error(`${referenceId} is not a valid reference id.`);

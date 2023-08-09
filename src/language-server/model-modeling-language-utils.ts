@@ -2,11 +2,18 @@ import {AstNode} from "langium";
 import {
     ArithExpr,
     Class,
+    CReference,
+    Enum,
+    EnumEntry,
+    EnumValueExpr,
     FunctionReturn,
     IFunction,
     ImplicitlyTypedValue,
+    Interface,
     isBoolExpr,
     isClass,
+    isEnum,
+    isEnumValueExpr,
     isFunctionLoop,
     isFunctionVariable,
     isInstanceLoop,
@@ -15,15 +22,31 @@ import {
     isStringExpr,
     isTypedVariable,
     isUntypedVariable,
+    isVariableValueExpr,
     TypedVariable,
     Variable
 } from "./generated/ast";
 import {InvalidArgumentError} from "commander";
 
 export class ModelModelingLanguageUtils {
-    public static getQualifiedRefName(node: AstNode, name: string): string {
+    public static getFullyQualifiedRefName(node: CReference, name: string): string {
         let parent: AstNode | undefined = node.$container;
         if (isClass(parent)) {
+            name = `${parent.name}::${name}`;
+            parent = parent.$container;
+        }
+        while (isPackage(parent)) {
+            // Iteratively prepend the name of the parent namespace
+            // This allows us to work with nested namespaces
+            name = `${parent.name}.${name}`;
+            parent = parent.$container;
+        }
+        return name;
+    }
+
+    public static getFullyQualifiedEnumEntryName(node: EnumEntry, name: string): string {
+        let parent: AstNode | undefined = node.$container;
+        if (isEnum(parent)) {
             name = `${parent.name}::${name}`;
             parent = parent.$container;
         }
@@ -68,10 +91,29 @@ export class ModelModelingLanguageUtils {
             if (rType == "BinaryExpression") {
                 rType = this.getArithExprType(arith.right);
             }
-            if (lType == rType && lType != "BoolExpr") {
+            if (lType == rType && lType != "BoolExpr" && lType != "EnumValueExpr" && lType != "VariableValueExpr") {
                 return lType;
             }
             return "StringExpr";
+        }
+        if (isVariableValueExpr(arith)) {
+            if (arith.val.ref != undefined) {
+                const varTyping = this.getVariableTyping(arith.val.ref);
+                if (varTyping.dtype != undefined && (varTyping.dtype == "double" || varTyping.dtype == "float" || varTyping.dtype == "int")) {
+                    return "NumberExpr";
+                }
+            }
+            return "StringExpr";
+        }
+        if (isEnumValueExpr(arith)) {
+            const eveType = this.getEnumValueExprType(arith);
+            if (eveType == "double" || eveType == "int") {
+                return "NumberExpr";
+            } else if (eveType == "bool") {
+                return "BoolExpr";
+            } else {
+                return "StringExpr";
+            }
         }
         return arith.$type;
     }
@@ -95,6 +137,10 @@ export class ModelModelingLanguageUtils {
         return isStringExpr(expr) || this.getArithExprType(expr) == "StringExpr";
     }
 
+    public static isEnumValueArithExpr(expr: ArithExpr): boolean {
+        return isEnumValueExpr(expr);
+    }
+
     public static getInstanceVariableType(instVar: TypedVariable): string {
         if (instVar.typing.type == undefined && instVar.typing.dtype != undefined) {
             return instVar.typing.dtype;
@@ -105,14 +151,32 @@ export class ModelModelingLanguageUtils {
         return "unknown";
     }
 
+    public static getEnumValueExprType(eve: EnumValueExpr): "int" | "double" | "bool" | "string" | "enumval" {
+        if (eve.val.ref != undefined && eve.val.ref.value != undefined) {
+            const valExpr = eve.val.ref.value;
+            if (isNumberExpr(valExpr)) {
+                if (Number.isInteger(valExpr.value)) {
+                    return "int";
+                }
+                return "double";
+            } else if (isBoolExpr(valExpr)) {
+                return "bool";
+            }
+            return "string";
+        }
+        return "enumval";
+    }
+
     public static getImplicitlyTypedValue(itv: ImplicitlyTypedValue): "int" | "double" | "bool" | "string" {
+        const arithExprType = this.getArithExprType(itv.val);
         if (this.isIntArithExpr(itv.val)) {
             return "int";
-        } else if (this.isNumberArithExpr(itv.val)) {
+        }
+        if (arithExprType == "NumberExpr") {
             return "double";
-        } else if (this.isBoolArithExpr(itv.val)) {
+        } else if (arithExprType == "BoolExpr") {
             return "bool";
-        } else if (this.isStringArithExpr(itv.val)) {
+        } else if (arithExprType == "StringExpr") {
             return "string";
         }
         return "string";
@@ -120,7 +184,11 @@ export class ModelModelingLanguageUtils {
 
     public static getFunctionReturnStatementType(fr: FunctionReturn): string {
         if (fr.val != undefined && fr.var == undefined) {
-            return this.getImplicitlyTypedValue(fr.val);
+            if (this.isEnumValueArithExpr(fr.val.val)) {
+                return this.getEnumValueExprEnumName((fr.val.val as EnumValueExpr)) ?? "unknown";
+            } else {
+                return this.getImplicitlyTypedValue(fr.val);
+            }
         } else if (fr.val == undefined && fr.var != undefined && fr.var.ref != undefined) {
             if (fr.var.ref.typing.dtype != undefined && fr.var.ref.typing.type == undefined) {
                 return fr.var.ref.typing.dtype;
@@ -140,7 +208,10 @@ export class ModelModelingLanguageUtils {
         return "";
     }
 
-    public static getVariableTyping(v: Variable): { dtype: string | undefined, type: Class | undefined } {
+    public static getVariableTyping(v: Variable): {
+        dtype: "bool" | "double" | "float" | "int" | "string" | "tuple" | undefined;
+        type: Class | Enum | Interface | undefined
+    } {
         if (isTypedVariable(v)) {
             return {dtype: v.typing.dtype, type: v.typing.type?.ref};
         } else if (isFunctionVariable(v)) {
@@ -154,6 +225,15 @@ export class ModelModelingLanguageUtils {
                 }
             }
         }
-        return {dtype: "unknown", type: undefined};
+        return {dtype: undefined, type: undefined};
+    }
+
+    public static getEnumValueExprEnumName(node: EnumValueExpr): string | undefined {
+        const target = node.val.$refText;
+        const splitted = target.split("::");
+        if (splitted.length != 2) {
+            return undefined;
+        }
+        return splitted.at(0);
     }
 }

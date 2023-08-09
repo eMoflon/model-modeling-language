@@ -9,7 +9,7 @@ import {
     MaybePromise
 } from "langium";
 import * as ast from "./generated/ast";
-import {isBoolExpr, isNumberExpr, isStringExpr} from "./generated/ast";
+import {EnumEntry, EnumValueExpr} from "./generated/ast";
 import {CodeAction, CodeActionKind, CodeActionParams, Command, Diagnostic} from "vscode-languageserver";
 import {IssueCodes} from "./model-modeling-language-validator";
 import {ModelModelingLanguageUtils} from "./model-modeling-language-utils";
@@ -60,18 +60,21 @@ export class ModelModelingLanguageCodeActionProvider implements CodeActionProvid
         if (rootCst && text) {
             const cstNode = findLeafNodeAtOffset(rootCst, offset);
             const container = getContainerOfType(cstNode?.element, ast.isAttribute);
-            if (container && container.$cstNode) {
+            if (container && container.$cstNode && container.defaultValue != undefined) {
                 let newType: string = "";
-                if (isStringExpr(container.defaultValue)) {
+                if (ModelModelingLanguageUtils.isStringArithExpr(container.defaultValue)) {
                     newType = "string";
-                } else if (isNumberExpr(container.defaultValue)) {
-                    if (container.defaultValue.value % 1 === 0) {
-                        newType = "int";
-                    } else {
-                        newType = "double";
-                    }
-                } else if (isBoolExpr(container.defaultValue)) {
+                } else if (ModelModelingLanguageUtils.isIntArithExpr(container.defaultValue)) {
+                    newType = "int";
+                } else if (ModelModelingLanguageUtils.isNumberArithExpr(container.defaultValue)) {
+                    newType = "double";
+                } else if (ModelModelingLanguageUtils.isBoolArithExpr(container.defaultValue)) {
                     newType = "bool"
+                } else if (ModelModelingLanguageUtils.isEnumValueArithExpr(container.defaultValue)) {
+                    const defValueEnumEntry: EnumEntry | undefined = (container.defaultValue as EnumValueExpr).val.ref;
+                    if (defValueEnumEntry != undefined) {
+                        newType = ModelModelingLanguageUtils.getQualifiedClassName(defValueEnumEntry.$container, defValueEnumEntry.$container.name);
+                    }
                 }
                 if (newType != "") {
                     return {
@@ -113,7 +116,7 @@ export class ModelModelingLanguageCodeActionProvider implements CodeActionProvid
                                     start: start,
                                     end: start
                                 },
-                                newText: '@opposite \n'+' '.repeat(indentation)
+                                newText: '@opposite \n' + ' '.repeat(indentation)
                             }]
                         }
                     }
@@ -138,7 +141,7 @@ export class ModelModelingLanguageCodeActionProvider implements CodeActionProvid
                         if (oppositeCNodeDocument != undefined) {
                             const start = oppositeCNode.range.start;
                             const indentation = start.character;
-                            const refQName = ModelModelingLanguageUtils.getQualifiedRefName(container, container.name);
+                            const refQName = ModelModelingLanguageUtils.getFullyQualifiedRefName(container, container.name);
                             return {
                                 title: `Add corresponding @opposite annotation`,
                                 kind: CodeActionKind.QuickFix,
@@ -150,7 +153,7 @@ export class ModelModelingLanguageCodeActionProvider implements CodeActionProvid
                                                 start: start,
                                                 end: start
                                             },
-                                            newText: `@opposite ${refQName}\n`+' '.repeat(indentation)
+                                            newText: `@opposite ${refQName}\n` + ' '.repeat(indentation)
                                         }]
                                     }
                                 }
@@ -203,7 +206,7 @@ export class ModelModelingLanguageCodeActionProvider implements CodeActionProvid
                                     start: start,
                                     end: start
                                 },
-                                newText: '@opposite \n'+' '.repeat(indentation)
+                                newText: '@opposite \n' + ' '.repeat(indentation)
                             }]
                         }
                     }
