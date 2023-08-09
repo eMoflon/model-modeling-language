@@ -20,7 +20,8 @@ import {
     isMacroAttributeStatement,
     isMacroInstance,
     isModel,
-    isPackage, isTypedVariable
+    isPackage,
+    isTypedVariable
 } from "./generated/ast";
 
 export class ModelModelingLanguageFormatter extends AbstractFormatter {
@@ -29,6 +30,8 @@ export class ModelModelingLanguageFormatter extends AbstractFormatter {
             const formatter = this.getNodeFormatter(node);
             formatter.nodes(...node.imports).prepend(Formatting.noIndent());
             formatter.nodes(...node.packages).prepend(Formatting.noIndent());
+            formatter.nodes(...node.macros).prepend(Formatting.noIndent());
+            formatter.nodes(...node.functions).prepend(Formatting.noIndent());
         } else if (isImport(node)) {
             const formatter = this.getNodeFormatter(node);
             formatter.keyword('import').append(Formatting.oneSpace());
