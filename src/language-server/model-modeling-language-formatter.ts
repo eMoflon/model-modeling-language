@@ -124,9 +124,11 @@ export class ModelModelingLanguageFormatter extends AbstractFormatter {
                 oppoFormatter.property('reference').append(Formatting.newLine());
             }
 
-            formatter.property('type').prepend(Formatting.oneSpace()).append(Formatting.noSpace());
+            formatter.property('type').prepend(Formatting.oneSpace());
 
             if (node.multiplicity != undefined) {
+                formatter.property('type').append(Formatting.noSpace());
+
                 const multiFormatter = this.getNodeFormatter(node.multiplicity);
                 multiFormatter.keyword('[').append(Formatting.noSpace());
                 multiFormatter.keyword(']').prepend(Formatting.noSpace());
