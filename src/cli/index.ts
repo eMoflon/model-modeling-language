@@ -8,7 +8,7 @@ import { generateJavaScript } from './generator';
 import { NodeFileSystem } from 'langium/node';
 
 export const generateAction = async (fileName: string, opts: GenerateOptions): Promise<void> => {
-    const services = createModelModelingLanguageServices(NodeFileSystem).ModelModelingLanguage;
+    const services = createModelModelingLanguageServices(NodeFileSystem).mmlServices;
     const model = await extractAstNode<Model>(fileName, services);
     const generatedFilePath = generateJavaScript(model, fileName, opts.destination);
     console.log(chalk.green(`JavaScript code generated successfully: ${generatedFilePath}`));

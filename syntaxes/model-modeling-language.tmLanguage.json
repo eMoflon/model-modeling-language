@@ -10,7 +10,7 @@
     },
     {
       "name": "keyword.control.model-modeling-language",
-      "match": "\\b(abstract|as|attribute|bool|class|derived|double|enum|extends|false|float|id|implements|import|int|interface|ordered|package|readonly|reference|resolve|string|transient|true|unique|unsettable|using|volatile)\\b|\\B(@opposite)\\b"
+      "match": "\\b(abstract|as|attribute|bool|class|derived|double|enum|extends|false|float|for|function|id|implements|import|in|instance|int|interface|macro|ordered|package|readonly|reference|resolve|return|returns|string|transient|true|tuple|unique|unsettable|using|volatile)\\b|\\B(@opposite)\\b"
     },
     {
       "name": "string.quoted.double.model-modeling-language",

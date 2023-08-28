@@ -70,18 +70,18 @@ export const ModelModelingLanguageModule: Module<ModelModelingLanguageServices, 
  */
 export function createModelModelingLanguageServices(context: DefaultSharedModuleContext): {
     shared: LangiumSharedServices,
-    ModelModelingLanguage: ModelModelingLanguageServices
+    mmlServices: ModelModelingLanguageServices
 } {
     const shared = inject(
         createDefaultSharedModule(context),
-        ModelModelingLanguageGeneratedSharedModule
+        ModelModelingLanguageGeneratedSharedModule,
     );
-    const ModelModelingLanguage = inject(
+    const mmlServices = inject(
         createDefaultModule({shared}),
         ModelModelingLanguageGeneratedModule,
         ModelModelingLanguageModule
     );
-    shared.ServiceRegistry.register(ModelModelingLanguage);
-    registerValidationChecks(ModelModelingLanguage);
-    return {shared, ModelModelingLanguage};
+    shared.ServiceRegistry.register(mmlServices);
+    registerValidationChecks(mmlServices);
+    return {shared, mmlServices};
 }
