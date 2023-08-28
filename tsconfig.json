@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES6",
     "module": "commonjs",
-    "lib": ["ESNext"],
+    "lib": ["ESNext","DOM","WebWorker"],
     "sourceMap": true,
     "outDir": "out",
     "strict": true,
@@ -19,6 +19,6 @@
   ],
   "exclude": [
      "out",
-     "node_modules"
+     "/node_modules"
   ]
 }

@@ -26,7 +26,6 @@ import {
     TypedVariable,
     Variable
 } from "./generated/ast";
-import {InvalidArgumentError} from "commander";
 
 export class ModelModelingLanguageUtils {
     public static getFullyQualifiedRefName(node: CReference, name: string): string {
@@ -196,7 +195,7 @@ export class ModelModelingLanguageUtils {
                 return this.getQualifiedClassName(fr.var.ref.typing.type.ref, fr.var.ref.typing.type.ref.name);
             }
         }
-        throw new InvalidArgumentError("Invalid return statement configuration");
+        return "unknown";
     }
 
     public static getFunctionSignatureReturnType(func: IFunction): string {
@@ -235,5 +234,15 @@ export class ModelModelingLanguageUtils {
             return undefined;
         }
         return splitted.at(0);
+    }
+
+    public static getEnumType(node: Enum): "int" | "double" | "bool" | "string" | "enumval" {
+        const types = node.entries.map(entry => this.getEnumValueExprType({val: {ref: entry}} as EnumValueExpr));
+        if (types.length == 1) {
+            return types.at(0) ?? "enumval";
+        } else if (types.length == 2 && (types.includes("int") && types.includes("double"))) {
+            return "double";
+        }
+        return "enumval";
     }
 }
