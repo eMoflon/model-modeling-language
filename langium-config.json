@@ -6,6 +6,9 @@
         "fileExtensions": [".mml"],
         "textMate": {
             "out": "syntaxes/model-modeling-language.tmLanguage.json"
+        },
+        "monarch": {
+            "out": "syntaxes/model-modeling-language.monarch.ts"
         }
     }],
     "out": "src/language-server/generated"
