@@ -11,6 +11,7 @@ import {
     isClass,
     isCReference,
     isEnum,
+    isEnumValueExpr,
     isInterface,
     isReferenceModifiers,
     Model,
@@ -49,7 +50,11 @@ class AttributeEntity {
             this.defaultValue = "";
         } else {
             this.hasDefaultValue = true;
-            this.defaultValue = new MmlSerializerContext().evaluateArithExpr(attr.defaultValue);
+            if (isEnumValueExpr(attr.defaultValue) && attr.defaultValue.val.ref != undefined) {
+                this.defaultValue = referenceStorage.getNodeReferenceId(attr.defaultValue.val.ref)
+            } else {
+                this.defaultValue = new MmlSerializerContext().evaluateArithExpr(attr.defaultValue);
+            }
         }
         this.modifiers = new ClassElementModifiers(attr.modifiers);
     }
