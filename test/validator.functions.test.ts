@@ -824,6 +824,170 @@ describe('Function validator tests', () => {
         expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionVariableNameNotUnique);
     });
 
+    test('Validator should notice invalid function variable selector expr selector', async () => {
+        const validationResult = await getValidation(`
+        package A {
+            class B {
+            }
+            class C {
+            }
+            enum D {
+                X
+            }
+        }    
+        macro T1[] {
+            A.B x {
+            }
+            A.C y {
+            }
+        }
+
+        function F1() {
+            tuple t = T1[]
+            A.B q = F3(t.x.bla)
+        }
+        
+        function F3(A.B x) returns A.B {
+            return x
+        }
+        `);
+
+        expect(validationResult.diagnostics.length).toEqual(3);
+        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
+        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
+        expect(validationResult.diagnostics.at(2).code).toEqual(IssueCodes.InvalidTupleSelectorInParameter);
+    });
+
+    test('Validator should notice invalid function variable selector type in function call', async () => {
+        const validationResult = await getValidation(`
+        package A {
+            class B {
+            }
+            class C {
+            }
+            enum D {
+                X
+            }
+        }    
+        macro T1[] {
+            A.B x {
+            }
+            A.C y {
+            }
+        }
+
+        function F1() {
+            tuple t = T1[]
+            A.B q = F3(t.y)
+        }
+        
+        function F3(A.B x) returns A.B {
+            return x
+        }
+        `);
+
+        expect(validationResult.diagnostics.length).toEqual(1);
+        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
+    });
+
+    test('Validator should notice invalid selector on non-function variable in function call', async () => {
+        const validationResult = await getValidation(`
+        package A {
+            class B {
+            }
+            class C {
+            }
+            enum D {
+                X
+            }
+        }    
+        macro T1[] {
+            A.B x {
+            }
+            A.C y {
+            }
+        }
+
+        function F1() {
+            A.B t = T1[].x
+            A.B q = F3(t.y)
+        }
+        
+        function F3(A.B x) returns A.B {
+            return x
+        }
+        `);
+
+        expect(validationResult.diagnostics.length).toEqual(2);
+        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
+        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
+    });
+
+    test('Validator should notice invalid function variable selector type in macro call', async () => {
+        const validationResult = await getValidation(`
+        package A {
+            class B {
+            }
+            class C {
+            }
+            enum D {
+                X
+            }
+        }    
+        macro T1[] {
+            A.B x {
+            }
+            A.C y {
+            }
+        }
+        
+        macro T2[A.B x] {
+        
+        }
+
+        function F1() {
+            tuple t = T1[]
+            T2[t.y]
+        }
+        `);
+
+        expect(validationResult.diagnostics.length).toEqual(1);
+        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
+    });
+
+    test('Validator should notice invalid selector on non-function variable in macro call', async () => {
+        const validationResult = await getValidation(`
+        package A {
+            class B {
+            }
+            class C {
+            }
+            enum D {
+                X
+            }
+        }    
+        macro T1[] {
+            A.B x {
+            }
+            A.C y {
+            }
+        }
+        
+        macro T2[A.B x] {
+        
+        }
+
+        function F1() {
+            A.B t = T1[].x
+            T2[t.y]
+        }
+        `);
+
+        expect(validationResult.diagnostics.length).toEqual(2);
+        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
+        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
+    });
+
 
     test('Validator should succeed', async () => {
         const validationResult = await getValidation(`
@@ -853,8 +1017,10 @@ describe('Function validator tests', () => {
             tuple t = T1[]
             A.C y = T1[].y
             T2[42,y]
+            T2[42,t.y]
             A.B z = F2()
             A.B p = F3("ABC", A.D::X, z)
+            A.B q = F3("ABC", A.D::X, t.x)
             for i in 1:5 {
                 A.B x = F2()
             }

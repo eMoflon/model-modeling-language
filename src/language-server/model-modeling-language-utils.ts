@@ -18,6 +18,7 @@ import {
     isFunctionAssignment,
     isFunctionLoop,
     isFunctionVariable,
+    isFunctionVariableSelectorExpr,
     isInstanceLoop,
     isNumberExpr,
     isPackage,
@@ -92,12 +93,12 @@ export class ModelModelingLanguageUtils {
             if (rType == "BinaryExpression") {
                 rType = this.getArithExprType(arith.right);
             }
-            if (lType == rType && lType != "BoolExpr" && lType != "EnumValueExpr" && lType != "VariableValueExpr") {
+            if (lType == rType && lType != "BoolExpr" && lType != "EnumValueExpr" && lType != "VariableValueExpr" && lType != "FunctionVariableSelectorExpr") {
                 return lType;
             }
             return "StringExpr";
         }
-        if (isVariableValueExpr(arith)) {
+        if (isVariableValueExpr(arith) || isFunctionVariableSelectorExpr(arith)) {
             if (arith.val.ref != undefined) {
                 const varTyping = this.getVariableTyping(arith.val.ref);
                 if (varTyping.dtype != undefined && (varTyping.dtype == "double" || varTyping.dtype == "float" || varTyping.dtype == "int")) {
@@ -140,6 +141,10 @@ export class ModelModelingLanguageUtils {
 
     public static isEnumValueArithExpr(expr: ArithExpr): boolean {
         return isEnumValueExpr(expr);
+    }
+
+    public static isFunctionVariableSelectorArithExpr(expr: ArithExpr): boolean {
+        return isFunctionVariableSelectorExpr(expr);
     }
 
     public static getInstanceVariableType(instVar: TypedVariable): string {

@@ -11,6 +11,7 @@ import {
     FunctionCall,
     FunctionLoop,
     FunctionMacroCall,
+    FunctionVariableSelectorExpr,
     IFunction,
     IMacro,
     Import,
@@ -24,6 +25,7 @@ import {
     isFunctionReturn,
     isFunctionStatement,
     isFunctionVariable,
+    isFunctionVariableSelectorExpr,
     isModel,
     MacroAssignStatement,
     MacroAttributeStatement,
@@ -116,6 +118,9 @@ export function registerValidationChecks(services: ModelModelingLanguageServices
         ],
         ArithExpr: [
             validator.checkArithExprOperations
+        ],
+        FunctionVariableSelectorExpr: [
+            validator.checkFunctionArgumentSelector
         ]
     };
     registry.register(checks, validator);
@@ -166,6 +171,7 @@ export namespace IssueCodes {
     export const InstanceNameNotUnique = "instance-name-not-unique";
     export const InstanceLoopTypeMismatch = "instance-loop-type-mismatch";
     export const ArithExpressionUnsupportedOperation = "arith-expression-unsupported-operation";
+    export const InvalidTupleSelectorInParameter = "invalid-tuple-selector-in-parameter";
 }
 
 /**
@@ -886,6 +892,15 @@ export class ModelModelingLanguageValidator {
                                         });
                                     }
                                 }
+                            } else if (isFunctionVariableSelectorExpr(arg.value) && arg.value.val.ref != undefined) {
+                                if (macroParamVarTyping.type != ModelModelingLanguageUtils.getVariableTyping(arg.value.val.ref).type) {
+                                    accept('error', `Macro expects reference to ${macroParamVarTyping.type.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(macroParamVarTyping.type, macroParamVarTyping.type.name)}"`, {
+                                        node: fmc,
+                                        property: "args",
+                                        index: idx,
+                                        code: IssueCodes.FunctionCallArgumentTypeMismatch
+                                    })
+                                }
                             } else {
                                 accept('error', `Macro expects reference to ${macroParamVarTyping.type.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(macroParamVarTyping.type, macroParamVarTyping.type.name)}"`, {
                                     node: fmc,
@@ -995,6 +1010,15 @@ export class ModelModelingLanguageValidator {
                                             code: IssueCodes.FunctionCallArgumentTypeMismatch
                                         })
                                     }
+                                }
+                            } else if (isFunctionVariableSelectorExpr(arg.value) && arg.value.val.ref != undefined) {
+                                if (funcParamVarTyping.type != ModelModelingLanguageUtils.getVariableTyping(arg.value.val.ref).type) {
+                                    accept('error', `Function expects reference to ${funcParamVarTyping.type.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(funcParamVarTyping.type, funcParamVarTyping.type.name)}"`, {
+                                        node: fmc,
+                                        property: "args",
+                                        index: idx,
+                                        code: IssueCodes.FunctionCallArgumentTypeMismatch
+                                    })
                                 }
                             } else {
                                 accept('error', `Function expects reference to ${funcParamVarTyping.type.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(funcParamVarTyping.type, funcParamVarTyping.type.name)}"`, {
@@ -1168,7 +1192,7 @@ export class ModelModelingLanguageValidator {
     }
 
     checkInstanceLoops(instLoop: InstanceLoop, accept: ValidationAcceptor) {
-        if (instLoop.var.ref != undefined && instLoop.var.ref.typing.dtype != undefined && instLoop.var.ref.typing.type == undefined) {
+        if (instLoop.var.ref != undefined && instLoop.var.ref.typing != undefined && instLoop.var.ref.typing.dtype != undefined && instLoop.var.ref.typing.type == undefined) {
             accept('error', `No class type - instance loops iterate over the elements of a reference of a class`, {
                 node: instLoop,
                 property: "var",
@@ -1200,6 +1224,19 @@ export class ModelModelingLanguageValidator {
                         code: IssueCodes.ArithExpressionUnsupportedOperation
                     })
                 }
+            }
+        }
+    }
+
+    checkFunctionArgumentSelector(fSelectorExpr: FunctionVariableSelectorExpr, accept: ValidationAcceptor) {
+        console.log(`[FVARSELEXPRCHECK] ${fSelectorExpr.val.ref?.name} |${fSelectorExpr.$cstNode?.range.start.line}`)
+        if (fSelectorExpr.val != undefined) {
+            const matches = fSelectorExpr.val.$refText.match(/\./g);
+            if (matches != null && matches.length != 1) {
+                accept('error', `Invalid tuple selector`, {
+                    node: fSelectorExpr,
+                    code: IssueCodes.InvalidTupleSelectorInParameter
+                })
             }
         }
     }
