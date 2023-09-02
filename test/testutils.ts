@@ -7,12 +7,11 @@ import {
 } from "../src/language-server/model-modeling-language-module";
 
 function getServices(): ModelModelingLanguageServices {
-    return createModelModelingLanguageServices(EmptyFileSystem).ModelModelingLanguage;
+    return createModelModelingLanguageServices(EmptyFileSystem).mmlServices;
 }
 
 export async function getModel(code: string): Promise<Model> {
     const services = getServices();
-    const validator = validationHelper(services);
     const doc = await parseDocument(services, code);
     return doc.parseResult.value as Model;
 }
