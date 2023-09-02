@@ -239,7 +239,7 @@ export class ModelModelingLanguageUtils {
     }
 
     public static getEnumType(node: Enum): "int" | "double" | "bool" | "string" | "enumval" {
-        const types = node.entries.map(entry => this.getEnumValueExprType({val: {ref: entry}} as EnumValueExpr));
+        const types = [...new Set(node.entries.map(entry => this.getEnumValueExprType({val: {ref: entry}} as EnumValueExpr)))];
         if (types.length == 1) {
             return types.at(0) ?? "enumval";
         } else if (types.length == 2 && (types.includes("int") && types.includes("double"))) {
