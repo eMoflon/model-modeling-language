@@ -765,6 +765,66 @@ describe('Function validator tests', () => {
         expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionVariableNameNotUnique);
     });
 
+    test('Validator should notice non-unique function variables 5', async () => {
+        const validationResult = await getValidation(`
+        package A {
+            class B {
+            }
+            class C {
+            }
+            enum D {
+                X
+            }
+        }    
+        macro T1[] {
+        }
+        
+        function F1() {
+            A.D e = F2()
+            for i in 1:5 {
+                A.D e = F2()
+            }
+        }
+        
+        function F2() returns A.D {
+            return A.D::X
+        }
+        `);
+
+        expect(validationResult.diagnostics.length).toEqual(1);
+        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionVariableNameNotUnique);
+    });
+
+    test('Validator should notice non-unique function variables 6', async () => {
+        const validationResult = await getValidation(`
+        package A {
+            class B {
+            }
+            class C {
+            }
+            enum D {
+                X
+            }
+        }    
+        macro T1[] {
+        }
+        
+        function F1() {
+            for i in 1:5 {
+                A.D i = F2()
+            }
+        }
+        
+        function F2() returns A.D {
+            return A.D::X
+        }
+        `);
+
+        expect(validationResult.diagnostics.length).toEqual(1);
+        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionVariableNameNotUnique);
+    });
+
+
     test('Validator should succeed', async () => {
         const validationResult = await getValidation(`
         package A {

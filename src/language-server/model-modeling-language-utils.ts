@@ -7,6 +7,7 @@ import {
     EnumEntry,
     EnumValueExpr,
     FunctionReturn,
+    FunctionStatement,
     IFunction,
     ImplicitlyTypedValue,
     Interface,
@@ -14,6 +15,7 @@ import {
     isClass,
     isEnum,
     isEnumValueExpr,
+    isFunctionAssignment,
     isFunctionLoop,
     isFunctionVariable,
     isInstanceLoop,
@@ -244,5 +246,20 @@ export class ModelModelingLanguageUtils {
             return "double";
         }
         return "enumval";
+    }
+
+    public static getFunctionStatementDeepVariableNames(fs: FunctionStatement): Variable[] {
+        if (isFunctionAssignment(fs)) {
+            return [fs.var];
+        } else if (isFunctionLoop(fs)) {
+            const fVars: Variable[] = [];
+            fVars.push(fs.var);
+            fs.statements.forEach(stmt => {
+                fVars.push(...this.getFunctionStatementDeepVariableNames(stmt));
+            });
+            return fVars;
+        } else {
+            return [];
+        }
     }
 }

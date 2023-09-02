@@ -19,11 +19,10 @@ import {
     isBinaryExpression,
     isEnum,
     isEnumValueExpr,
-    isFunctionAssignment,
     isFunctionCall,
-    isFunctionLoop,
     isFunctionMacroCall,
     isFunctionReturn,
+    isFunctionStatement,
     isFunctionVariable,
     isModel,
     MacroAssignStatement,
@@ -816,15 +815,17 @@ export class ModelModelingLanguageValidator {
             reportedVars.add(param.name);
         });
         fct.statements.forEach(stmt => {
-            if (isFunctionAssignment(stmt) || isFunctionLoop(stmt)) {
-                if (reportedVars.has(stmt.var.name)) {
-                    accept('error', `Iterator has non-unique name '${stmt.var.name}'.`, {
-                        node: stmt.var,
-                        property: 'name',
-                        code: IssueCodes.FunctionVariableNameNotUnique
-                    })
-                }
-                reportedVars.add(stmt.var.name);
+            if (isFunctionStatement(stmt)) {
+                ModelModelingLanguageUtils.getFunctionStatementDeepVariableNames(stmt).forEach(stmtVar => {
+                    if (reportedVars.has(stmtVar.name)) {
+                        accept('error', `Iterator has non-unique name '${stmtVar.name}'.`, {
+                            node: stmtVar,
+                            property: 'name',
+                            code: IssueCodes.FunctionVariableNameNotUnique
+                        })
+                    }
+                    reportedVars.add(stmtVar.name);
+                });
             }
         });
     }
