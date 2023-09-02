@@ -184,11 +184,14 @@ Modulo infers ArithExpr:
 EnumValueExpr:
     val=[EnumEntry:FQNAME];
 
+FunctionVariableSelectorExpr:
+    val=[TypedVariable:QNAME];
+
 VariableValueExpr:
     val=[Variable:ID];
 
 PrimaryArithExpr infers ArithExpr:
-    '(' ArithExpr ')' | ValueExpr | EnumValueExpr | VariableValueExpr;
+    '(' ArithExpr ')' | ValueExpr | EnumValueExpr | VariableValueExpr | FunctionVariableSelectorExpr;
 
 
 hidden terminal WS: /\s+/;

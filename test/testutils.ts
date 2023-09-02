@@ -5,6 +5,7 @@ import {
     createModelModelingLanguageServices,
     ModelModelingLanguageServices
 } from "../src/language-server/model-modeling-language-module";
+import {serializeModel} from "../src/language-server/generator/mml-serializer";
 
 function getServices(): ModelModelingLanguageServices {
     return createModelModelingLanguageServices(EmptyFileSystem).mmlServices;
@@ -32,4 +33,9 @@ export function createPath(node: AstNode): string {
 export function findNode(node: AstNode, path: string): AstNode | undefined {
     const services = getServices();
     return services.workspace.AstNodeLocator.getAstNode(node, path);
+}
+
+export async function getSerialization(code: string): Promise<string> {
+    const model: Model = await getModel(code);
+    return serializeModel(model, getServices());
 }

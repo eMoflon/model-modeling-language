@@ -14,7 +14,7 @@ export function isAbstractElement(item: unknown): item is AbstractElement {
     return reflection.isInstance(item, AbstractElement);
 }
 
-export type ArithExpr = BinaryExpression | EnumValueExpr | ValueExpr | VariableValueExpr;
+export type ArithExpr = BinaryExpression | EnumValueExpr | FunctionVariableSelectorExpr | ValueExpr | VariableValueExpr;
 
 export const ArithExpr = 'ArithExpr';
 
@@ -306,6 +306,18 @@ export const FunctionVariable = 'FunctionVariable';
 
 export function isFunctionVariable(item: unknown): item is FunctionVariable {
     return reflection.isInstance(item, FunctionVariable);
+}
+
+export interface FunctionVariableSelectorExpr extends AstNode {
+    readonly $container: Attribute | BinaryExpression | EnumEntry | FunctionArgument | ImplicitlyTypedValue | MacroAttributeStatement;
+    readonly $type: 'FunctionVariableSelectorExpr';
+    val: Reference<TypedVariable>
+}
+
+export const FunctionVariableSelectorExpr = 'FunctionVariableSelectorExpr';
+
+export function isFunctionVariableSelectorExpr(item: unknown): item is FunctionVariableSelectorExpr {
+    return reflection.isInstance(item, FunctionVariableSelectorExpr);
 }
 
 export interface IFunction extends AstNode {
@@ -641,6 +653,7 @@ export interface ModelModelingLanguageAstType {
     FunctionReturn: FunctionReturn
     FunctionStatement: FunctionStatement
     FunctionVariable: FunctionVariable
+    FunctionVariableSelectorExpr: FunctionVariableSelectorExpr
     IFunction: IFunction
     IInstance: IInstance
     IMacro: IMacro
@@ -674,7 +687,7 @@ export interface ModelModelingLanguageAstType {
 export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return ['AbstractElement', 'ArithExpr', 'Attribute', 'AttributeModifiers', 'AttributeType', 'BinaryExpression', 'BoolExpr', 'CReference', 'Class', 'Enum', 'EnumEntry', 'EnumValueExpr', 'FunctionArgument', 'FunctionAssignment', 'FunctionCall', 'FunctionLoop', 'FunctionMacroCall', 'FunctionReturn', 'FunctionStatement', 'FunctionVariable', 'IFunction', 'IInstance', 'IMacro', 'ImplicitlyTypedValue', 'Import', 'ImportAlias', 'InstanceLoop', 'InstanceStatement', 'Interface', 'MacroAssignStatement', 'MacroAttributeStatement', 'MacroInstance', 'MacroStatement', 'Model', 'Multiplicity', 'MultiplicitySpec', 'NumberExpr', 'OppositeAnnotation', 'Package', 'ReferenceModifiers', 'Statement', 'StringExpr', 'TypedVariable', 'UntypedVariable', 'ValueExpr', 'Variable', 'VariableType', 'VariableValueExpr'];
+        return ['AbstractElement', 'ArithExpr', 'Attribute', 'AttributeModifiers', 'AttributeType', 'BinaryExpression', 'BoolExpr', 'CReference', 'Class', 'Enum', 'EnumEntry', 'EnumValueExpr', 'FunctionArgument', 'FunctionAssignment', 'FunctionCall', 'FunctionLoop', 'FunctionMacroCall', 'FunctionReturn', 'FunctionStatement', 'FunctionVariable', 'FunctionVariableSelectorExpr', 'IFunction', 'IInstance', 'IMacro', 'ImplicitlyTypedValue', 'Import', 'ImportAlias', 'InstanceLoop', 'InstanceStatement', 'Interface', 'MacroAssignStatement', 'MacroAttributeStatement', 'MacroInstance', 'MacroStatement', 'Model', 'Multiplicity', 'MultiplicitySpec', 'NumberExpr', 'OppositeAnnotation', 'Package', 'ReferenceModifiers', 'Statement', 'StringExpr', 'TypedVariable', 'UntypedVariable', 'ValueExpr', 'Variable', 'VariableType', 'VariableValueExpr'];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
@@ -685,6 +698,7 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
             }
             case BinaryExpression:
             case EnumValueExpr:
+            case FunctionVariableSelectorExpr:
             case ValueExpr:
             case VariableValueExpr: {
                 return this.isSubtype(ArithExpr, supertype);
@@ -745,6 +759,7 @@ export class ModelModelingLanguageAstReflection extends AbstractAstReflection {
             }
             case 'FunctionAssignment:select':
             case 'FunctionReturn:var':
+            case 'FunctionVariableSelectorExpr:val':
             case 'InstanceLoop:var':
             case 'MacroAssignStatement:instance':
             case 'MacroInstance:iVar': {

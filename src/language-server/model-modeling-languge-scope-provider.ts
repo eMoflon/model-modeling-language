@@ -16,6 +16,8 @@ import {
     Enum,
     EnumValueExpr,
     FunctionAssignment,
+    FunctionMacroCall,
+    FunctionVariable,
     IMacro,
     isAttribute,
     isClass,
@@ -27,6 +29,8 @@ import {
     isFunctionLoop,
     isFunctionMacroCall,
     isFunctionReturn,
+    isFunctionVariable,
+    isFunctionVariableSelectorExpr,
     isIFunction,
     isIInstance,
     isIMacro,
@@ -270,20 +274,20 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                 return result;
             }
         } else if (isEnumValueExpr(context.container)) {
-            console.log(`[EVExp] isEnumValue | ${context.property}`);
+            //console.log(`[EVExp] isEnumValue | ${context.property}`);
             if (context.property === "val") {
-                console.log("[EVExp] isVal");
+                //console.log("[EVExp] isVal");
                 const containerEnum: Enum | undefined = this._getEnumEntryValueType(context.container, context);
-                console.log(`[EVExp] > ${containerEnum == undefined ? "undefined" : containerEnum.name}`);
+                //console.log(`[EVExp] > ${containerEnum == undefined ? "undefined" : containerEnum.name}`);
                 const scopes: Array<Stream<AstNodeDescription>> = [];
                 if (containerEnum != undefined) {
-                    console.log(`[EVExp] >> ${containerEnum.entries.map(e => e.name).join(",")}`);
+                    //console.log(`[EVExp] >> ${containerEnum.entries.map(e => e.name).join(",")}`);
                     scopes.push(stream(containerEnum.entries.map(v => {
                         if (v != undefined) {
-                            console.log(`[EVExp] |> ${v.name}`);
+                            //console.log(`[EVExp] |> ${v.name}`);
                             const name = ModelModelingLanguageUtils.getFullyQualifiedEnumEntryName(v, v.name);
                             if (name != undefined) {
-                                console.log(`[EVExp] |>|> ${name}`);
+                                //console.log(`[EVExp] |>|> ${name}`);
                                 return this.descriptions.createDescription(v, name);
                             }
                         }
@@ -296,8 +300,38 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                 }
                 return result;
             }
+        } else if (isFunctionVariableSelectorExpr(context.container)) {
+            console.log(`[FSelExprEval] isFunctionArgument | ${context.property}`);
+            if (context.property === "val") {
+                console.log("[FSelExprEval] isSelectedRef");
+                const scopes: Array<Stream<AstNodeDescription>> = [];
+                const functionVarsInScope: FunctionVariable[] = this.getLocalInstanceVariablesInScope(context.container).filter(x => isFunctionVariable(x)).map(x => x as FunctionVariable);
+                console.log(`[FSelExprEval] VarsInScope: ${functionVarsInScope.map(x => x.name).join(", ")}`);
+                functionVarsInScope.forEach(fVar => {
+                    const availableSelectors: TypedVariable[] | undefined = this.getAvailableFunctionVariablesSelectors(fVar);
+                    if (availableSelectors != undefined) {
+                        console.log(`[FSelExprEval] Selectors (-> ${fVar.name}): ${availableSelectors.map(x => x.name).join(", ")}`);
+                        scopes.push(stream(availableSelectors.map(selector => {
+                            if (selector != undefined) {
+                                const name = fVar.name + "." + selector.name;
+                                if (name != undefined) {
+                                    console.log(`[FSelExprEval] |>|> ${name}`);
+                                    return this.descriptions.createDescription(selector, name);
+                                }
+                            }
+                            return undefined;
+                        })).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                    }
+                });
+
+                let result = EMPTY_SCOPE;
+                for (let i = scopes.length - 1; i >= 0; i--) {
+                    result = this.createScope(scopes[i], result);
+                }
+                return result;
+            }
         }
-        console.log("[GetScope] Return super scope");
+        console.log(`[GetScope] Return super scope [Container: ${context.container.$type} (${context.container.$cstNode?.range.start.line})]`);
         return super.getScope(context);
     }
 
@@ -340,6 +374,28 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
         return this.createScope(aliasDescriptions, globalScope);
     }
 
+    getAvailableFunctionVariablesSelectors(fvar: FunctionVariable): TypedVariable[] | undefined {
+        if (isFunctionAssignment(fvar.$container)) {
+            const assignment: FunctionAssignment = fvar.$container;
+            if (isFunctionMacroCall(assignment.call)) {
+                const calledMacro: FunctionMacroCall = assignment.call;
+                if (calledMacro.macro.ref != undefined) {
+                    const macro: IMacro = calledMacro.macro.ref;
+                    return macro.instances.map(x => {
+                        if (x.nInst != undefined && x.iVar == undefined) {
+                            return x.nInst;
+                        } else if (x.nInst == undefined && x.iVar != undefined && x.iVar.ref != undefined) {
+                            return x.iVar.ref;
+                        } else {
+                            throw new Error("Invalid function call assignment");
+                        }
+                    })
+                }
+            }
+        }
+        return undefined;
+    }
+
     getAstNodeByPath(nodeDescription: AstNodeDescription): AstNode | undefined {
         const targetDocUri: URI = nodeDescription.documentUri;
         if (!this.services.shared.workspace.LangiumDocuments.hasDocument(targetDocUri)) {
@@ -356,6 +412,7 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
 
     private _getLocalInstanceVariables(node: AstNode, containerIdx: number | undefined): Variable[] {
         let scopedInstanceVariables: Variable[] = [];
+        //console.log(`[GETLOCALINSTVARS] Entry -> ${node.$type} (${node.$cstNode?.range.start.line})`)
         if (node == undefined) {
             return scopedInstanceVariables;
         }
@@ -365,8 +422,10 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
             } else {
                 if (isFunctionLoop(node)) {
                     node.statements.forEach((statement, idx) => {
-                        if (containerIdx == undefined || containerIdx < idx) {
+                        //console.log(`[GETLOCALINSTVARS] FunctionLoop >> ${statement.$type} [${idx}/${containerIdx}]`)
+                        if (containerIdx == undefined || idx < containerIdx) {
                             if (isFunctionAssignment(statement)) {
+                                //console.log(`[GETLOCALINSTVARS] FunctionLoop >>> ${statement.var.name} `)
                                 scopedInstanceVariables.push(statement.var);
                             }
                         }
@@ -374,7 +433,7 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                     scopedInstanceVariables.push(node.var);
                 } else if (isInstanceLoop(node)) {
                     node.statements.forEach((statement, idx) => {
-                        if (containerIdx == undefined || containerIdx < idx) {
+                        if (containerIdx == undefined || idx < containerIdx) {
                             if (isFunctionAssignment(statement)) {
                                 scopedInstanceVariables.push(statement.var);
                             }
@@ -388,8 +447,10 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
 
         if (isIFunction(node)) {
             node.statements.forEach((statement, idx) => {
+                //console.log(`[GETLOCALINSTVARS] IFunction >> ${statement.$type} `)
                 if (containerIdx == undefined || idx < containerIdx) {
                     if (isFunctionAssignment(statement)) {
+                        //console.log(`[GETLOCALINSTVARS] IFunction >>> ${statement.var.name} `)
                         scopedInstanceVariables.push(statement.var);
                     }
                 }
@@ -426,50 +487,11 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
             }
             if (res != undefined) {
                 const nodeByPath = this.getAstNodeByPath(res);
-                if (nodeByPath != undefined && isEnum(nodeByPath)){
+                if (nodeByPath != undefined && isEnum(nodeByPath)) {
                     return nodeByPath;
                 }
             }
         }
         return undefined;
-
-        /* console.log("[EnumTypeResolution] Fallback to default")
-         if (isAttribute(node.$container)) {
-             if (node.$container.type.etype != undefined && node.$container.type.etype.ref != undefined) {
-                 return node.$container.type.etype.ref;
-             }
-             return undefined;
-         } else if (isMacroAttributeStatement(node.$container)) {
-             if (node.$container.attr.ref != undefined && node.$container.attr.ref.type.etype != undefined && node.$container.attr.ref.type.etype.ref != undefined) {
-                 return node.$container.attr.ref.type.etype.ref;
-             }
-             return undefined;
-         } else if (isFunctionArgument(node.$container)) {
-             if (isFunctionCall(node.$container.$container)) {
-                 if (node.$container.$container.func.ref != undefined && node.$container.$containerIndex != undefined && node.$container.$container.func.ref.parameter.length >= node.$container.$containerIndex) {
-                     const funcParamTypedVarRef: TypedVariable | undefined = node.$container.$container.func.ref.parameter.at(node.$container.$containerIndex);
-                     if (funcParamTypedVarRef != undefined && funcParamTypedVarRef.typing.type != undefined && funcParamTypedVarRef.typing.type.ref != undefined && isEnum(funcParamTypedVarRef.typing.type.ref)) {
-                         return funcParamTypedVarRef.typing.type.ref;
-                     }
-                 }
-             } else if (isFunctionMacroCall(node.$container.$container)) {
-                 if (node.$container.$container.macro.ref != undefined && node.$container.$containerIndex != undefined && node.$container.$container.macro.ref.parameter.length >= node.$container.$containerIndex) {
-                     const macroParamTypedVarRef: TypedVariable | undefined = node.$container.$container.macro.ref.parameter.at(node.$container.$containerIndex);
-                     if (macroParamTypedVarRef != undefined && macroParamTypedVarRef.typing.type != undefined && macroParamTypedVarRef.typing.type.ref != undefined && isEnum(macroParamTypedVarRef.typing.type.ref)) {
-                         return macroParamTypedVarRef.typing.type.ref;
-                     }
-                 }
-             }
-             return undefined;
-         } else if (isImplicitlyTypedValue(node.$container)) {
-             if (node.$container.$container.var != undefined && node.$container.$container.var.ref != undefined && node.$container.$container.var.ref.typing.type != undefined && node.$container.$container.var.ref.typing.type.ref != undefined && isEnum(node.$container.$container.var.ref.typing.type.ref)) {
-                 return node.$container.$container.var.ref.typing.type.ref;
-             }
-             return undefined;
-         } else if (node.$container == undefined) {
-             return undefined;
-         } else {
-             return this._getEnumEntryValueType(node.$container);
-         }*/
     }
 }
