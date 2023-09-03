@@ -1,12 +1,12 @@
-import {AstNode, getDocument, LangiumServices, Reference} from "langium";
+import {AstNode, AstNodeLocator, getDocument, Reference} from "langium";
 
 export class MmlReferenceStorage {
     private referenceMap: Map<string, AstNode> = new Map<string, AstNode>;
     private nodeMap: Map<AstNode, string> = new Map<AstNode, string>;
-    private astLocator;
+    private _astLocator;
 
-    constructor(services: LangiumServices) {
-        this.astLocator = services.workspace.AstNodeLocator;
+    constructor(locator: AstNodeLocator) {
+        this._astLocator = locator;
     }
 
     private storeReference(ref: Reference<AstNode>): string {
@@ -24,7 +24,7 @@ export class MmlReferenceStorage {
 
     public getNodeReferenceId(node: AstNode): string {
         const doc = getDocument(node);
-        const path = this.astLocator.getAstNodePath(node);
+        const path = this._astLocator.getAstNodePath(node);
         return doc.uri.path + node.$type + path;
     }
 
@@ -40,5 +40,27 @@ export class MmlReferenceStorage {
             console.error("Undefined node!")
             return "$$ERROR$$";
         }
+    }
+
+    public updateReferenceStorage(refStorage: MmlReferenceStorage): void {
+        if (this.referenceMap.size != refStorage.referenceMap.size) {
+            refStorage.referenceMap.forEach((value: AstNode, key: string) => {
+                if (!this.referenceMap.has(key)) {
+                    this.referenceMap.set(key, value);
+                }
+            })
+        }
+
+        if (this.nodeMap.size != refStorage.nodeMap.size) {
+            refStorage.nodeMap.forEach((value: string, key: AstNode) => {
+                if (!this.nodeMap.has(key)) {
+                    this.nodeMap.set(key, value);
+                }
+            })
+        }
+    }
+
+    get astLocator() {
+        return this._astLocator;
     }
 }

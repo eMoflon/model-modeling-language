@@ -1,23 +1,50 @@
 import {
     ArithExpr,
+    FunctionVariableSelectorExpr,
     isBinaryExpression,
     isBoolExpr,
     isEnumValueExpr,
+    isFunctionVariableSelectorExpr,
     isNumberExpr,
     isStringExpr,
-    isVariableValueExpr
+    isVariableValueExpr,
+    Variable
 } from "../generated/ast";
 import {ModelModelingLanguageUtils} from "../model-modeling-language-utils";
 
 export class MmlSerializerContext {
-    private variableMap: Map<string, any> = new Map<string, any>();
+    private variableMap: Map<Variable, any> = new Map<Variable, any>();
 
 
     constructor() {
     }
 
-    public storeValue(name: string, value: any) {
-        this.variableMap.set(name, value);
+    public storeValue(variable: Variable, value: any) {
+        this.variableMap.set(variable, value);
+    }
+
+    public unsetValue(variable: Variable) {
+        this.variableMap.delete(variable);
+    }
+
+    public resolve(variable: Variable): any {
+        return this.variableMap.get(variable);
+    }
+
+    public clone(): MmlSerializerContext {
+        const newContext = new MmlSerializerContext();
+        this.variableMap.forEach((value: any, key: Variable) => {
+            newContext.storeValue(key, value);
+        });
+        return newContext;
+    }
+
+    public enhance(other: MmlSerializerContext): void {
+        other.variableMap.forEach((value: any, key: Variable) => {
+            if (!this.variableMap.has(key)) {
+                this.storeValue(key, value);
+            }
+        });
     }
 
     public evaluateArithExpr(expr: ArithExpr): boolean | number | string {
@@ -27,8 +54,13 @@ export class MmlSerializerContext {
             return expr.value;
         } else if (isNumberExpr(expr)) {
             return expr.value;
-        } else if (isVariableValueExpr(expr)) {
-            return "VAR";
+        } else if (isVariableValueExpr(expr) && expr.val.ref != undefined) {
+            return this.resolve(expr.val.ref);
+        } else if (isFunctionVariableSelectorExpr(expr) && expr.val.ref != undefined) {
+            const resolver: MmlSerializerContext | undefined = this.findFunctionVariableSelectorBase(expr);
+            if (resolver != undefined) {
+                return resolver.resolve(expr.val.ref);
+            }
         } else if (isEnumValueExpr(expr)) {
             const enumEntry = expr.val.ref;
             if (enumEntry != undefined) {
@@ -78,5 +110,15 @@ export class MmlSerializerContext {
             }
         }
         return "$$UNKNOWN$$"
+    }
+
+    private findFunctionVariableSelectorBase(fExpr: FunctionVariableSelectorExpr): MmlSerializerContext | undefined {
+        const baseName = fExpr.val.$refText.split(".")[0];
+        for (let [key, value] of this.variableMap) {
+            if (key.name == baseName && value instanceof MmlSerializerContext) {
+                return value;
+            }
+        }
+        return undefined;
     }
 }
