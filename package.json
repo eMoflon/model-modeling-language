@@ -61,6 +61,8 @@
         "chalk": "~4.1.2",
         "commander": "~10.0.0",
         "langium": "~1.1.0",
+        "uuid": "^9.0.0",
+        "@types/uuid": "^9.0.0",
         "vscode-languageclient": "~8.0.2",
         "vscode-languageserver": "~8.0.2"
     },
