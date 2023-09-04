@@ -4,6 +4,7 @@ import {
     IMacro,
     InstanceLoop,
     InstanceStatement,
+    isEnumValueExpr,
     isFunctionAssignment,
     isFunctionMacroCall,
     isInstanceLoop,
@@ -134,10 +135,19 @@ export class ObjectInstance {
 
     public addAttribute(attr: MacroAttributeStatement, context: MmlSerializerContext, referenceStorage: MmlReferenceStorage) {
         if (attr.attr.ref != undefined) {
+            var val;
+            var isEnumType = false;
+            if (isEnumValueExpr(attr.value) && attr.value.val.ref != undefined) {
+                val = referenceStorage.getNodeReferenceId(attr.value.val.ref)
+                isEnumType = true;
+            } else {
+                val = context.evaluateArithExpr(attr.value);
+            }
             this.attributes.set(attr.attr.ref.name, {
                 name: attr.attr.ref.name,
                 typeId: referenceStorage.resolveReference(attr.attr),
-                value: context.evaluateArithExpr(attr.value)
+                isEnumType: isEnumType,
+                value: val
             });
         }
     }
@@ -160,6 +170,7 @@ export class ObjectInstance {
 interface AttributeEntry {
     name: string;
     typeId: string;
+    isEnumType: boolean
     value: any;
 }
 
