@@ -27,6 +27,7 @@ import {
     isFunctionVariable,
     isFunctionVariableSelectorExpr,
     isModel,
+    isVariableValueExpr,
     MacroAssignStatement,
     MacroAttributeStatement,
     Model,
@@ -655,7 +656,15 @@ export class ModelModelingLanguageValidator {
         const attr = mas.attr.ref;
         if (attr != undefined && mas.value != undefined) {
             if (attr.type.ptype != undefined && attr.type.etype == undefined) {
-                if (attr.type.ptype == "bool" && !ModelModelingLanguageUtils.isBoolArithExpr(mas.value)) {
+                if (isVariableValueExpr(mas.value) && mas.value.val.ref != undefined) {
+                    if (attr.type.ptype != ModelModelingLanguageUtils.getVariableTyping(mas.value.val.ref).dtype) {
+                        accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
+                            node: mas,
+                            property: "value",
+                            code: IssueCodes.MacroAttributeTypeDoesNotMatch
+                        });
+                    }
+                } else if (attr.type.ptype == "bool" && !ModelModelingLanguageUtils.isBoolArithExpr(mas.value)) {
                     accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                         node: mas,
                         property: "value",
