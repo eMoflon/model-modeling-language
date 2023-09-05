@@ -14,6 +14,7 @@ import {ModelModelingLanguageUtils} from "../model-modeling-language-utils";
 
 export class MmlSerializerContext {
     private variableMap: Map<Variable, any> = new Map<Variable, any>();
+    private unbindedValue: any;
 
 
     constructor() {
@@ -23,12 +24,20 @@ export class MmlSerializerContext {
         this.variableMap.set(variable, value);
     }
 
+    public storeUnbindedValue(value: any) {
+        this.unbindedValue = value;
+    }
+
     public unsetValue(variable: Variable) {
         this.variableMap.delete(variable);
     }
 
     public resolve(variable: Variable): any {
         return this.variableMap.get(variable);
+    }
+
+    public resolveUnbindedValue() {
+        return this.unbindedValue;
     }
 
     public clone(): MmlSerializerContext {
