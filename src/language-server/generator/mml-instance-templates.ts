@@ -1,12 +1,17 @@
 import {
+    FunctionCall,
     FunctionMacroCall,
+    FunctionStatement,
+    IFunction,
     IInstance,
     IMacro,
     InstanceLoop,
-    InstanceStatement,
     isEnumValueExpr,
     isFunctionAssignment,
+    isFunctionCall,
+    isFunctionLoop,
     isFunctionMacroCall,
+    isFunctionReturn,
     isInstanceLoop,
     isInstanceStatement,
     isMacroAssignStatement,
@@ -22,7 +27,7 @@ import {zip} from "./utils";
 import {MmlReferenceStorage} from "./mml-reference-storage";
 import {MmlInstanceRegistry} from "./mml-instance-registry";
 
-export function executeMacroCall(macroCall: FunctionMacroCall, referenceStorage: MmlReferenceStorage, outerContext: MmlSerializerContext, serializer: SerializedInstance, instanceRegistry: MmlInstanceRegistry) {
+function executeMacroCall(macroCall: FunctionMacroCall, referenceStorage: MmlReferenceStorage, outerContext: MmlSerializerContext, serializer: SerializedInstance, instanceRegistry: MmlInstanceRegistry) {
     const innerContext = new MmlSerializerContext();
     if (macroCall.macro.ref != undefined) {
         const macro: IMacro = macroCall.macro.ref;
@@ -40,6 +45,66 @@ export function executeMacroCall(macroCall: FunctionMacroCall, referenceStorage:
         macro.instances.forEach(inst => createInstance(inst, referenceStorage, innerContext, serializer, instanceRegistry));
     }
     return innerContext;
+}
+
+function executeFunctionCall(functionCall: FunctionCall, referenceStorage: MmlReferenceStorage, outerContext: MmlSerializerContext, serializer: SerializedInstance, instanceRegistry: MmlInstanceRegistry) {
+    const innerContext: MmlSerializerContext = new MmlSerializerContext();
+    if (functionCall.func.ref != undefined) {
+        const func: IFunction = functionCall.func.ref;
+        const zipped = zip(functionCall.args, func.parameter);
+        zipped.forEach(value => {
+            if (value[0].value != undefined && value[0].ref == undefined) {
+                innerContext.storeValue(value[1], outerContext.evaluateArithExpr(value[0].value))
+            } else if (value[0].value == undefined && value[0].ref != undefined && value[0].ref.ref != undefined) {
+                const passedVariable: Variable = value[0].ref.ref;
+                const resolved: any = outerContext.resolve(passedVariable);
+                innerContext.storeValue(value[1], resolved);
+            }
+        });
+
+        for (const stmt of func.statements) {
+            if (isFunctionReturn(stmt)) {
+                if (stmt.var != undefined && stmt.var.ref != undefined) {
+                    innerContext.storeUnbindedValue(innerContext.resolve(stmt.var.ref));
+                } else if (stmt.val != undefined) {
+                    innerContext.storeUnbindedValue(innerContext.evaluateArithExpr(stmt.val.val));
+                }
+            } else {
+                executeFunctionRecursively(stmt, referenceStorage, innerContext, serializer, instanceRegistry);
+            }
+        }
+    }
+    return innerContext;
+}
+
+function executeFunctionRecursively(stmt: FunctionStatement, referenceStorage: MmlReferenceStorage, outerContext: MmlSerializerContext, serializer: SerializedInstance, instanceRegistry: MmlInstanceRegistry) {
+    if (isFunctionAssignment(stmt)) {
+        if (isFunctionCall(stmt.call)) {
+            const innerContext: MmlSerializerContext = executeFunctionCall(stmt.call, referenceStorage, outerContext, serializer, instanceRegistry);
+            if (stmt.call.func.ref != undefined && stmt.call.func.ref.returnsVar) {
+                outerContext.storeValue(stmt.var, innerContext.resolveUnbindedValue());
+            }
+        } else if (isFunctionMacroCall(stmt.call)) {
+            const innerContext: MmlSerializerContext = executeMacroCall(stmt.call, referenceStorage, outerContext, serializer, instanceRegistry);
+            if (stmt.select != undefined && stmt.select.ref != undefined) {
+                outerContext.storeValue(stmt.var, innerContext.resolve(stmt.select.ref));
+            } else {
+                outerContext.storeValue(stmt.var, innerContext);
+            }
+        }
+    } else if (isFunctionLoop(stmt)) {
+        for (let i = stmt.lower; i < stmt.upper; i++) {
+            const newContext: MmlSerializerContext = outerContext.clone();
+            newContext.storeValue(stmt.var, i);
+            stmt.statements.forEach(loopStmt => executeFunctionRecursively(loopStmt, referenceStorage, newContext, serializer, instanceRegistry));
+            newContext.unsetValue(stmt.var);
+            //outerContext.enhance(newContext);
+        }
+    } else if (isFunctionCall(stmt)) {
+        executeFunctionCall(stmt, referenceStorage, outerContext, serializer, instanceRegistry);
+    } else if (isFunctionMacroCall(stmt)) {
+        executeMacroCall(stmt, referenceStorage, outerContext, serializer, instanceRegistry);
+    }
 }
 
 export class SerializedInstances {
@@ -60,19 +125,27 @@ class SerializedInstance {
         this.executeRecursively(instance.statements, referenceStorage, outerContext, instanceRegistry);
     }
 
-    private executeRecursively(stmts: (InstanceLoop | InstanceStatement)[], referenceStorage: MmlReferenceStorage, outerContext: MmlSerializerContext, instanceRegistry: MmlInstanceRegistry) {
+    private executeRecursively(stmts: (InstanceLoop | FunctionStatement)[], referenceStorage: MmlReferenceStorage, outerContext: MmlSerializerContext, instanceRegistry: MmlInstanceRegistry) {
         stmts.forEach(iStmt => {
             if (isInstanceStatement(iStmt)) {
-                if (isFunctionAssignment(iStmt) && isFunctionMacroCall(iStmt.call)) {
-                    const innerContext = executeMacroCall(iStmt.call, referenceStorage, outerContext, this, instanceRegistry);
-                    if (iStmt.select != undefined && iStmt.select.ref != undefined) {
-                        outerContext.storeValue(iStmt.var, innerContext.resolve(iStmt.select.ref));
-                    } else {
-                        outerContext.storeValue(iStmt.var, innerContext);
+                if (isFunctionAssignment(iStmt)) {
+                    if (isFunctionMacroCall(iStmt.call)) {
+                        const innerContext = executeMacroCall(iStmt.call, referenceStorage, outerContext, this, instanceRegistry);
+                        if (iStmt.select != undefined && iStmt.select.ref != undefined) {
+                            outerContext.storeValue(iStmt.var, innerContext.resolve(iStmt.select.ref));
+                        } else {
+                            outerContext.storeValue(iStmt.var, innerContext);
+                        }
+                    } else if (isFunctionCall(iStmt.call)) {
+                        const innerContext: MmlSerializerContext = executeFunctionCall(iStmt.call, referenceStorage, outerContext, this, instanceRegistry);
+                        if (iStmt.call.func.ref != undefined && iStmt.call.func.ref.returnsVar) {
+                            outerContext.storeValue(iStmt.var, innerContext.resolveUnbindedValue());
+                        }
                     }
-                }
-                if (isFunctionMacroCall(iStmt)) {
+                } else if (isFunctionMacroCall(iStmt)) {
                     executeMacroCall(iStmt, referenceStorage, outerContext, this, instanceRegistry);
+                } else if (isFunctionCall(iStmt)) {
+                    executeFunctionCall(iStmt, referenceStorage, outerContext, this, instanceRegistry);
                 }
             } else if (isInstanceLoop(iStmt) && iStmt.var.ref != undefined && iStmt.ref.ref != undefined) {
                 const obj: ObjectInstance = outerContext.resolve(iStmt.var.ref);
@@ -84,7 +157,7 @@ class SerializedInstance {
                         newContext.storeValue(iStmt.ivar, referencedObj);
                         this.executeRecursively(iStmt.statements, referenceStorage, newContext, instanceRegistry);
                         newContext.unsetValue(iStmt.ivar);
-                        outerContext.enhance(newContext);
+                        //outerContext.enhance(newContext);
                     }
                 });
             }
