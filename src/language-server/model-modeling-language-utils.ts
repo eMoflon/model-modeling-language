@@ -11,6 +11,7 @@ import {
     IFunction,
     ImplicitlyTypedValue,
     Interface,
+    isBinaryExpression,
     isBoolExpr,
     isClass,
     isEnum,
@@ -27,7 +28,8 @@ import {
     isUntypedVariable,
     isVariableValueExpr,
     TypedVariable,
-    Variable
+    Variable,
+    VariableValueExpr
 } from "./generated/ast";
 
 export class ModelModelingLanguageUtils {
@@ -87,13 +89,17 @@ export class ModelModelingLanguageUtils {
         if (arith.$type === "BinaryExpression") {
             let lType = arith.left.$type;
             let rType = arith.right.$type;
-            if (lType == "BinaryExpression") {
+            if (isBinaryExpression(arith.left)) {
                 lType = this.getArithExprType(arith.left);
+            } else if (isVariableValueExpr(arith.left)) {
+                lType = this.resolveVariableValueType(arith.left);
             }
-            if (rType == "BinaryExpression") {
+            if (isBinaryExpression(arith.right)) {
                 rType = this.getArithExprType(arith.right);
+            } else if (isVariableValueExpr(arith.right)) {
+                rType = this.resolveVariableValueType(arith.right);
             }
-            if (lType == rType && lType != "BoolExpr" && lType != "EnumValueExpr" && lType != "VariableValueExpr" && lType != "FunctionVariableSelectorExpr") {
+            if (lType == rType && lType != "BoolExpr" && lType != "EnumValueExpr" && lType != "VariableValueExpr" && lType != "FunctionVariableSelectorExpr" && lType != "BinaryExpression") {
                 return lType;
             }
             return "StringExpr";
@@ -120,9 +126,33 @@ export class ModelModelingLanguageUtils {
         return arith.$type;
     }
 
+    private static resolveVariableValueType(expr: VariableValueExpr): "StringExpr" | "BoolExpr" | "NumberExpr" {
+        if (isVariableValueExpr(expr) && expr.val.ref != undefined) {
+            const typing = this.getVariableTyping(expr.val.ref);
+            if (typing.dtype != undefined) {
+                if (typing.dtype == "int" || typing.dtype == "double" || typing.dtype == "float") {
+                    return "NumberExpr";
+                } else if (typing.dtype == "string") {
+                    return "StringExpr";
+                } else if (typing.dtype == "bool") {
+                    return "BoolExpr";
+                }
+            }
+        }
+        return "StringExpr";
+    }
+
     public static isIntArithExpr(arith: ArithExpr): boolean {
         if (arith.$type === "BinaryExpression") {
             return this.isIntArithExpr(arith.left) && this.isIntArithExpr(arith.right);
+        } else if (isVariableValueExpr(arith)) {
+            if (arith.val.ref != undefined) {
+                const varTyping = this.getVariableTyping(arith.val.ref);
+                if (varTyping.dtype != undefined && varTyping.dtype == "int") {
+                    return true;
+                }
+            }
+            return false;
         }
         return isNumberExpr(arith) && arith.value % 1 === 0;
     }
