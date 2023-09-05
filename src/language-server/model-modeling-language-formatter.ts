@@ -32,6 +32,7 @@ export class ModelModelingLanguageFormatter extends AbstractFormatter {
             formatter.nodes(...node.packages).prepend(Formatting.noIndent());
             formatter.nodes(...node.macros).prepend(Formatting.noIndent());
             formatter.nodes(...node.functions).prepend(Formatting.noIndent());
+            formatter.nodes(...node.instances).prepend(Formatting.noIndent());
         } else if (isImport(node)) {
             const formatter = this.getNodeFormatter(node);
             formatter.keyword('import').append(Formatting.oneSpace());
