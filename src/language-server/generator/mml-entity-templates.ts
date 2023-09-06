@@ -67,7 +67,7 @@ class AbstractClassEntity {
     readonly isInterface: boolean;
     readonly attributes: AttributeEntity[] = [];
     readonly references: ReferenceEntity[] = [];
-    readonly extendesIds: string[] = [];
+    readonly extendsIds: string[] = [];
     readonly implementsIds: string[] = [];
 
     constructor(abstractClass: Class | Interface, referenceStorage: MmlReferenceStorage) {
@@ -76,11 +76,11 @@ class AbstractClassEntity {
         if (isInterface(abstractClass)) {
             this.isAbstract = false;
             this.isInterface = true;
-            abstractClass.extendedInterfaces.forEach(extInterface => this.extendesIds.push(referenceStorage.resolveReference(extInterface)));
+            abstractClass.extendedInterfaces.forEach(extInterface => this.extendsIds.push(referenceStorage.resolveReference(extInterface)));
         } else {
             this.isInterface = false;
             this.isAbstract = abstractClass.abstract;
-            abstractClass.extendedClasses.forEach(extClasses => this.extendesIds.push(referenceStorage.resolveReference(extClasses)));
+            abstractClass.extendedClasses.forEach(extClasses => this.extendsIds.push(referenceStorage.resolveReference(extClasses)));
             abstractClass.implementedInterfaces.forEach(implInterfaces => this.implementsIds.push(referenceStorage.resolveReference(implInterfaces)));
         }
         abstractClass.body.forEach(statement => {
