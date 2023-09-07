@@ -4,7 +4,6 @@ import {
     DefaultScopeProvider,
     EMPTY_SCOPE,
     getContainerOfType,
-    getDocument,
     LangiumDocument,
     ReferenceInfo,
     Scope,
@@ -12,13 +11,16 @@ import {
     Stream
 } from "langium";
 import {
+    Attribute,
     Class,
+    CReference,
     Enum,
     EnumValueExpr,
     FunctionAssignment,
     FunctionMacroCall,
     FunctionVariable,
     IMacro,
+    Interface,
     isAttribute,
     isClass,
     isCReference,
@@ -35,10 +37,10 @@ import {
     isIInstance,
     isIMacro,
     isInstanceLoop,
+    isInterface,
     isMacroAssignStatement,
     isMacroAttributeStatement,
     isModel,
-    isTypedVariable,
     TypedVariable,
     Variable
 } from "./generated/ast";
@@ -59,111 +61,84 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
         if (isMacroAttributeStatement(context.container)) {
             const attr = context.container;
             const macroInst = attr.$container;
-            let refInstVar;
+            let refInstVar: TypedVariable;
             if (macroInst.nInst != undefined) {
-                //console.log("[MAS] nInst != undefined");
                 refInstVar = macroInst.nInst;
             } else if (macroInst.iVar != undefined && macroInst.iVar.ref != undefined) {
                 refInstVar = macroInst.iVar.ref;
-                //console.log("[MAS] iVar != undefined");
             } else {
-                //console.log("[MAS] Wat? both undefined!");
                 return EMPTY_SCOPE;
             }
             if (refInstVar.typing.dtype != undefined) {
-                //console.log("[MAS] dType != undefined");
                 return EMPTY_SCOPE;
             }
             if (refInstVar.typing.type != undefined && refInstVar.typing.type.ref != undefined && isClass(refInstVar.typing.type.ref)) {
                 const containerClass: Class = refInstVar.typing.type.ref;
-                //console.log(`-> Found container class: ${containerClass.name}`);
-                const precomputed = getDocument(containerClass).precomputedScopes;
-                //console.log("[MAS] Retrieving precomputed scopes!");
-                if (precomputed) {
-                    //console.log("[MAS] Retrieved precomputed scopes");
-                    const scopes: Array<Stream<AstNodeDescription>> = [];
-                    const allDescriptions = precomputed.get(containerClass);
-                    if (allDescriptions.length > 0) {
-                        //console.log(`[MAS] Found ${allDescriptions.length} descriptions`);
-                        scopes.push(stream(allDescriptions).filter(
-                            desc => isAttribute(desc.node)));
-                    } else {
-                        //console.log("[MAS] No descriptions found!!");
+                const scopes: Array<Stream<AstNodeDescription>> = [];
+                scopes.push(stream(this.getAllInheritedAttributes(containerClass).map(a => {
+                    const name = this.nameProvider.getName(a);
+                    if (name != undefined) {
+                        return this.descriptions.createDescription(a, name);
                     }
-                    let result: Scope = EMPTY_SCOPE;
-                    //console.log("[MAS] Building scope!");
-                    for (let i = scopes.length - 1; i >= 0; i--) {
-                        result = this.createScope(scopes[i], result);
-                    }
-                    return result;
+                    return undefined;
+                })).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                let result: Scope = EMPTY_SCOPE;
+                for (let i = scopes.length - 1; i >= 0; i--) {
+                    result = this.createScope(scopes[i], result);
                 }
+                return result;
             }
             console.log(`[getScope] ${context.property} | ${context.index}`)
         } else if (isMacroAssignStatement(context.container)) {
             const attr = context.container;
             const macroInst = attr.$container;
             let refInstVar;
-            //console.log(`[MAS] >> ${context.property} <<`);
             if (macroInst.nInst != undefined) {
-                //console.log("[MAS] nInst != undefined");
                 refInstVar = macroInst.nInst;
             } else if (macroInst.iVar != undefined && macroInst.iVar.ref != undefined) {
                 refInstVar = macroInst.iVar.ref;
-                //console.log("[MAS] iVar != undefined");
             } else {
-                //console.log("[MAS] Wat? both undefined!");
                 return EMPTY_SCOPE;
             }
             if (refInstVar.typing.dtype != undefined) {
-                //console.log("[MAS] dType != undefined");
                 return EMPTY_SCOPE;
             }
             if (refInstVar.typing.type != undefined && refInstVar.typing.type.ref != undefined && isClass(refInstVar.typing.type.ref)) {
                 const containerClass: Class = refInstVar.typing.type.ref;
-                //console.log(`-> Found container class: ${containerClass.name}`);
-                //console.log("[MAS] Retrieving precomputed scopes!");
-                const precomputed = getDocument(containerClass).precomputedScopes;
-                //console.log("[MAS] Retrieved precomputed scopes");
                 const scopes: Array<Stream<AstNodeDescription>> = [];
-                if (precomputed) {
-                    if (context.property === "cref") {
-                        const allDescriptions = precomputed.get(containerClass);
-                        if (allDescriptions.length > 0) {
-                            //console.log(`[MAS] Found ${allDescriptions.length} descriptions`);
-                            scopes.push(stream(allDescriptions).filter(
-                                desc => isCReference(desc.node)));
-                        } else {
-                            //console.log("[MAS] No descriptions found!!");
+                if (context.property === "cref") {
+                    scopes.push(stream(this.getAllInheritedReferences(containerClass).map(a => {
+                        const name = this.nameProvider.getName(a);
+                        if (name != undefined) {
+                            return this.descriptions.createDescription(a, name);
                         }
-                    } else if (context.property === "instance") {
-                        const iMacro: IMacro = macroInst.$container;
-                        const allDescriptions = precomputed.get(iMacro);
-                        if (allDescriptions.length > 0) {
-                            //console.log(`[MAS] Found ${allDescriptions.length} descriptions`);
-                            scopes.push(stream(allDescriptions).filter(
-                                desc => isTypedVariable(desc.node)));
-                        } else {
-                            //console.log("[MAS] No descriptions found!!");
-                        }
-                        scopes.push(stream(iMacro.instances).filter(e => e != undefined && e.nInst != undefined && e.iVar == undefined).map(e => e.nInst as TypedVariable).map(v => {
-                            if (v != undefined) {
-                                const name = this.nameProvider.getName(v);
-                                if (name != undefined) {
-                                    return this.descriptions.createDescription(v, name);
-                                }
+                        return undefined;
+                    })).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                } else if (context.property === "instance") {
+                    scopes.push(stream(macroInst.$container.instances.filter(inst => inst.nInst != undefined && inst.iVar == undefined).map(mi => {
+                        if (mi != undefined && mi.nInst != undefined) {
+                            const tVar: TypedVariable = mi.nInst;
+                            const name = this.nameProvider.getName(tVar);
+                            if (name != undefined) {
+                                return this.descriptions.createDescription(tVar, name);
                             }
-                            return undefined;
-                        }).filter(d => d != undefined) as Stream<AstNodeDescription>);
-                    }
+                        }
+                        return undefined;
+                    })).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                    scopes.push(stream(macroInst.$container.parameter.map(tVar => {
+                        const name = this.nameProvider.getName(tVar);
+                        if (name != undefined) {
+                            return this.descriptions.createDescription(tVar, name);
+                        }
+                        return undefined;
+                    })).filter(d => d != undefined) as Stream<AstNodeDescription>);
                 }
                 let result = EMPTY_SCOPE;
-                //console.log("[MAS] Building scope!");
                 for (let i = scopes.length - 1; i >= 0; i--) {
                     result = this.createScope(scopes[i], result);
                 }
                 return result;
             }
-            //console.log(`[getScope] ${context.property} | ${context.index}`)
         } else if (isFunctionAssignment(context.container)) {
             const assgnmt = context.container;
             if (isFunctionMacroCall(assgnmt.call)) {
@@ -221,7 +196,7 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                 const scopes: Array<Stream<AstNodeDescription>> = [];
                 if (instLoop.var.ref != undefined && instLoop.var.ref.typing.type != undefined && instLoop.var.ref.typing.type.ref != undefined && isClass(instLoop.var.ref.typing.type.ref)) {
                     const sourceClass = instLoop.var.ref.typing.type.ref;
-                    scopes.push(stream(sourceClass.body).filter(x => isCReference(x)).map(v => {
+                    scopes.push(stream(this.getAllInheritedReferences(sourceClass)).map(v => {
                         if (v != undefined) {
                             const name = this.nameProvider.getName(v);
                             if (name != undefined) {
@@ -493,5 +468,71 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
             }
         }
         return undefined;
+    }
+
+    private getAllInheritedAttributes(aclass: Class | Interface): Attribute[] {
+        let combinedResult: Attribute[] = [];
+        if (isClass(aclass)) {
+            aclass.body.forEach(stmt => {
+                if (isAttribute(stmt)) {
+                    combinedResult.push(stmt);
+                }
+            });
+            aclass.extendedClasses.forEach(extClass => {
+                if (extClass.ref != undefined) {
+                    combinedResult.push(...this.getAllInheritedAttributes(extClass.ref))
+                }
+            });
+            aclass.implementedInterfaces.forEach(implInterface => {
+                if (implInterface.ref != undefined) {
+                    combinedResult.push(...this.getAllInheritedAttributes(implInterface.ref))
+                }
+            });
+        } else if (isInterface(aclass)) {
+            aclass.body.forEach(stmt => {
+                if (isAttribute(stmt)) {
+                    combinedResult.push(stmt);
+                }
+            });
+            aclass.extendedInterfaces.forEach(implInterface => {
+                if (implInterface.ref != undefined) {
+                    combinedResult.push(...this.getAllInheritedAttributes(implInterface.ref))
+                }
+            });
+        }
+        return combinedResult;
+    }
+
+    private getAllInheritedReferences(aclass: Class | Interface): CReference[] {
+        let combinedResult: CReference[] = [];
+        if (isClass(aclass)) {
+            aclass.body.forEach(stmt => {
+                if (isCReference(stmt)) {
+                    combinedResult.push(stmt);
+                }
+            });
+            aclass.extendedClasses.forEach(extClass => {
+                if (extClass.ref != undefined) {
+                    combinedResult.push(...this.getAllInheritedReferences(extClass.ref))
+                }
+            });
+            aclass.implementedInterfaces.forEach(implInterface => {
+                if (implInterface.ref != undefined) {
+                    combinedResult.push(...this.getAllInheritedReferences(implInterface.ref))
+                }
+            });
+        } else if (isInterface(aclass)) {
+            aclass.body.forEach(stmt => {
+                if (isCReference(stmt)) {
+                    combinedResult.push(stmt);
+                }
+            });
+            aclass.extendedInterfaces.forEach(implInterface => {
+                if (implInterface.ref != undefined) {
+                    combinedResult.push(...this.getAllInheritedReferences(implInterface.ref))
+                }
+            });
+        }
+        return combinedResult;
     }
 }
