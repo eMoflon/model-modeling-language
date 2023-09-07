@@ -292,6 +292,148 @@ describe('Macro validator tests', () => {
         expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.MacroAssignReferenceTypeDoesNotMatch);
     });
 
+    test('Validator should notice instantiation of abstract class', async () => {
+        const validationResult = await getValidation(`
+        package A {
+            abstract class B {
+                attribute bool a = true;
+            }
+        }
+        macro test[]{
+            A.B x {
+                a = false
+            }
+        }
+        `);
+
+        expect(validationResult.diagnostics.length).toEqual(1);
+        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.InstantiationOfAbstractClass);
+    });
+
+    test('Validator should notice instantiation of interface', async () => {
+        const validationResult = await getValidation(`
+        package A {
+            interface B {
+                attribute bool a = true;
+            }
+        }
+        macro test[]{
+            A.B x {
+                a = false
+            }
+        }
+        `);
+
+        expect(validationResult.diagnostics.length).toEqual(2);
+        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
+        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.InstantiationOfInterface);
+    });
+
+    test('Validator should notice instantiation of primitive type', async () => {
+        const validationResult = await getValidation(`
+        macro test[]{
+            int x {
+                a = false
+            }
+        }
+        `);
+
+        expect(validationResult.diagnostics.length).toEqual(2);
+        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
+        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.InstantiationOfPrimitiveType);
+    });
+
+    test('Validator should notice instantiation of enum class', async () => {
+        const validationResult = await getValidation(`
+        package A {
+            enum B {
+                A,
+                B
+            }
+        }
+        macro test[]{
+            A.B x {
+                a = false
+            }
+        }
+        `);
+
+        expect(validationResult.diagnostics.length).toEqual(2);
+        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
+        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.InstantiationOfEnum);
+    });
+
+    test('Validator should notice usage of abstract type', async () => {
+        const validationResult = await getValidation(`
+        package A {
+            abstract class B {
+                attribute bool a = true;
+            }
+        }
+        macro test[A.B x]{
+            x {
+                a = false
+            }
+        }
+        `);
+
+        expect(validationResult.diagnostics.length).toEqual(1);
+        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.InstantiationOfAbstractClass);
+    });
+
+    test('Validator should notice usage of interface', async () => {
+        const validationResult = await getValidation(`
+        package A {
+            interface B {
+                attribute bool a = true;
+            }
+        }
+        macro test[A.B x]{
+            x {
+                a = false
+            }
+        }
+        `);
+
+        expect(validationResult.diagnostics.length).toEqual(2);
+        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
+        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.InstantiationOfInterface);
+    });
+
+    test('Validator should notice usage of primitive type', async () => {
+        const validationResult = await getValidation(`
+        macro test[int x]{
+            x {
+                a = false
+            }
+        }
+        `);
+
+        expect(validationResult.diagnostics.length).toEqual(2);
+        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
+        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.InstantiationOfPrimitiveType);
+    });
+
+    test('Validator should notice usage of enum class', async () => {
+        const validationResult = await getValidation(`
+        package A {
+            enum B {
+                A,
+                B
+            }
+        }
+        macro test[A.B x]{
+            x {
+                a = false
+            }
+        }
+        `);
+
+        expect(validationResult.diagnostics.length).toEqual(2);
+        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
+        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.InstantiationOfEnum);
+    });
+
     test('Validator should succeed', async () => {
         const validationResult = await getValidation(`
         package A {
