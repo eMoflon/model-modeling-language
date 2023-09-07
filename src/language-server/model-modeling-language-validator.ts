@@ -1,5 +1,6 @@
-import {getDocument, LangiumDocument, ValidationAcceptor, ValidationChecks} from 'langium';
+import {AstNode, getDocument, LangiumDocument, ValidationAcceptor, ValidationChecks} from 'langium';
 import {
+    AbstractElement,
     ArithExpr,
     Attribute,
     Class,
@@ -18,6 +19,7 @@ import {
     InstanceLoop,
     Interface,
     isBinaryExpression,
+    isClass,
     isEnum,
     isEnumValueExpr,
     isFunctionCall,
@@ -26,15 +28,18 @@ import {
     isFunctionStatement,
     isFunctionVariable,
     isFunctionVariableSelectorExpr,
+    isInterface,
     isModel,
     isVariableValueExpr,
     MacroAssignStatement,
     MacroAttributeStatement,
+    MacroInstance,
     Model,
     ModelModelingLanguageAstType,
     Multiplicity,
     Package,
-    TypedVariable
+    TypedVariable,
+    VariableType
 } from './generated/ast';
 import type {ModelModelingLanguageServices} from './model-modeling-language-module';
 import {URI} from "vscode-uri";
@@ -91,6 +96,9 @@ export function registerValidationChecks(services: ModelModelingLanguageServices
         ],
         IMacro: [
             validator.checkUniqueMacroVariableNames
+        ],
+        MacroInstance: [
+            validator.checkMacroInstanceInstanciator
         ],
         MacroAttributeStatement: [
             validator.checkMacroAttributeStatementType
@@ -173,6 +181,10 @@ export namespace IssueCodes {
     export const InstanceLoopTypeMismatch = "instance-loop-type-mismatch";
     export const ArithExpressionUnsupportedOperation = "arith-expression-unsupported-operation";
     export const InvalidTupleSelectorInParameter = "invalid-tuple-selector-in-parameter";
+    export const InstantiationOfInterface = "instantiation-of-interface";
+    export const InstantiationOfAbstractClass = "instantiation-of-abstract-class";
+    export const InstantiationOfEnum = "instantiation-of-enum";
+    export const InstantiationOfPrimitiveType = "instantiation-of-primitive-type";
 }
 
 /**
@@ -1245,6 +1257,49 @@ export class ModelModelingLanguageValidator {
                 accept('error', `Invalid tuple selector`, {
                     node: fSelectorExpr,
                     code: IssueCodes.InvalidTupleSelectorInParameter
+                })
+            }
+        }
+    }
+
+    checkMacroInstanceInstanciator(mInst: MacroInstance, accept: ValidationAcceptor) {
+        let typing: VariableType | null = null;
+        let varNode: AstNode | null = null;
+        if (mInst.nInst != undefined && mInst.iVar == undefined) {
+            typing = mInst.nInst.typing;
+            varNode = mInst.nInst;
+        } else if (mInst.nInst == undefined && mInst.iVar != undefined && mInst.iVar.ref != undefined) {
+            typing = mInst.iVar.ref.typing;
+            varNode = mInst.iVar.ref;
+        }
+
+        if (typing != null && varNode != null) {
+            if (typing.type != undefined && typing.type.ref != undefined && typing.dtype == undefined) {
+                const refType: AbstractElement = typing.type.ref
+                if (isInterface(refType)) {
+                    const intf: Interface = refType;
+                    accept('error', `Cannot instantiate interface ${ModelModelingLanguageUtils.getQualifiedClassName(intf, intf.name)}`, {
+                        node: varNode,
+                        code: IssueCodes.InstantiationOfInterface
+                    })
+                } else if (isClass(refType)) {
+                    const cls: Class = refType;
+                    if (cls.abstract) {
+                        accept('error', `Cannot instantiate abstract class ${ModelModelingLanguageUtils.getQualifiedClassName(cls, cls.name)}`, {
+                            node: varNode,
+                            code: IssueCodes.InstantiationOfAbstractClass
+                        })
+                    }
+                } else if (isEnum(refType)) {
+                    accept('error', `Cannot instantiate enum!`, {
+                        node: varNode,
+                        code: IssueCodes.InstantiationOfEnum
+                    })
+                }
+            } else if (typing.type == undefined && typing.dtype != undefined) {
+                accept('error', `Cannot instantiate with primitive type ${typing.dtype}`, {
+                    node: varNode,
+                    code: IssueCodes.InstantiationOfPrimitiveType
                 })
             }
         }
