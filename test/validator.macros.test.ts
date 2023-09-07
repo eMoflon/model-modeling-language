@@ -295,7 +295,7 @@ describe('Macro validator tests', () => {
     test('Validator should succeed', async () => {
         const validationResult = await getValidation(`
         package A {
-            class B {
+            class B extends SuperAbst{
                 attribute bool a = true;
                 attribute string c = "ABC";
                 attribute int d = 2;
@@ -303,9 +303,15 @@ describe('Macro validator tests', () => {
                 @opposite A.C::x
                 reference A.C x;
             }
-            class C {
+            class C implements SuperInt{
                 @opposite A.B::x
                 reference A.B[*] x; 
+            }
+            abstract class SuperAbst {
+                attribute bool abst = true;
+            }
+            interface SuperInt {
+                attribute bool interf = true;
             }
             enum D {
                 Q = true,
@@ -319,8 +325,10 @@ describe('Macro validator tests', () => {
                 d = 42
                 e = A.D::W
                 x -> y 
+                abst = false
             }
             A.C y {
+                interf = false
             }
         }
         `);
