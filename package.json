@@ -1,83 +1,84 @@
 {
-    "name": "model-modeling-language",
-    "displayName": "Model modeling language",
-    "description": "A VS Code extension that implements a Domain Specific Language for describing metamodels.",
-    "version": "0.0.1",
-    "repository": "WIP",
-    "publisher": "Janik Rapp",
-    "engines": {
-        "vscode": "^1.67.0"
-    },
-    "categories": [
-        "Programming Languages"
-    ],
-    "contributes": {
-        "languages": [
-            {
-                "id": "model-modeling-language",
-                "aliases": [
-                    "Model modeling language",
-                    "model-modeling-language"
-                ],
-                "extensions": [
-                    ".mml"
-                ],
-                "configuration": "./language-configuration.json"
-            }
+  "name": "model-modeling-language",
+  "displayName": "Model modeling language",
+  "description": "A VS Code extension that implements a Domain Specific Language for describing metamodels.",
+  "version": "0.0.1",
+  "repository": "https://github.com/JanikNex/model-modeling-language",
+  "publisher": "Janik Rapp",
+  "engines": {
+    "vscode": "^1.67.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "model-modeling-language",
+        "aliases": [
+          "Model modeling language",
+          "model-modeling-language"
         ],
-        "grammars": [
-            {
-                "language": "model-modeling-language",
-                "scopeName": "source.model-modeling-language",
-                "path": "./syntaxes/model-modeling-language.tmLanguage.json"
-            }
-        ]
-    },
-    "activationEvents": [
-        "onLanguage:model-modeling-language"
+        "extensions": [
+          ".mml"
+        ],
+        "configuration": "./language-configuration.json"
+      }
     ],
-    "files": [
-        "bin",
-        "out",
-        "src",
-        "syntaxes",
-        "language-configuration.json"
-    ],
-    "bin": {
-        "model-modeling-language-cli": "./bin/cli"
-    },
-    "main": "./out/extension.js",
-    "scripts": {
-        "vscode:prepublish": "npm run build && npm run lint",
-        "build": "tsc",
-        "watch": "tsc -watch",
-        "lint": "eslint src test --ext ts",
-        "langium:generate": "langium generate",
-        "langium:watch": "langium generate --watch",
-        "fullbuild": "npm run langium:generate && vsce package",
-        "build:ls": "esbuild ./out/language-server/main-browser.js --bundle --format=esm --sourcemap --outfile=./out/public/mmlServerWorker.js"
-    },
-    "dependencies": {
-        "chalk": "~4.1.2",
-        "commander": "~10.0.0",
-        "langium": "~1.1.0",
-        "uuid": "^9.0.0",
-        "@types/uuid": "^9.0.0",
-        "vscode-languageclient": "~8.0.2",
-        "vscode-languageserver": "~8.0.2"
-    },
-    "devDependencies": {
-        "@types/node": "~16.18.11",
-        "@types/vscode": "~1.67.0",
-        "@vscode/vsce": "^2.21.0",
-        "@typescript-eslint/eslint-plugin": "~5.51.0",
-        "@typescript-eslint/parser": "~5.51.0",
-        "esbuild": "^0.17.18",
-        "eslint": "~8.33.0",
-        "eslint-plugin-header": "^3.1.1",
-        "langium-cli": "~1.1.0",
-        "typescript": "~4.9.5",
-        "vitest": "^0.33.0",
-        "shx": "^0.3.4"
-    }
+    "grammars": [
+      {
+        "language": "model-modeling-language",
+        "scopeName": "source.model-modeling-language",
+        "path": "./syntaxes/model-modeling-language.tmLanguage.json"
+      }
+    ]
+  },
+  "activationEvents": [
+    "onLanguage:model-modeling-language"
+  ],
+  "files": [
+    "bin",
+    "out",
+    "src",
+    "syntaxes",
+    "language-configuration.json"
+  ],
+  "bin": {
+    "model-modeling-language-cli": "./bin/cli"
+  },
+  "main": "./out/extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run build && npm run lint",
+    "build": "tsc",
+    "watch": "tsc -watch",
+    "lint": "eslint src test --ext ts",
+    "langium:generate": "langium generate",
+    "langium:watch": "langium generate --watch",
+    "fullbuild": "npm run langium:generate && vsce package",
+    "build:ls": "esbuild ./out/language-server/main-browser.js --bundle --format=esm --sourcemap --outfile=./out/public/mmlServerWorker.js",
+    "fullbuild:ls": "vsce package && npm run build:ls"
+  },
+  "dependencies": {
+    "chalk": "~4.1.2",
+    "commander": "~10.0.0",
+    "langium": "~1.1.0",
+    "uuid": "^9.0.0",
+    "@types/uuid": "^9.0.0",
+    "vscode-languageclient": "~8.0.2",
+    "vscode-languageserver": "~8.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "~16.18.11",
+    "@types/vscode": "~1.67.0",
+    "@vscode/vsce": "^2.21.0",
+    "@typescript-eslint/eslint-plugin": "~5.51.0",
+    "@typescript-eslint/parser": "~5.51.0",
+    "esbuild": "^0.17.18",
+    "eslint": "~8.33.0",
+    "eslint-plugin-header": "^3.1.1",
+    "langium-cli": "~1.1.0",
+    "typescript": "~4.9.5",
+    "vitest": "^0.33.0",
+    "shx": "^0.3.4"
+  }
 }
