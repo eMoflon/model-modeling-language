@@ -10,7 +10,6 @@ import {
     isVariableValueExpr,
     Variable
 } from "../generated/ast";
-import {ModelModelingLanguageUtils} from "../model-modeling-language-utils";
 
 export class MmlSerializerContext {
     private variableMap: Map<Variable, any> = new Map<Variable, any>();
@@ -76,7 +75,7 @@ export class MmlSerializerContext {
                 if (enumEntry.value != undefined) {
                     return this.evaluateArithExpr(enumEntry.value);
                 } else {
-                    return ModelModelingLanguageUtils.getFullyQualifiedEnumEntryName(enumEntry, enumEntry.name);
+                    return enumEntry.name;
                 }
             }
         } else if (isBinaryExpression(expr)) {
