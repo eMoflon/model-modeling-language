@@ -49,8 +49,8 @@
   "main": "./out/extension.js",
   "scripts": {
     "vscode:prepublish": "npm run build && npm run lint",
-    "build": "tsc",
-    "watch": "tsc -watch",
+    "build": "tsc -b tsconfig.json",
+    "watch": "tsc -b tsconfig.json -watch",
     "lint": "eslint src test --ext ts",
     "langium:generate": "langium generate",
     "langium:watch": "langium generate --watch",
@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "chalk": "~4.1.2",
-    "commander": "~10.0.0",
+    "commander": "~11.0.0",
     "langium": "~1.1.0",
     "uuid": "^9.0.0",
     "@types/uuid": "^9.0.0",
