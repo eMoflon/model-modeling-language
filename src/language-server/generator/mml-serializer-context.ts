@@ -110,7 +110,7 @@ export class MmlSerializerContext {
                 }
             } else if (expr.operator == "^") {
                 if (typeof left == "number" && typeof right == "number") {
-                    return left ^ right;
+                    return left ** right;
                 }
             } else if (expr.operator == "/") {
                 if (typeof left == "number" && typeof right == "number") {
