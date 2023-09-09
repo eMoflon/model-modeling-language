@@ -195,8 +195,8 @@ PrimaryArithExpr infers ArithExpr:
 
 
 hidden terminal WS: /\s+/;
-terminal DOUBLE returns number: NUM '.' NUM;
-terminal NUM returns number: /[0-9]+/;
+terminal DOUBLE returns number: /-?\d+\.\d+/;
+terminal NUM returns number: /-?\d+/;
 terminal STRING returns string: /"[^"]*"/;
 terminal FQNAME returns string: QNAME '::' ID;
 terminal QNAME returns string: ID ('.' ID)+;

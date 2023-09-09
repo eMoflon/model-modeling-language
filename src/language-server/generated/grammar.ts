@@ -3581,28 +3581,8 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
         "name": "number"
       },
       "definition": {
-        "$type": "TerminalGroup",
-        "elements": [
-          {
-            "$type": "TerminalRuleCall",
-            "rule": {
-              "$ref": "#/rules@63"
-            }
-          },
-          {
-            "$type": "CharacterRange",
-            "left": {
-              "$type": "Keyword",
-              "value": "."
-            }
-          },
-          {
-            "$type": "TerminalRuleCall",
-            "rule": {
-              "$ref": "#/rules@63"
-            }
-          }
-        ]
+        "$type": "RegexToken",
+        "regex": "-?\\\\d+\\\\.\\\\d+"
       },
       "fragment": false,
       "hidden": false
@@ -3616,7 +3596,7 @@ export const ModelModelingLanguageGrammar = (): Grammar => loadedModelModelingLa
       },
       "definition": {
         "$type": "RegexToken",
-        "regex": "[0-9]+"
+        "regex": "-?\\\\d+"
       },
       "fragment": false,
       "hidden": false
