@@ -1,5 +1,6 @@
 import {AstNode} from "langium";
 import {
+    AbstractElement,
     ArithExpr,
     Class,
     CReference,
@@ -21,6 +22,7 @@ import {
     isFunctionVariable,
     isFunctionVariableSelectorExpr,
     isInstanceLoop,
+    isInterface,
     isNumberExpr,
     isPackage,
     isStringExpr,
@@ -296,5 +298,37 @@ export class ModelModelingLanguageUtils {
         } else {
             return [];
         }
+    }
+
+    /**
+     * Determine all interited abstract elements, that means all classes and interfaces
+     * that are somehow implemented or extended from the given ArbstractElement
+     * @param ae Starting element
+     */
+    public static getAllInheritedAbstractElements(ae: AbstractElement): AbstractElement[] {
+        const abstElements: AbstractElement[] = [];
+        if (isEnum(ae)) {
+            abstElements.push(ae)
+        } else if (isClass(ae)) {
+            abstElements.push(ae)
+            ae.extendedClasses.forEach(ref => {
+                if (ref.ref != undefined) {
+                    abstElements.push(...this.getAllInheritedAbstractElements(ref.ref))
+                }
+            })
+            ae.implementedInterfaces.forEach(ref => {
+                if (ref.ref != undefined) {
+                    abstElements.push(...this.getAllInheritedAbstractElements(ref.ref))
+                }
+            })
+        } else if (isInterface(ae)) {
+            abstElements.push(ae)
+            ae.extendedInterfaces.forEach(ref => {
+                if (ref.ref != undefined) {
+                    abstElements.push(...this.getAllInheritedAbstractElements(ref.ref))
+                }
+            })
+        }
+        return abstElements
     }
 }

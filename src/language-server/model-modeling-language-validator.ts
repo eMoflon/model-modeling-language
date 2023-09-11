@@ -743,6 +743,7 @@ export class ModelModelingLanguageValidator {
                 const targetRefTypeClss = targetReference.type.ref;
                 if (instVarClss != undefined && targetRefTypeClss != undefined) {
                     if (targetRefTypeClss != instVarClss) {
+                    if (targetRefTypeClss != instVarClss && !ModelModelingLanguageUtils.getAllInheritedAbstractElements(instVarClss).includes(targetRefTypeClss)) {
                         const qcn1 = ModelModelingLanguageUtils.getQualifiedClassName(targetRefTypeClss, targetRefTypeClss.name);
                         const qcn2 = ModelModelingLanguageUtils.getQualifiedClassName(instVarClss, instVarClss.name);
                         accept('error', `Non-matching types, a reference of type "${qcn1}" cannot have a class of type "${qcn2}"!`, {
