@@ -2,6 +2,11 @@ import {AstNodeDescription, DefaultScopeComputation, LangiumDocument, streamAllC
 import {isClass, isCReference, isEnum, isInterface, isPackage} from "./generated/ast";
 import {ModelModelingLanguageUtils} from "./model-modeling-language-utils";
 
+/**
+ * The ScopeComputation deals with the calculation of the scope. At this point we implement
+ * the export of fully-qualified names for references, packages, classes, enums and interfaces
+ * to the global scope. This enables referencing of these structures across documents.
+ */
 export class ModelModelingLanguageScopeComputation extends DefaultScopeComputation {
 
     override async computeExports(document: LangiumDocument): Promise<AstNodeDescription[]> {

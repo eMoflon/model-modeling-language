@@ -48,6 +48,10 @@ import {URI} from "vscode-uri";
 import {ModelModelingLanguageServices} from "./model-modeling-language-module";
 import {ModelModelingLanguageUtils} from "./model-modeling-language-utils";
 
+/**
+ * The ScopeProvider searches scopes and is used to calculate custom scopes for individual
+ * parameters that are not covered by the standard scoper.
+ */
 export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
     services: ModelModelingLanguageServices;
 

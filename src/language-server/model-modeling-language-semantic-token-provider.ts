@@ -31,6 +31,18 @@ import {
 } from "./generated/ast";
 import {SemanticTokenTypes} from "vscode-languageserver";
 
+/**
+ * The SemanticTokenProvider deals with semantic highlighting. While syntax highlighting can
+ * be done on token level by TextMate, semantic highlighting allows even more granular and
+ * type specific options.
+ *
+ * For this purpose, a SemanticTokenType is defined for each component of each language
+ * element, which is returned to the frontend by the Language Server. Based on these
+ * types, the UI determines the color to be displayed.
+ *
+ * IMPORTANT: It is not possible to assign specific colors at this point. The final design is
+ * exclusively determined by the UI.
+ */
 export class ModelModelingLanguageSemanticTokenProvider extends AbstractSemanticTokenProvider {
     protected highlightElement(node: AstNode, acceptor: SemanticTokenAcceptor): void | "prune" | undefined {
         if (isClass(node)) {

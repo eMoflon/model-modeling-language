@@ -9,6 +9,11 @@ import {
 
 type Suggestions = Promise<CompletionList | undefined>;
 
+/**
+ * The CompletionProvider deals with text completions. Langium allows completions of
+ * various kinds, but we currently only use code snippets to provide ready-made code
+ * snippets with fillable gaps.
+ */
 export class ModelModelingLanguageCompletionProvider extends DefaultCompletionProvider {
 
     override async getCompletion(document: LangiumDocument, params: CompletionParams): Suggestions {

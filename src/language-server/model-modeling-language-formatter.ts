@@ -24,6 +24,10 @@ import {
     isTypedVariable
 } from "./generated/ast";
 
+/**
+ * The Formatter deals with formatting MML code in the file. More precisely, correct
+ * line breaks and spaces between individual tokens are checked and adjusted if necessary.
+ */
 export class ModelModelingLanguageFormatter extends AbstractFormatter {
     protected format(node: AstNode): void {
         if (isModel(node)) {

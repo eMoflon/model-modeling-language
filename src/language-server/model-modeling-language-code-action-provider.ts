@@ -14,6 +14,11 @@ import {CodeAction, CodeActionKind, CodeActionParams, Command, Diagnostic} from 
 import {IssueCodes} from "./model-modeling-language-validator";
 import {ModelModelingLanguageUtils} from "./model-modeling-language-utils";
 
+/**
+ * The CodeActionProvider deals with code actions (also known as quick fixes).
+ * Based on the issue codes of the validator, actions are matched that make minor
+ * adjustments to the code to fix a problem (e.g. adjust attribute type based on real value).
+ */
 export class ModelModelingLanguageCodeActionProvider implements CodeActionProvider {
     protected readonly reflection: AstReflection;
     protected readonly indexManager: IndexManager;
@@ -46,13 +51,13 @@ export class ModelModelingLanguageCodeActionProvider implements CodeActionProvid
             case IssueCodes.OppositesOppositeAnnotationMissing:
                 accept(this.fixMissingOppositesOppositeAnnotation(diagnostic, document));
                 break;
-            case IssueCodes.InterfaceSelfExtension:
-                accept(this.fixInterfaceSelfExtension(diagnostic, document));
-                break;
         }
         return undefined;
     }
 
+    /**
+     *
+     */
     private fixAttributeType(diagnostic: Diagnostic, document: LangiumDocument): CodeAction | undefined {
         const offset = document.textDocument.offsetAt(diagnostic.range.start);
         const rootCst = document.parseResult.value.$cstNode;
@@ -182,36 +187,6 @@ export class ModelModelingLanguageCodeActionProvider implements CodeActionProvid
                     }
                 }
             };
-        }
-        return undefined;
-    }
-
-    private fixInterfaceSelfExtension(diagnostic: Diagnostic, document: LangiumDocument): CodeAction | undefined {
-        const offset = document.textDocument.offsetAt(diagnostic.range.start);
-        const rootCst = document.parseResult.value.$cstNode;
-        if (rootCst) {
-            const cstNode = findLeafNodeAtOffset(rootCst, offset);
-            const container = getContainerOfType(cstNode?.element, ast.isCReference);
-            if (container && container.$cstNode) {
-                const start = container.$cstNode.range.start;
-                const indentation = start.character;
-                return {
-                    title: `Add new @opposite annotation`,
-                    kind: CodeActionKind.QuickFix,
-                    diagnostics: [diagnostic],
-                    edit: {
-                        changes: {
-                            [document.textDocument.uri]: [{
-                                range: {
-                                    start: start,
-                                    end: start
-                                },
-                                newText: '@opposite \n' + ' '.repeat(indentation)
-                            }]
-                        }
-                    }
-                };
-            }
         }
         return undefined;
     }

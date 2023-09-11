@@ -135,6 +135,9 @@ export function registerValidationChecks(services: ModelModelingLanguageServices
     registry.register(checks, validator);
 }
 
+/**
+ * Register issue codes, which are used to attach code actions.
+ */
 export namespace IssueCodes {
     export const ImportAlreadyExists = "import-already-exists";
     export const ImportIsMissing = "import-is-missing";
@@ -420,26 +423,32 @@ export class ModelModelingLanguageValidator {
 
     checkAttributeTypes(attr: Attribute, accept: ValidationAcceptor) {
         if (attr.defaultValue != undefined) {
+            // attribute has default value
             if (attr.type.ptype != undefined && attr.type.etype == undefined) {
+                // attribute has primitive type, not enum type
                 if (attr.type.ptype == "bool" && !ModelModelingLanguageUtils.isBoolArithExpr(attr.defaultValue)) {
+                    // bool type but default value is not
                     accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                         node: attr,
                         property: 'type',
                         code: IssueCodes.AttributeTypeDoesNotMatch
                     })
                 } else if (attr.type.ptype == "string" && !ModelModelingLanguageUtils.isStringArithExpr(attr.defaultValue)) {
+                    // string type but default value is not
                     accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                         node: attr,
                         property: 'type',
                         code: IssueCodes.AttributeTypeDoesNotMatch
                     })
                 } else if (attr.type.ptype == "int" && !ModelModelingLanguageUtils.isIntArithExpr(attr.defaultValue)) {
+                    // int type but default value is not
                     accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                         node: attr,
                         property: 'type',
                         code: IssueCodes.AttributeTypeDoesNotMatch
                     })
                 } else if ((attr.type.ptype == "double" || attr.type.ptype == "float") && !ModelModelingLanguageUtils.isNumberArithExpr(attr.defaultValue)) {
+                    // number type but default value is not
                     accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                         node: attr,
                         property: 'type',
@@ -447,6 +456,7 @@ export class ModelModelingLanguageValidator {
                     })
                 }
             } else if (attr.type.ptype == undefined && attr.type.etype != undefined && attr.type.etype.ref != undefined && !ModelModelingLanguageUtils.isEnumValueArithExpr(attr.defaultValue)) {
+                // attribute has enum type, not primitive type, but default value is no enum value
                 accept('error', `Default value does not match specified attribute type (${ModelModelingLanguageUtils.getQualifiedClassName(attr.type.etype.ref, attr.type.etype.ref.name)})`, {
                     node: attr,
                     property: 'type',
@@ -667,9 +677,13 @@ export class ModelModelingLanguageValidator {
     checkMacroAttributeStatementType(mas: MacroAttributeStatement, accept: ValidationAcceptor) {
         const attr = mas.attr.ref;
         if (attr != undefined && mas.value != undefined) {
+            // both sides of statement are not undefined
             if (attr.type.ptype != undefined && attr.type.etype == undefined) {
+                // attribute has primitive datatype, not enum type
                 if (isVariableValueExpr(mas.value) && mas.value.val.ref != undefined) {
+                    // value is known variable
                     if (attr.type.ptype != ModelModelingLanguageUtils.getVariableTyping(mas.value.val.ref).dtype) {
+                        // typing of variable does not match the defined attribute type
                         accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                             node: mas,
                             property: "value",
@@ -677,24 +691,28 @@ export class ModelModelingLanguageValidator {
                         });
                     }
                 } else if (attr.type.ptype == "bool" && !ModelModelingLanguageUtils.isBoolArithExpr(mas.value)) {
+                    // attribute has bool type but value has not
                     accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                         node: mas,
                         property: "value",
                         code: IssueCodes.MacroAttributeTypeDoesNotMatch
                     });
                 } else if (attr.type.ptype == "string" && !ModelModelingLanguageUtils.isStringArithExpr(mas.value)) {
+                    // attribute has string type but value has not
                     accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                         node: mas,
                         property: "value",
                         code: IssueCodes.MacroAttributeTypeDoesNotMatch
                     });
                 } else if (attr.type.ptype == "int" && !ModelModelingLanguageUtils.isIntArithExpr(mas.value)) {
+                    // attribute has int type but value has not
                     accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                         node: mas,
                         property: "value",
                         code: IssueCodes.MacroAttributeTypeDoesNotMatch
                     });
                 } else if ((attr.type.ptype == "double" || attr.type.ptype == "float") && !ModelModelingLanguageUtils.isNumberArithExpr(mas.value)) {
+                    // attribute has number type but value has not
                     accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                         node: mas,
                         property: "value",
@@ -702,7 +720,9 @@ export class ModelModelingLanguageValidator {
                     });
                 }
             } else if (attr.type.ptype == undefined && attr.type.etype != undefined && attr.type.etype.ref != undefined) {
+                // attribute has enum type, not primitive datatype
                 if (ModelModelingLanguageUtils.isEnumValueArithExpr(mas.value) && mas.value != undefined && (mas.value as EnumValueExpr).val.ref != undefined) {
+                    // value is enum value
                     const attrType: Enum = attr.type.etype.ref;
                     // @ts-ignore
                     const valEntry: EnumEntry = (mas.value as EnumValueExpr).val.ref;
@@ -715,6 +735,7 @@ export class ModelModelingLanguageValidator {
                         });
                     }
                 } else {
+                    // attribute has enum type but provided value is no enum type
                     accept('error', `Default value does not match specified attribute type (${ModelModelingLanguageUtils.getQualifiedClassName(attr.type.etype.ref, attr.type.etype.ref.name)})`, {
                         node: mas,
                         property: "value",
@@ -732,18 +753,22 @@ export class ModelModelingLanguageValidator {
         const targetReference: CReference | undefined = mas.cref.ref;
         const instVar: TypedVariable | undefined = mas.instance.ref;
         if (targetReference != undefined && instVar != undefined) {
+            // both references are linked
             if (instVar.typing.dtype != undefined && instVar.typing.type == undefined) {
+                // provided value has primitive datatype instead of class type
                 accept('error', `A reference cannot point to a variable of type "${instVar.typing.dtype}"!`, {
                     node: mas,
                     property: "instance",
                     code: IssueCodes.MacroAssignReferenceTypeDoesNotMatch
                 });
             } else if (instVar.typing.type != undefined) {
+                // provided value has class type
                 const instVarClss = instVar.typing.type.ref;
                 const targetRefTypeClss = targetReference.type.ref;
                 if (instVarClss != undefined && targetRefTypeClss != undefined) {
-                    if (targetRefTypeClss != instVarClss) {
+                    // both references are linked
                     if (targetRefTypeClss != instVarClss && !ModelModelingLanguageUtils.getAllInheritedAbstractElements(instVarClss).includes(targetRefTypeClss)) {
+                        // required and provided class types do not match and inheritance is also not given
                         const qcn1 = ModelModelingLanguageUtils.getQualifiedClassName(targetRefTypeClss, targetRefTypeClss.name);
                         const qcn2 = ModelModelingLanguageUtils.getQualifiedClassName(instVarClss, instVarClss.name);
                         accept('error', `Non-matching types, a reference of type "${qcn1}" cannot have a class of type "${qcn2}"!`, {
@@ -860,29 +885,38 @@ export class ModelModelingLanguageValidator {
 
     checkFunctionMacroCallArguments(fmc: FunctionMacroCall, accept: ValidationAcceptor) {
         if (fmc.macro.ref != undefined) {
+            // macro is linked
             const calledMacro = fmc.macro.ref;
             if (fmc.args.length < calledMacro.parameter.length) {
+                // too few arguments provided
                 const missingArgs = calledMacro.parameter.slice(fmc.args.length, calledMacro.parameter.length).map(ma => ma.typing.dtype != undefined ? ma.typing.dtype : ma.typing.type != undefined && ma.typing.type.ref != undefined ? ModelModelingLanguageUtils.getQualifiedClassName(ma.typing.type.ref, ma.typing.type.ref.name) : "unknown parameter").join(', ');
                 accept('error', `Missing arguments ${fmc.macro.ref.name}(${missingArgs})`, {
                     node: fmc,
                     code: IssueCodes.FunctionMacroCallArgumentLengthMismatch
                 })
             } else if (fmc.args.length > calledMacro.parameter.length) {
+                // too many arguments provided
                 accept('error', `Expected ${calledMacro.parameter.length} arguments, found ${fmc.args.length}`, {
                     node: fmc,
                     code: IssueCodes.FunctionMacroCallArgumentLengthMismatch
                 })
             } else {
+                // correct number of arguments provided
                 fmc.args.forEach((arg, idx) => {
+                    // iterate over all provided arguments
                     const macroParamVarInst = calledMacro.parameter.at(idx);
                     if (macroParamVarInst == undefined) {
                         return;
                     }
                     const macroParamVarTyping = ModelModelingLanguageUtils.getVariableTyping(macroParamVarInst);
                     if ((arg.value != undefined && arg.ref == undefined) || (arg.ref != undefined && arg.ref.ref != undefined && ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref) != undefined && ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref).dtype != undefined && ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref).type == undefined)) {
+                        // provided value is constant primitive value or variable of primitive type
                         if (macroParamVarTyping.dtype != undefined && macroParamVarTyping.type == undefined) {
+                            // requested parameter has primitive datatype
                             if (arg.value != undefined && arg.ref == undefined) {
+                                // provided value has constant primitive datatype
                                 if (!ModelModelingLanguageUtils.doesValueExpTypeMatch(macroParamVarTyping.dtype, arg.value)) {
+                                    // primitive datatypes do not match
                                     accept('error', `Invalid argument type - Expected type "${macroParamVarTyping.dtype}"`, {
                                         node: fmc,
                                         property: "args",
@@ -891,7 +925,9 @@ export class ModelModelingLanguageValidator {
                                     })
                                 }
                             } else if (arg.value == undefined && arg.ref != undefined && arg.ref.ref != undefined) {
+                                // provided value is variable with primitive value
                                 if (ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref).dtype != macroParamVarTyping.dtype) {
+                                    // primitive datatypes do not match
                                     accept('error', `Invalid argument type - Expected type "${macroParamVarTyping.dtype}"`, {
                                         node: fmc,
                                         property: "args",
@@ -901,11 +937,15 @@ export class ModelModelingLanguageValidator {
                                 }
                             }
                         } else if (macroParamVarTyping.dtype == undefined && macroParamVarTyping.type != undefined) {
+                            // requested datatype has class type
                             if (arg.ref == undefined && arg.value != undefined && isEnum(macroParamVarTyping.type) && isEnumValueExpr(arg.value) && arg.value.val.ref != undefined) {
+                                // requested and provided value has enum datatype
                                 const enumEntry: EnumEntry = arg.value.val.ref;
                                 if (enumEntry != undefined) {
+                                    // enum is linked
                                     const enumContainer: Enum = enumEntry.$container;
                                     if (macroParamVarTyping.type != enumContainer) {
+                                        // enum type does not match requested type
                                         accept('error', `Macro expects reference to enum of type "${ModelModelingLanguageUtils.getQualifiedClassName(macroParamVarTyping.type, macroParamVarTyping.type.name)}"`, {
                                             node: fmc,
                                             property: "args",
@@ -915,7 +955,9 @@ export class ModelModelingLanguageValidator {
                                     }
                                 }
                             } else if (isFunctionVariableSelectorExpr(arg.value) && arg.value.val.ref != undefined) {
+                                // provided value is variable selector
                                 if (macroParamVarTyping.type != ModelModelingLanguageUtils.getVariableTyping(arg.value.val.ref).type) {
+                                    // provided value does not match selector type
                                     accept('error', `Macro expects reference to ${macroParamVarTyping.type.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(macroParamVarTyping.type, macroParamVarTyping.type.name)}"`, {
                                         node: fmc,
                                         property: "args",
@@ -924,6 +966,7 @@ export class ModelModelingLanguageValidator {
                                     })
                                 }
                             } else {
+                                // constant value is requested but class type is provided
                                 accept('error', `Macro expects reference to ${macroParamVarTyping.type.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(macroParamVarTyping.type, macroParamVarTyping.type.name)}"`, {
                                     node: fmc,
                                     property: "args",
@@ -934,9 +977,12 @@ export class ModelModelingLanguageValidator {
                         }
 
                     } else if (arg.value == undefined && arg.ref != undefined && arg.ref.ref != undefined) {
+                        // provided value has class type
                         const argRefRefTyping = ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref);
                         if (argRefRefTyping.dtype == undefined && argRefRefTyping.type != undefined) {
+                            // referenced value is no primitive type
                             if (macroParamVarInst.typing.dtype != undefined && macroParamVarInst.typing.type == undefined) {
+                                // requested primitive datatype but got class type
                                 accept('error', `Incorrect type - macro expects parameters of type ${macroParamVarTyping.dtype}`, {
                                     node: fmc,
                                     property: "args",
@@ -944,9 +990,11 @@ export class ModelModelingLanguageValidator {
                                     code: IssueCodes.FunctionMacroCallArgumentTypeMismatch
                                 })
                             } else if (macroParamVarTyping.dtype == undefined && macroParamVarTyping.type != undefined) {
+                                // requested class type and got class type
                                 const paramClass = macroParamVarTyping.type;
                                 const argClass = argRefRefTyping.type;
                                 if (paramClass != argClass) {
+                                    // class types do not match
                                     accept('error', `Incorrect type - macro expects reference to class of type "${ModelModelingLanguageUtils.getQualifiedClassName(paramClass, paramClass.name)}"`, {
                                         node: fmc,
                                         property: "args",
@@ -965,30 +1013,38 @@ export class ModelModelingLanguageValidator {
 
     checkFunctionCallArguments(fmc: FunctionCall, accept: ValidationAcceptor) {
         if (fmc.func.ref != undefined) {
+            // function is linked
             const calledFunc = fmc.func.ref;
             if (fmc.args.length < calledFunc.parameter.length) {
+                // too few arguments provided
                 const missingArgs = calledFunc.parameter.slice(fmc.args.length, calledFunc.parameter.length).map(ma => ma.typing.dtype != undefined ? ma.typing.dtype : ma.typing.type != undefined && ma.typing.type.ref != undefined ? ModelModelingLanguageUtils.getQualifiedClassName(ma.typing.type.ref, ma.typing.type.ref.name) : "unknown parameter").join(', ');
                 accept('error', `Missing arguments ${fmc.func.ref.name}(${missingArgs})`, {
                     node: fmc,
                     code: IssueCodes.FunctionCallArgumentLengthMismatch
                 })
             } else if (fmc.args.length > calledFunc.parameter.length) {
+                // too many arguments provided
                 accept('error', `Expected ${calledFunc.parameter.length} arguments, found ${fmc.args.length}`, {
                     node: fmc,
                     code: IssueCodes.FunctionCallArgumentLengthMismatch
                 })
             } else {
+                // correct number of arguments provided
                 fmc.args.forEach((arg, idx) => {
+                    // iterate over all provided arguments
                     const funcParamVarInst = calledFunc.parameter.at(idx);
                     if (funcParamVarInst == undefined) {
                         return;
                     }
                     const funcParamVarTyping = ModelModelingLanguageUtils.getVariableTyping(funcParamVarInst);
                     if ((arg.value != undefined && arg.ref == undefined) || (arg.ref != undefined && arg.ref.ref != undefined && ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref) != undefined && ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref).dtype != undefined && ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref).type == undefined)) {
-                        console.warn(`[EnumTypeMatcher] Coming from: ${arg.ref != undefined && arg.ref.ref != undefined ? ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref).dtype : "undefined"} ${arg.ref != undefined && arg.ref.ref != undefined ? ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref).type : "undefined"}`);
+                        // provided value is constant primitive value or variable of primitive type
                         if (funcParamVarTyping.dtype != undefined && funcParamVarTyping.type == undefined) {
+                            // requested parameter has primitive datatype
                             if (arg.value != undefined && arg.ref == undefined) {
+                                // provided value has constant primitive datatype
                                 if (!ModelModelingLanguageUtils.doesValueExpTypeMatch(funcParamVarTyping.dtype, arg.value)) {
+                                    // primitive datatypes do not match
                                     accept('error', `Invalid argument type - Expected type "${funcParamVarTyping.dtype}"`, {
                                         node: fmc,
                                         property: "args",
@@ -997,7 +1053,9 @@ export class ModelModelingLanguageValidator {
                                     })
                                 }
                             } else if (arg.value == undefined && arg.ref != undefined && arg.ref.ref != undefined) {
+                                // provided value is variable with primitive value
                                 if (ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref).dtype != funcParamVarTyping.dtype) {
+                                    // primitive datatypes do not match
                                     accept('error', `Invalid argument type - Expected type "${funcParamVarTyping.dtype}"`, {
                                         node: fmc,
                                         property: "args",
@@ -1007,16 +1065,26 @@ export class ModelModelingLanguageValidator {
                                 }
                             }
                         } else if (funcParamVarTyping.dtype == undefined && funcParamVarTyping.type != undefined) {
-                            // TODO: fix for enum (enum in arg.value != undefined)
-                            console.warn(`[EnumTypeMatcher] What am i doing here? ${funcParamVarTyping.type.$type} ${funcParamVarTyping.type.name}`);
+                            // requested datatype has class type
                             if (isEnum(funcParamVarTyping.type)) {
+                                // provided value has enum datatype
                                 if (arg.value != undefined && arg.ref == undefined) {
-                                    console.warn(`[EnumTypeMatcher] ${arg.value.$type}`);
+                                    // provided value constant
                                     if (isEnumValueExpr(arg.value) && arg.value.val.ref != undefined) {
-                                        console.warn(`[EnumTypeMatcher] ${arg.value.val.ref.$container.name} ${funcParamVarTyping.type.name}`);
+                                        // provided value is EnumValueExpr
+                                        if (ModelModelingLanguageUtils.getEnumValueExprEnumName(arg.value) != ModelModelingLanguageUtils.getQualifiedClassName(funcParamVarTyping.type, funcParamVarTyping.type.name)) {
+                                            // ...but type does not match
+                                            accept('error', `Invalid argument type - Expected type "${ModelModelingLanguageUtils.getQualifiedClassName(funcParamVarTyping.type, funcParamVarTyping.type.name)}"`, {
+                                                node: fmc,
+                                                property: "args",
+                                                index: idx,
+                                                code: IssueCodes.FunctionCallArgumentTypeMismatch
+                                            })
+                                        }
                                     }
                                     if (!(isEnumValueExpr(arg.value) && arg.value.val.ref != undefined && arg.value.val.ref.$container == funcParamVarTyping.type)) {
-                                        accept('error', `Invalid argument type - Expected type "${funcParamVarTyping.type.$type.toLowerCase()}"`, {
+                                        // provided type does not match enum
+                                        accept('error', `Invalid argument type - Expected type "${ModelModelingLanguageUtils.getQualifiedClassName(funcParamVarTyping.type, funcParamVarTyping.type.name)}"`, {
                                             node: fmc,
                                             property: "args",
                                             index: idx,
@@ -1024,7 +1092,9 @@ export class ModelModelingLanguageValidator {
                                         })
                                     }
                                 } else if (arg.value == undefined && arg.ref != undefined && arg.ref.ref != undefined) {
+                                    // provided value is variable
                                     if (ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref).type != funcParamVarTyping.type) {
+                                        // ...but type does not match
                                         accept('error', `Invalid argument type - Expected type "${funcParamVarTyping.type.$type.toLowerCase()}"`, {
                                             node: fmc,
                                             property: "args",
@@ -1034,7 +1104,9 @@ export class ModelModelingLanguageValidator {
                                     }
                                 }
                             } else if (isFunctionVariableSelectorExpr(arg.value) && arg.value.val.ref != undefined) {
+                                // provided value is variable selector
                                 if (funcParamVarTyping.type != ModelModelingLanguageUtils.getVariableTyping(arg.value.val.ref).type) {
+                                    // provided value does not match selector type
                                     accept('error', `Function expects reference to ${funcParamVarTyping.type.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(funcParamVarTyping.type, funcParamVarTyping.type.name)}"`, {
                                         node: fmc,
                                         property: "args",
@@ -1043,6 +1115,7 @@ export class ModelModelingLanguageValidator {
                                     })
                                 }
                             } else {
+                                // constant value is requested but class type is provided
                                 accept('error', `Function expects reference to ${funcParamVarTyping.type.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(funcParamVarTyping.type, funcParamVarTyping.type.name)}"`, {
                                     node: fmc,
                                     property: "args",
@@ -1052,9 +1125,12 @@ export class ModelModelingLanguageValidator {
                             }
                         }
                     } else if (arg.value == undefined && arg.ref != undefined && arg.ref.ref != undefined) {
+                        // provided value has class type
                         const argRefRefTyping = ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref);
                         if (argRefRefTyping.dtype == undefined && argRefRefTyping.type != undefined) {
+                            // referenced value is no primitive type
                             if (funcParamVarInst.typing.dtype != undefined && funcParamVarInst.typing.type == undefined) {
+                                // requested primitive datatype but got class type
                                 accept('error', `Incorrect type - function expects parameters of type ${funcParamVarTyping.dtype}`, {
                                     node: fmc,
                                     property: "args",
@@ -1062,9 +1138,11 @@ export class ModelModelingLanguageValidator {
                                     code: IssueCodes.FunctionCallArgumentTypeMismatch
                                 })
                             } else if (funcParamVarTyping.dtype == undefined && funcParamVarTyping.type != undefined) {
+                                // requested class type and got class type
                                 const paramClass = funcParamVarTyping.type;
                                 const argClass = argRefRefTyping.type;
                                 if (paramClass != argClass) {
+                                    // class types do not match
                                     accept('error', `Incorrect type - function expects reference to ${paramClass.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(paramClass, paramClass.name)}"`, {
                                         node: fmc,
                                         property: "args",

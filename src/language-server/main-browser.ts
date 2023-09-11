@@ -24,7 +24,6 @@ type DocumentChange = { uri: string, content: string, diagnostics: Diagnostic[] 
 const documentChangeNotification = new NotificationType<DocumentChange>('browser/DocumentChange');
 shared.workspace.DocumentBuilder.onBuildPhase(DocumentState.Validated, documents => {
     for (const document of documents) {
-        //const json = [];
         const module = document.parseResult.value as Model;
 
         connection.sendNotification(documentChangeNotification, {
