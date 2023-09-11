@@ -54,7 +54,7 @@
     "vscode:prepublish": "npm run build && npm run lint",
     "build": "tsc -b tsconfig.json",
     "watch": "tsc -b tsconfig.json -watch",
-    "lint": "eslint src test --ext ts",
+    "lint": "eslint src test --ext ts --no-error-on-unmatched-pattern",
     "langium:generate": "langium generate",
     "langium:watch": "langium generate --watch",
     "fullbuild": "npm run langium:generate && vsce package",
