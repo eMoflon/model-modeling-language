@@ -41,7 +41,9 @@
     "out",
     "src",
     "syntaxes",
-    "language-configuration.json"
+    "language-configuration.json",
+    "langium-config.json",
+    "tsconfig.json"
   ],
   "bin": {
     "model-modeling-language-cli": "./bin/cli"
