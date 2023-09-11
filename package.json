@@ -59,7 +59,7 @@
     "langium:watch": "langium generate --watch",
     "fullbuild": "npm run langium:generate && vsce package",
     "build:ls": "esbuild ./out/language-server/main-browser.js --bundle --format=esm --sourcemap --outfile=./out/public/mmlServerWorker.js",
-    "fullbuild:ls": "vsce package && npm run build:ls"
+    "fullbuild:ls": "vsce package --no-dependencies && npm run build:ls"
   },
   "dependencies": {
     "chalk": "~4.1.2",
