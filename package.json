@@ -43,7 +43,8 @@
     "syntaxes",
     "language-configuration.json",
     "langium-config.json",
-    "tsconfig.json"
+    "tsconfig.json",
+    ".eslintrc.json"
   ],
   "bin": {
     "model-modeling-language-cli": "./bin/cli"
