@@ -4,12 +4,19 @@ import fs from 'fs';
 import {AstNode, LangiumDocument, LangiumServices} from 'langium';
 import {URI} from 'vscode-uri';
 
+/**
+ * Types of path targets
+ */
 export enum GeneratorTargetType {
     FILE,
     DIRECTORY,
     UNKNOWN
 }
 
+/**
+ * Resolve the target type of a given path
+ * @param targetName
+ */
 export function getTargetType(targetName: string): GeneratorTargetType {
     if (!fs.existsSync(targetName)) {
         console.error(chalk.red(`Target ${targetName} does not exist.`));
@@ -21,6 +28,11 @@ export function getTargetType(targetName: string): GeneratorTargetType {
     return GeneratorTargetType.FILE
 }
 
+/**
+ * Get a list of all subordinate files with respect to a list of file extensions
+ * @param targetName Base path
+ * @param extensions List of file extensions
+ */
 export function getFilesInDirRecursive(targetName: string, extensions: string[]): string[] {
     const fileNames: string[] = []
     fs.readdirSync(targetName).forEach(filePath => {
@@ -35,6 +47,10 @@ export function getFilesInDirRecursive(targetName: string, extensions: string[])
     return fileNames
 }
 
+/**
+ * Get all files in a directory
+ * @param dir Directory path
+ */
 export async function getFiles(dir: string): Promise<string[]> {
     const dirents = await fs.promises.readdir(dir, {withFileTypes: true});
     const files = await Promise.all(dirents.map((dirent) => {
@@ -44,6 +60,13 @@ export async function getFiles(dir: string): Promise<string[]> {
     return Array.prototype.concat(...files) as string[];
 }
 
+/**
+ * Extract the content of all given Files, create Langium Documents and run the builder
+ * with all validation checks.
+ * In case of validation errors, show their origin, return the documents otherwise
+ * @param fileNames List of filepaths
+ * @param services Langium services
+ */
 export async function extractDocuments(fileNames: string[], services: LangiumServices): Promise<LangiumDocument[]> {
     const extensions = services.LanguageMetaData.fileExtensions;
 
@@ -84,11 +107,21 @@ export async function extractDocuments(fileNames: string[], services: LangiumSer
     return documents;
 }
 
+/**
+ * Build a langium model for a given filepath and extract the root as given type
+ * @param fileName Filepath
+ * @param services Langium services
+ */
 export async function extractAstNode<T extends AstNode>(fileName: string, services: LangiumServices): Promise<T> {
     // @ts-ignore
     return (await extractDocuments([fileName], services)).at(0).parseResult.value as T
 }
 
+/**
+ * Build langium models for all provided filepaths and extract all roots as given type
+ * @param fileNames List of filepaths
+ * @param services Langium services
+ */
 export async function extractAstNodes<T extends AstNode>(fileNames: string[], services: LangiumServices): Promise<T[]> {
     return (await extractDocuments(fileNames, services)).map(doc => doc.parseResult.value as T)
 }
@@ -98,6 +131,11 @@ interface FilePathData {
     name: string
 }
 
+/**
+ * Based on a filepath, compute the default export destination, in case of no provided destination
+ * @param filePath Filepath
+ * @param destination (optional) destination
+ */
 export function extractDestinationAndName(filePath: string, destination: string | undefined): FilePathData {
     filePath = path.basename(filePath, path.extname(filePath)).replace(/[.-]/g, '');
     return {
