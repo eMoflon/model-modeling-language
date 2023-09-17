@@ -14,7 +14,7 @@ import {ModelModelingLanguageScopeComputation} from "./model-modeling-language-s
 import {ModelModelingLanguageSemanticTokenProvider} from "./model-modeling-language-semantic-token-provider";
 import {ModelModelingLanguageCodeActionProvider} from "./model-modeling-language-code-action-provider";
 import {ModelModelingLanguageFormatter} from "./model-modeling-language-formatter";
-import {ModelModelingLanguageScopeProvider} from "./model-modeling-languge-scope-provider";
+import {ModelModelingLanguageScopeProvider} from "./model-modeling-language-scope-provider";
 import {ModelModelingLanguageCompletionProvider} from "./model-modeling-language-completion-provider";
 
 /**
