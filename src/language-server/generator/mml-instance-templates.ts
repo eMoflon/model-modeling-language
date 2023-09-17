@@ -27,6 +27,11 @@ import {zip} from "./utils";
 import {MmlReferenceStorage} from "./mml-reference-storage";
 import {MmlInstanceRegistry} from "./mml-instance-registry";
 
+/**
+ * These dataclasses define the structure of the serialized instance output.
+ * The instances are being precomputed, all references are resolved and arithmetic expressions evaluated.
+ */
+
 function executeMacroCall(macroCall: FunctionMacroCall, referenceStorage: MmlReferenceStorage, outerContext: MmlSerializerContext, serializer: SerializedInstance, instanceRegistry: MmlInstanceRegistry) {
     const innerContext = new MmlSerializerContext();
     if (macroCall.macro.ref != undefined) {

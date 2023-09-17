@@ -23,6 +23,11 @@ import {MmlReferenceStorage} from "./mml-reference-storage";
 import {ModelModelingLanguageUtils} from "../model-modeling-language-utils";
 import {MmlSerializerContext} from "./mml-serializer-context";
 
+/**
+ * These dataclasses define the structure of the serialized metamodel output.
+ * The metamodel is being precomputed and all references are resolved.
+ */
+
 class AttributeEntity {
     readonly referenceId: string;
     readonly name: string;

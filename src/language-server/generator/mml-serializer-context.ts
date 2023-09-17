@@ -11,6 +11,14 @@ import {
     Variable
 } from "../generated/ast";
 
+/**
+ * The MmlSerializerContext is used for variable storage and resolution.
+ * At any given time, the used context should represent the variable states
+ * of the current scope.
+ *
+ * Since any variable values are used inside a ArithExpr, the ArithExpr evaluation
+ * is also included in this class. The evaluation is performed considering the current context.
+ */
 export class MmlSerializerContext {
     private variableMap: Map<Variable, any> = new Map<Variable, any>();
     private unbindedValue: any;

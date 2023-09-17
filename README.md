@@ -12,6 +12,19 @@ With the help of Langium, four different products are provided:
 * A **Language Server** based on the Language Server Protocol (LSP)
 * An **extended Language Server**, based on the Language Server Protocol (LSP), to provide continuous output
 
+---
+
+* [How to build](#how-to-build)
+* [Using the CLI](#using-the-cli)
+* [Using the Language Server](#using-the-language-server)
+* [Using the VSCode Extension](#using-the-vscode-extension)
+* [The Model Modeling Language](#the-model-modeling-language)
+  * [Specification of Metamodels](#on-the-specification-of-metamodels)
+  * [Specification of Instances](#on-the-specification-of-instances)
+* [File structure](#file-structure-where-can-i-find)
+
+---
+
 ## How to build
 
 Langium requires Node.js >=14 and npm >=7. Once you have those requirements installed, you can install the required node
@@ -228,3 +241,30 @@ instance <Name> {
     }
 }
 ```
+
+## File structure: Where can I find....
+
+| Filepath                                                                | Description                                                                                   |
+|-------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| `/src/cli/*`                                                              | CLI functionality: parameter handling and calling of the MML interpreter                      |
+| `/src/language-server/generated/*`                                        | Generated parser: Do **not** modify these files, because they will be overwritten by Langium! |
+| `/src/language-server/generator/mml-entity-templates.ts`                  | Dataclasses for the serialization of metamodel elements                                       |
+| `/src/language-server/generator/mml-instance-templates.ts`                | Dataclasses for the serialization of instances                                                |
+| `/src/language-server/generator/mml-instance-registry.ts`                 | Registration for previously created instances                                                 |
+| `/src/language-server/generator/mml-reference-storage.ts`                 | Registration for previously created metamodel elements                                        |
+| `/src/language-server/generator/mml-serializer.ts`                        | Base serialization of MML models                                                              |
+| `/src/language-server/generator/mml-serializer-context.ts`                | Context for resolving environment variables                                                   |
+| `/src/language-server/generator/utils.ts`                                 | Utility functions                                                                             |
+| `/src/language-server/main.ts`                                            | Language Server startup file                                                                  |
+| `/src/language-server/main-browser.ts`                                    | Language Server startup file extended with interpreting functionality                         |
+| `/src/language-server/model-modeling-language.langium`                    | **The** Model Modeling Language grammar definition                                            |
+| `/src/language-server/model-modeling-language-code-action-provider.ts`    | Implementation of QuickFixes                                                                  |
+| `/src/language-server/model-modeling-language-completion-provider.ts`     | Implementation of Code Snippets                                                               |
+| `/src/language-server/model-modeling-language-formatter.ts`               | Implementation of automatic code formatting                                                   |
+| `/src/language-server/model-modeling-language-module.ts`                  | Base registration of langium services                                                         |
+| `/src/language-server/model-modeling-language-scope-computation.ts`       | Definition of global scope exports                                                            |
+| `/src/language-server/model-modeling-language-scope-provider.ts`          | Definition of custom scopes for language structures                                           |
+| `/src/language-server/model-modeling-language-semantic-token-provider.ts` | Implementation of semantic highlighting                                                       |
+| `/src/language-server/model-modeling-language-utils.ts`                   | Collection of utility functions                                                               |
+| `/src/language-server/model-modeling-language-validator.ts`               | Implementation of code validation checks                                                      |
+| `/src/extension.ts`                                                       | Entrypoint for the VSIX extension                                                             |

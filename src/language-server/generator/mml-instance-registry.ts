@@ -1,6 +1,9 @@
 import {ObjectInstance} from "./mml-instance-templates";
 import {v4 as uuidv4} from 'uuid';
 
+/**
+ * The MmlInstanceRegistry stores and resolves ids of created instances
+ */
 export class MmlInstanceRegistry {
     private knownInstances: Map<string, ObjectInstance> = new Map<string, ObjectInstance>()
 

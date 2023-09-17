@@ -1,5 +1,8 @@
 import {AstNode, AstNodeLocator, getDocument, Reference} from "langium";
 
+/**
+ * The MmlReferenceStorage stores and resolves ids of ast nodes
+ */
 export class MmlReferenceStorage {
     private referenceMap: Map<string, AstNode> = new Map<string, AstNode>;
     private nodeMap: Map<AstNode, string> = new Map<AstNode, string>;
