@@ -119,13 +119,13 @@ export class ModelModelingLanguageUtils {
     }
 
     public static doesValueExpTypeMatch(stringType: string, valExpr: ArithExpr): boolean {
-        if (isStringExpr(valExpr) && stringType === "string") {
+        if (this.isStringArithExpr(valExpr) && stringType === "string") {
             return true;
         }
-        if (isBoolExpr(valExpr) && stringType === "bool") {
+        if (this.isBoolArithExpr(valExpr) && stringType === "bool") {
             return true;
         }
-        return isNumberExpr(valExpr) && (stringType === "double" || stringType === "int");
+        return this.isNumberArithExpr(valExpr) && (stringType === "double" || stringType === "int");
     }
 
     /**
