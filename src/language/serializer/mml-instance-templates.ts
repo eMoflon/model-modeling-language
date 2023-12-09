@@ -21,11 +21,11 @@ import {
     MacroInstance,
     Model,
     Variable
-} from "../generated/ast";
-import {MmlSerializerContext} from "./mml-serializer-context";
-import {zip} from "./utils";
-import {MmlReferenceStorage} from "./mml-reference-storage";
-import {MmlInstanceRegistry} from "./mml-instance-registry";
+} from "../generated/ast.js";
+import {MmlSerializerContext} from "./mml-serializer-context.js";
+import {zip} from "./utils.js";
+import {MmlReferenceStorage} from "./mml-reference-storage.js";
+import {MmlInstanceRegistry} from "./mml-instance-registry.js";
 
 /**
  * These dataclasses define the structure of the serialized instance output.
@@ -213,8 +213,8 @@ export class ObjectInstance {
 
     public addAttribute(attr: MacroAttributeStatement, context: MmlSerializerContext, referenceStorage: MmlReferenceStorage) {
         if (attr.attr.ref != undefined) {
-            var val;
-            var isEnumType = false;
+            let val;
+            let isEnumType = false;
             if (isEnumValueExpr(attr.value) && attr.value.val.ref != undefined) {
                 val = referenceStorage.getNodeReferenceId(attr.value.val.ref)
                 isEnumType = true;

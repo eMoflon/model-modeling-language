@@ -28,7 +28,7 @@ import {
     isPackage,
     isStringExpr,
     isTypedVariable
-} from "./generated/ast";
+} from "./generated/ast.js";
 import {SemanticTokenTypes} from "vscode-languageserver";
 
 /**

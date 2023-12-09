@@ -18,10 +18,10 @@ import {
     Multiplicity,
     Package,
     ReferenceModifiers
-} from "../generated/ast";
-import {MmlReferenceStorage} from "./mml-reference-storage";
-import {ModelModelingLanguageUtils} from "../model-modeling-language-utils";
-import {MmlSerializerContext} from "./mml-serializer-context";
+} from "../generated/ast.js";
+import {MmlReferenceStorage} from "./mml-reference-storage.js";
+import {ModelModelingLanguageUtils} from "../model-modeling-language-utils.js";
+import {MmlSerializerContext} from "./mml-serializer-context.js";
 
 /**
  * These dataclasses define the structure of the serialized metamodel output.

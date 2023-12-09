@@ -1,5 +1,5 @@
-import {describe, expect, test} from "vitest";
-import {getModel} from "./testutils";
+import {describe, test} from "vitest";
+import {expectParserErrorLength, getModel} from "./testutils.js";
 
 
 describe('Test model definition parser', () => {
@@ -8,7 +8,7 @@ describe('Test model definition parser', () => {
         import "path/to/other/file";
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test import with alias', async () => {
@@ -16,7 +16,7 @@ describe('Test model definition parser', () => {
         import "path/to/other/file" using Test.Model as Test;
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
 
@@ -25,7 +25,7 @@ describe('Test model definition parser', () => {
         /// Test comment
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test multiline comment', async () => {
@@ -33,7 +33,7 @@ describe('Test model definition parser', () => {
         /* Test comment */
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
 
@@ -43,7 +43,7 @@ describe('Test model definition parser', () => {
         
         }
         `);
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test package with subpackages', async () => {
@@ -57,7 +57,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class', async () => {
@@ -68,7 +68,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test interface', async () => {
@@ -79,7 +79,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test interface that extends interface', async () => {
@@ -92,7 +92,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test interface that extends multiple interfaces', async () => {
@@ -107,7 +107,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test enum', async () => {
@@ -120,7 +120,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test enum with default values', async () => {
@@ -133,7 +133,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test abstract class', async () => {
@@ -144,7 +144,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class that implements interface', async () => {
@@ -157,7 +157,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class that extends class', async () => {
@@ -170,7 +170,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class that extends abstract class', async () => {
@@ -183,7 +183,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test abstract class that extends class', async () => {
@@ -196,7 +196,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test abstract class that extends abstract class', async () => {
@@ -209,7 +209,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class with string attribute', async () => {
@@ -221,7 +221,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class with string attribute and value', async () => {
@@ -233,7 +233,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class with int attribute', async () => {
@@ -245,7 +245,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class with int attribute and value', async () => {
@@ -257,7 +257,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class with double attribute', async () => {
@@ -269,7 +269,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
 
@@ -282,7 +282,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
 
@@ -295,7 +295,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
 
@@ -308,7 +308,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class with bool attribute', async () => {
@@ -320,7 +320,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class with bool attribute and value', async () => {
@@ -332,7 +332,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class with enum attribute', async () => {
@@ -349,7 +349,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class with enum attribute and value', async () => {
@@ -366,7 +366,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
 
@@ -379,7 +379,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
 
@@ -392,7 +392,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
 
@@ -405,7 +405,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
 
@@ -418,7 +418,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class with reference', async () => {
@@ -433,7 +433,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
 
@@ -449,7 +449,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class with reference and multiplicity 2', async () => {
@@ -464,7 +464,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class with reference and multiplicity 3', async () => {
@@ -479,7 +479,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class with reference and multiplicity 4', async () => {
@@ -494,7 +494,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class with reference and multiplicity 5', async () => {
@@ -509,7 +509,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class with reference and multiplicity 6', async () => {
@@ -524,7 +524,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
 
@@ -540,7 +540,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
 
@@ -556,7 +556,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class with annotated reference', async () => {
@@ -573,7 +573,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
     test('Test class with bi-annotated reference', async () => {
@@ -591,7 +591,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
 
@@ -609,7 +609,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
 
@@ -627,7 +627,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
 
@@ -645,7 +645,7 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });
 
 
@@ -656,6 +656,6 @@ describe('Test model definition parser', () => {
         }
         `);
 
-        expect(model.$document.parseResult.parserErrors.length).toEqual(0);
+        expectParserErrorLength(model).toEqual(0);
     });*/
 });

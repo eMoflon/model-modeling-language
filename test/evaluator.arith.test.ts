@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {getArithExprEval} from "./testutils";
+import {getArithExprEval} from "./testutils.js";
 
 describe('Arith Expression evaluator', () => {
     test('Addition 1', async () => {

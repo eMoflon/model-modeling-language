@@ -1,6 +1,6 @@
 import {describe, expect, test} from "vitest";
-import {getValidation} from "./testutils";
-import {IssueCodes} from "../src/language-server/model-modeling-language-validator";
+import {expectErrorCode, getValidation} from "./testutils.js";
+import {IssueCodes} from "../src/language/model-modeling-language-validator.js";
 
 describe('Macro validator tests', () => {
     test('Validator should notice non-unique macro name', async () => {
@@ -24,7 +24,7 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.MacroNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.MacroNameNotUnique);
     });
 
     test('Validator should notice non-unique macro variable name 1', async () => {
@@ -50,8 +50,8 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.MacroVariableNameNotUnique);
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.MacroVariableNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.MacroVariableNameNotUnique);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.MacroVariableNameNotUnique);
     });
 
     test('Validator should notice non-unique macro variable name 2', async () => {
@@ -77,7 +77,7 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.MacroVariableNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.MacroVariableNameNotUnique);
     });
 
     test('Validator should notice non-unique macro variable name 3', async () => {
@@ -103,8 +103,8 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.MacroVariableNameNotUnique);
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.MacroVariableNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.MacroVariableNameNotUnique);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.MacroVariableNameNotUnique);
     });
 
     test('Validator should notice non-unique macro variable name 4', async () => {
@@ -130,10 +130,10 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(4);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.MacroVariableNameNotUnique);
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.MacroVariableNameNotUnique);
-        expect(validationResult.diagnostics.at(2).code).toEqual(IssueCodes.MacroVariableNameNotUnique);
-        expect(validationResult.diagnostics.at(3).code).toEqual(IssueCodes.MacroVariableNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.MacroVariableNameNotUnique);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.MacroVariableNameNotUnique);
+        expectErrorCode(validationResult, 2).toEqual(IssueCodes.MacroVariableNameNotUnique);
+        expectErrorCode(validationResult, 3).toEqual(IssueCodes.MacroVariableNameNotUnique);
     });
 
     test('Validator should notice invalid macro attribute statement type 1', async () => {
@@ -159,7 +159,7 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.MacroAttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.MacroAttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice invalid macro attribute statement type 2', async () => {
@@ -185,7 +185,7 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.MacroAttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.MacroAttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice invalid macro attribute statement type 3', async () => {
@@ -211,7 +211,7 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.MacroAttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.MacroAttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice invalid macro attribute statement type 4', async () => {
@@ -239,7 +239,7 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.MacroAttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.MacroAttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice macro assignment on attribute variable', async () => {
@@ -263,7 +263,7 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.MacroAssignReferenceTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.MacroAssignReferenceTypeDoesNotMatch);
     });
 
     test('Validator should notice non-matching macro assignment class type', async () => {
@@ -289,7 +289,7 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.MacroAssignReferenceTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.MacroAssignReferenceTypeDoesNotMatch);
     });
 
     test('Validator should notice instantiation of abstract class', async () => {
@@ -307,7 +307,7 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.InstantiationOfAbstractClass);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.InstantiationOfAbstractClass);
     });
 
     test('Validator should notice instantiation of interface', async () => {
@@ -325,8 +325,8 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.InstantiationOfInterface);
+        expectErrorCode(validationResult, 0).toEqual(undefined);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.InstantiationOfInterface);
     });
 
     test('Validator should notice instantiation of primitive type', async () => {
@@ -339,8 +339,8 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.InstantiationOfPrimitiveType);
+        expectErrorCode(validationResult, 0).toEqual(undefined);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.InstantiationOfPrimitiveType);
     });
 
     test('Validator should notice instantiation of enum class', async () => {
@@ -359,8 +359,8 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.InstantiationOfEnum);
+        expectErrorCode(validationResult, 0).toEqual(undefined);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.InstantiationOfEnum);
     });
 
     test('Validator should notice usage of abstract type', async () => {
@@ -378,7 +378,7 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.InstantiationOfAbstractClass);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.InstantiationOfAbstractClass);
     });
 
     test('Validator should notice usage of interface', async () => {
@@ -396,8 +396,8 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.InstantiationOfInterface);
+        expectErrorCode(validationResult, 0).toEqual(undefined);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.InstantiationOfInterface);
     });
 
     test('Validator should notice usage of primitive type', async () => {
@@ -410,8 +410,8 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.InstantiationOfPrimitiveType);
+        expectErrorCode(validationResult, 0).toEqual(undefined);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.InstantiationOfPrimitiveType);
     });
 
     test('Validator should notice usage of enum class', async () => {
@@ -430,8 +430,8 @@ describe('Macro validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.InstantiationOfEnum);
+        expectErrorCode(validationResult, 0).toEqual(undefined);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.InstantiationOfEnum);
     });
 
     test('Validator should succeed', async () => {

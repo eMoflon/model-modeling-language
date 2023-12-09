@@ -105,7 +105,7 @@ VariableType:
 
 Variable:
     UntypedVariable | TypedVariable | FunctionVariable;
-    
+
 UntypedVariable:
     name=ID;
 

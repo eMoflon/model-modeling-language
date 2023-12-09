@@ -43,10 +43,10 @@ import {
     isModel,
     TypedVariable,
     Variable
-} from "./generated/ast";
+} from "./generated/ast.js";
 import {URI} from "vscode-uri";
-import {ModelModelingLanguageServices} from "./model-modeling-language-module";
-import {ModelModelingLanguageUtils} from "./model-modeling-language-utils";
+import {ModelModelingLanguageServices} from "./model-modeling-language-module.js";
+import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
 
 /**
  * The ScopeProvider searches scopes and is used to calculate custom scopes for individual

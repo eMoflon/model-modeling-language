@@ -32,7 +32,7 @@ import {
     TypedVariable,
     Variable,
     VariableValueExpr
-} from "./generated/ast";
+} from "./generated/ast.js";
 
 /**
  * A collection of various functions, which are used by different components.

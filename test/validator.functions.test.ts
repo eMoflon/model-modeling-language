@@ -1,6 +1,6 @@
 import {describe, expect, test} from "vitest";
-import {getValidation} from "./testutils";
-import {IssueCodes} from "../src/language-server/model-modeling-language-validator";
+import {expectErrorCode, getValidation} from "./testutils.js";
+import {IssueCodes} from "../src/language/model-modeling-language-validator.js";
 
 describe('Function validator tests', () => {
     test('Validator should notice non-unique function name', async () => {
@@ -22,7 +22,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionNameNotUnique);
     });
 
     test('Validator should notice missing return statement', async () => {
@@ -41,7 +41,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionReturnStatementMissing);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionReturnStatementMissing);
     });
 
     test('Validator should notice missing return signature', async () => {
@@ -61,7 +61,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionReturnTypeSignatureMissing);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionReturnTypeSignatureMissing);
     });
 
     test('Validator should notice non-matching return statement signature pair', async () => {
@@ -81,7 +81,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionReturnSignatureTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionReturnSignatureTypeMismatch);
     });
 
     test('Validator should notice missing macro call parameters', async () => {
@@ -101,7 +101,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionMacroCallArgumentLengthMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionMacroCallArgumentLengthMismatch);
     });
 
     test('Validator should notice to many macro call parameters', async () => {
@@ -121,7 +121,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionMacroCallArgumentLengthMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionMacroCallArgumentLengthMismatch);
     });
 
     test('Validator should notice macro call parameter type mismatch 1', async () => {
@@ -141,7 +141,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
     });
 
     test('Validator should notice macro call parameter type mismatch 2', async () => {
@@ -164,8 +164,8 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
     });
 
     test('Validator should notice macro call parameter type mismatch 3', async () => {
@@ -188,8 +188,8 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
     });
 
     test('Validator should notice macro call parameter type mismatch 4', async () => {
@@ -212,7 +212,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
     });
 
     test('Validator should notice missing function call parameters', async () => {
@@ -235,7 +235,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionCallArgumentLengthMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionCallArgumentLengthMismatch);
     });
 
     test('Validator should notice to many function call parameters', async () => {
@@ -258,7 +258,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionCallArgumentLengthMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionCallArgumentLengthMismatch);
     });
 
     test('Validator should notice function call parameter type mismatch 1', async () => {
@@ -281,7 +281,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
     });
 
     test('Validator should notice function call parameter type mismatch 2', async () => {
@@ -307,8 +307,8 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
     });
 
     test('Validator should notice function call parameter type mismatch 3', async () => {
@@ -334,8 +334,8 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
     });
 
     test('Validator should notice function call parameter type mismatch 4', async () => {
@@ -361,7 +361,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
     });
 
     test('Validator should notice tuple assignment of macro call instance', async () => {
@@ -386,7 +386,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionAssignmentTupleHandlingMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionAssignmentTupleHandlingMismatch);
     });
 
     test('Validator should notice variable assignment of macro call tuple', async () => {
@@ -411,7 +411,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionAssignmentTupleHandlingMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionAssignmentTupleHandlingMismatch);
     });
 
     test('Validator should notice macro call assignment type mismatch 1', async () => {
@@ -436,7 +436,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionAssignmentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionAssignmentTypeMismatch);
     });
 
     test('Validator should notice macro call assignment type mismatch 2', async () => {
@@ -461,7 +461,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionAssignmentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionAssignmentTypeMismatch);
     });
 
     test('Validator should notice assignment of void type function', async () => {
@@ -487,7 +487,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionAssignmentWithVoidFunction);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionAssignmentWithVoidFunction);
     });
 
     test('Validator should notice tuple assignment of function call', async () => {
@@ -513,7 +513,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionAssignmentTupleHandlingMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionAssignmentTupleHandlingMismatch);
     });
 
     test('Validator should notice assignment instance selector on function call', async () => {
@@ -539,8 +539,8 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionAssignmentTupleHandlingMismatch);
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.FunctionAssignmentWithVoidFunction);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionAssignmentTupleHandlingMismatch);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.FunctionAssignmentWithVoidFunction);
     });
 
     test('Validator should notice function call assignment type mismatch 1', async () => {
@@ -567,7 +567,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionAssignmentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionAssignmentTypeMismatch);
     });
 
     test('Validator should notice function call assignment type mismatch 2', async () => {
@@ -597,7 +597,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionAssignmentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionAssignmentTypeMismatch);
     });
 
     test('Validator should notice function call assignment type mismatch 3', async () => {
@@ -624,7 +624,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionAssignmentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionAssignmentTypeMismatch);
     });
 
     test('Validator should notice function loop boundary mismatch', async () => {
@@ -651,7 +651,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionLoopBoundaryMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionLoopBoundaryMismatch);
     });
 
     test('Validator should notice non-unique function variables 1', async () => {
@@ -673,7 +673,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionVariableNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionVariableNameNotUnique);
     });
 
     test('Validator should notice non-unique function variables 2', async () => {
@@ -703,7 +703,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionVariableNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionVariableNameNotUnique);
     });
 
     test('Validator should notice non-unique function variables 3', async () => {
@@ -733,7 +733,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionVariableNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionVariableNameNotUnique);
     });
 
     test('Validator should notice non-unique function variables 4', async () => {
@@ -762,7 +762,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionVariableNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionVariableNameNotUnique);
     });
 
     test('Validator should notice non-unique function variables 5', async () => {
@@ -792,7 +792,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionVariableNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionVariableNameNotUnique);
     });
 
     test('Validator should notice non-unique function variables 6', async () => {
@@ -821,7 +821,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionVariableNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionVariableNameNotUnique);
     });
 
     test('Validator should notice invalid function variable selector expr selector', async () => {
@@ -853,9 +853,9 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(3);
-        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
-        expect(validationResult.diagnostics.at(2).code).toEqual(IssueCodes.InvalidTupleSelectorInParameter);
+        expectErrorCode(validationResult, 0).toEqual(undefined);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 2).toEqual(IssueCodes.InvalidTupleSelectorInParameter);
     });
 
     test('Validator should notice invalid function variable selector type in function call', async () => {
@@ -887,7 +887,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
     });
 
     test('Validator should notice invalid selector on non-function variable in function call', async () => {
@@ -919,8 +919,8 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(undefined);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
     });
 
     test('Validator should notice invalid function variable selector type in macro call', async () => {
@@ -952,7 +952,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
     });
 
     test('Validator should notice invalid selector on non-function variable in macro call', async () => {
@@ -984,8 +984,8 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual("linking-error");
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(undefined);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
     });
 
 

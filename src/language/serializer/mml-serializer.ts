@@ -1,10 +1,10 @@
-import {Model} from "../generated/ast";
-import {MmlReferenceStorage} from "./mml-reference-storage";
-import {SerializedModel} from "./mml-entity-templates";
-import {ModelModelingLanguageServices} from "../model-modeling-language-module";
-import {SerializedInstances} from "./mml-instance-templates";
-import {MmlInstanceRegistry} from "./mml-instance-registry";
-import {jsonReplacer} from "./utils";
+import {Model} from "../generated/ast.js";
+import {MmlReferenceStorage} from "./mml-reference-storage.js";
+import {SerializedModel} from "./mml-entity-templates.js";
+import {ModelModelingLanguageServices} from "../model-modeling-language-module.js";
+import {SerializedInstances} from "./mml-instance-templates.js";
+import {MmlInstanceRegistry} from "./mml-instance-registry.js";
+import {jsonReplacer} from "./utils.js";
 
 /**
  * Function to interpret and serialize a given Mml model

@@ -1,6 +1,6 @@
 import {describe, expect, test} from "vitest";
-import {getValidation} from "./testutils";
-import {IssueCodes} from "../src/language-server/model-modeling-language-validator";
+import {expectErrorCode, getValidation} from "./testutils.js";
+import {IssueCodes} from "../src/language/model-modeling-language-validator.js";
 
 
 describe('Enum validator tests', () => {
@@ -15,7 +15,7 @@ describe('Enum validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.EnumTypeNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.EnumTypeNotUnique);
     });
 
     test('Validator should notice non-unique enum type 2', async () => {
@@ -29,7 +29,7 @@ describe('Enum validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.EnumTypeNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.EnumTypeNotUnique);
     });
 
     test('Validator should notice non-unique enum type 3', async () => {
@@ -43,7 +43,7 @@ describe('Enum validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.EnumTypeNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.EnumTypeNotUnique);
     });
 
     test('Validator should succeed 1', async () => {

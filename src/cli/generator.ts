@@ -1,10 +1,10 @@
-import fs from 'fs';
+import type {Model} from '../language/generated/ast.js';
+import * as fs from 'node:fs';
 import {CompositeGeneratorNode, NL, toString} from 'langium';
-import path from 'path';
-import {Model} from '../language-server/generated/ast';
-import {extractDestinationAndName} from './cli-util';
-import {serializeModel} from "../language-server/generator/mml-serializer";
-import {ModelModelingLanguageServices} from "../language-server/model-modeling-language-module";
+import * as path from 'node:path';
+import {extractDestinationAndName} from './cli-util.js';
+import {serializeModel} from "../language/serializer/mml-serializer.js";
+import {ModelModelingLanguageServices} from "../language/model-modeling-language-module.js";
 
 export function generateSingleModelSerialization(model: Model, filePath: string, destination: string | undefined, services: ModelModelingLanguageServices): string {
     const data = extractDestinationAndName(filePath, destination);
@@ -44,3 +44,4 @@ export function generateMultiModelSerialization(models: Model[], filePath: strin
     fs.writeFileSync(generatedFilePath, toString(fileNode));
     return generatedFilePath;
 }
+

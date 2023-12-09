@@ -1,7 +1,7 @@
 import { startLanguageServer } from 'langium';
 import { NodeFileSystem } from 'langium/node';
-import { createConnection, ProposedFeatures } from 'vscode-languageserver/node';
-import { createModelModelingLanguageServices } from './model-modeling-language-module';
+import { createConnection, ProposedFeatures } from 'vscode-languageserver/node.js';
+import { createModelModelingLanguageServices } from './model-modeling-language-module.js';
 
 // Create a connection to the client
 const connection = createConnection(ProposedFeatures.all);

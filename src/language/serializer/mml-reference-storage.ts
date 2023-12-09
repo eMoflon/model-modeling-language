@@ -6,13 +6,13 @@ import {AstNode, AstNodeLocator, getDocument, Reference} from "langium";
 export class MmlReferenceStorage {
     private referenceMap: Map<string, AstNode> = new Map<string, AstNode>;
     private nodeMap: Map<AstNode, string> = new Map<AstNode, string>;
-    private _astLocator;
+    private readonly _astLocator;
 
     constructor(locator: AstNodeLocator) {
         this._astLocator = locator;
     }
 
-    private storeReference(ref: Reference<AstNode>): string {
+    private storeReference(ref: Reference): string {
         const node = ref.ref;
         if (node != undefined) {
             const referenceId = this.getNodeReferenceId(node);
@@ -31,7 +31,7 @@ export class MmlReferenceStorage {
         return doc.uri.path + node.$type + path;
     }
 
-    public resolveReference(ref: Reference<AstNode>): string {
+    public resolveReference(ref: Reference): string {
         const node = ref.ref;
         if (node != undefined && ref.$nodeDescription != undefined) {
             const lookup = this.nodeMap.get(node);

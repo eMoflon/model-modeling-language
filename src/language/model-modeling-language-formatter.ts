@@ -22,7 +22,7 @@ import {
     isModel,
     isPackage,
     isTypedVariable
-} from "./generated/ast";
+} from "./generated/ast.js";
 
 /**
  * The Formatter deals with formatting MML code in the file. More precisely, correct

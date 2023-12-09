@@ -8,11 +8,11 @@ import {
     LangiumServices,
     MaybePromise
 } from "langium";
-import * as ast from "./generated/ast";
-import {EnumEntry, EnumValueExpr} from "./generated/ast";
+import * as ast from "./generated/ast.js";
+import {Attribute, CReference, EnumEntry, EnumValueExpr} from "./generated/ast.js";
 import {CodeAction, CodeActionKind, CodeActionParams, Command, Diagnostic} from "vscode-languageserver";
-import {IssueCodes} from "./model-modeling-language-validator";
-import {ModelModelingLanguageUtils} from "./model-modeling-language-utils";
+import {IssueCodes} from "./model-modeling-language-validator.js";
+import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
 
 /**
  * The CodeActionProvider deals with code actions (also known as quick fixes).
@@ -64,7 +64,7 @@ export class ModelModelingLanguageCodeActionProvider implements CodeActionProvid
         const text = document.textDocument.getText(diagnostic.range);
         if (rootCst && text) {
             const cstNode = findLeafNodeAtOffset(rootCst, offset);
-            const container = getContainerOfType(cstNode?.element, ast.isAttribute);
+            const container: Attribute | undefined = getContainerOfType(cstNode?.astNode, ast.isAttribute);
             if (container && container.$cstNode && container.defaultValue != undefined) {
                 let newType: string = "";
                 if (ModelModelingLanguageUtils.isStringArithExpr(container.defaultValue)) {
@@ -136,7 +136,7 @@ export class ModelModelingLanguageCodeActionProvider implements CodeActionProvid
         const rootCst = document.parseResult.value.$cstNode;
         if (rootCst) {
             const cstNode = findLeafNodeAtOffset(rootCst, offset);
-            const container = getContainerOfType(cstNode?.element, ast.isCReference);
+            const container: CReference | undefined = getContainerOfType(cstNode?.astNode, ast.isCReference);
             if (container && container.$cstNode) {
                 if (container.opposite != undefined && container.opposite.reference.ref != undefined) {
                     const oppositeNode = container.opposite.reference.ref;

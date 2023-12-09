@@ -1,6 +1,6 @@
 import {describe, expect, test} from "vitest";
-import {getValidation} from "./testutils";
-import {IssueCodes} from "../src/language-server/model-modeling-language-validator";
+import {expectErrorCode, getValidation} from "./testutils.js";
+import {IssueCodes} from "../src/language/model-modeling-language-validator.js";
 
 describe('ArithExpr validator tests', () => {
     test('Validator should compute correct string concat type', async () => {
@@ -126,7 +126,7 @@ describe('ArithExpr validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ArithExpressionUnsupportedOperation);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ArithExpressionUnsupportedOperation);
     });
 
     test('Validator should notice unsupported operation 2', async () => {
@@ -139,7 +139,7 @@ describe('ArithExpr validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ArithExpressionUnsupportedOperation);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ArithExpressionUnsupportedOperation);
     });
 
     test('Validator should notice unsupported operation 3', async () => {
@@ -152,7 +152,7 @@ describe('ArithExpr validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ArithExpressionUnsupportedOperation);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ArithExpressionUnsupportedOperation);
     });
 
     test('Validator should notice unsupported operation 4', async () => {
@@ -165,7 +165,7 @@ describe('ArithExpr validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ArithExpressionUnsupportedOperation);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ArithExpressionUnsupportedOperation);
     });
 
     test('Validator should notice unsupported operation 5', async () => {
@@ -178,7 +178,7 @@ describe('ArithExpr validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ArithExpressionUnsupportedOperation);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ArithExpressionUnsupportedOperation);
     });
 
     test('Validator should notice unsupported operation 6', async () => {
@@ -191,7 +191,7 @@ describe('ArithExpr validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ArithExpressionUnsupportedOperation);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ArithExpressionUnsupportedOperation);
     });
 
     test('Validator should notice unsupported operation 7', async () => {
@@ -204,7 +204,7 @@ describe('ArithExpr validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ArithExpressionUnsupportedOperation);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ArithExpressionUnsupportedOperation);
     });
 
     test('Validator should notice upsupported operation 8', async () => {
@@ -217,7 +217,7 @@ describe('ArithExpr validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ArithExpressionUnsupportedOperation);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ArithExpressionUnsupportedOperation);
     });
 
     test('Validator should compute correct multiplied string type', async () => {
