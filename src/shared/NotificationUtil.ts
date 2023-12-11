@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import {MessageType} from "./MmlNotificationTypes.js";
 
 export function showUIMessage(type: MessageType, message: string) {
     if (type == MessageType.INFO) {
@@ -8,10 +9,4 @@ export function showUIMessage(type: MessageType, message: string) {
     } else if (type == MessageType.ERROR) {
         vscode.window.showErrorMessage(message);
     }
-}
-
-export enum MessageType {
-    INFO,
-    WARNING,
-    ERROR
 }

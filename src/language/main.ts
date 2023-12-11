@@ -8,7 +8,7 @@ import {serializeModel} from "./serializer/mml-serializer.js";
 import {MmlGeneratorRequest, MmlGeneratorResponse} from "../shared/MmlConnectorTypes.js";
 import * as fs from "fs";
 import path from "node:path";
-import {MessageType} from "../shared/NotificationUtil.js";
+import {MessageType} from "../shared/MmlNotificationTypes.js";
 
 // Create a connection to the client
 const connection = createConnection(ProposedFeatures.all);

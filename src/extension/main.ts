@@ -4,7 +4,8 @@ import {MmlGeneratorRequest, MmlGeneratorResponse} from "../shared/MmlConnectorT
 import * as vscode from 'vscode';
 import {Uri} from 'vscode';
 import * as path from 'node:path';
-import {MessageType, showUIMessage} from "../shared/NotificationUtil.js";
+import {showUIMessage} from "../shared/NotificationUtil.js";
+import {MessageType} from "../shared/MmlNotificationTypes.js";
 
 let client: LanguageClient;
 

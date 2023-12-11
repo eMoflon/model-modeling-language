@@ -1,4 +1,4 @@
-import {MessageType} from "./NotificationUtil.js";
+import {MessageType} from "./MmlNotificationTypes.js";
 
 export type MmlGeneratorRequest = {
     readonly wsBasePath: string;
