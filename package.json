@@ -1,78 +1,132 @@
 {
-    "name": "model-modeling-language",
-    "displayName": "Model modeling language",
-    "description": "A VS Code extension that implements a Domain Specific Language for describing metamodels.",
-    "version": "0.0.2",
-    "repository": "https://github.com/JanikNex/model-modeling-language",
-    "publisher": "Janik Rapp",
-    "files": [
-        "bin"
-    ],
-    "type": "module",
-    "scripts": {
-        "build": "tsc -b tsconfig.json && node esbuild.mjs",
-        "watch": "concurrently -n tsc,esbuild -c blue,yellow \"tsc -b tsconfig.json --watch\" \"node esbuild.mjs --watch\"",
-        "lint": "eslint src --ext ts",
-        "langium:generate": "langium generate",
-        "langium:watch": "langium generate --watch",
-        "vscode:prepublish": "npm run build && npm run lint",
-        "package": "vsce package",
-        "fullbuild": "npm run langium:generate && vsce package"
-    },
-    "dependencies": {
-        "@types/uuid": "^9.0.0",
-        "uuid": "^9.0.0",
-        "langium": "~2.1.0",
-        "vscode-languageclient": "~9.0.1",
-        "vscode-languageserver": "~9.0.1",
-        "chalk": "~5.3.0",
-        "commander": "~11.0.0"
-    },
-    "devDependencies": {
-        "@types/node": "~16.18.41",
-        "@typescript-eslint/parser": "~6.4.1",
-        "@typescript-eslint/eslint-plugin": "~6.4.1",
-        "@vscode/vsce": "^2.21.0",
-        "eslint": "~8.47.0",
-        "langium-cli": "~2.1.0",
-        "typescript": "~5.1.6",
-        "@types/vscode": "~1.67.0",
-        "concurrently": "~8.2.1",
-        "esbuild": "~0.19.2",
-        "vitest": "^0.34.6"
-    },
-    "engines": {
-        "vscode": "^1.67.0",
-        "node": ">=16.0.0"
-    },
-    "categories": [
-        "Programming Languages"
-    ],
-    "contributes": {
-        "languages": [
-            {
-                "id": "model-modeling-language",
-                "aliases": [
-                    "Model Modeling Language",
-                    "model-modeling-language"
-                ],
-                "extensions": [".mml"],
-                "configuration": "./language-configuration.json"
-            }
+  "name": "model-modeling-language",
+  "displayName": "Model modeling language",
+  "description": "A VS Code extension that implements a Domain Specific Language for describing metamodels.",
+  "version": "0.0.2",
+  "repository": "https://github.com/JanikNex/model-modeling-language",
+  "publisher": "Janik Rapp",
+  "files": [
+    "bin"
+  ],
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b tsconfig.json && node esbuild.mjs",
+    "watch": "concurrently -n tsc,esbuild -c blue,yellow \"tsc -b tsconfig.json --watch\" \"node esbuild.mjs --watch\"",
+    "lint": "eslint src --ext ts",
+    "langium:generate": "langium generate",
+    "langium:watch": "langium generate --watch",
+    "vscode:prepublish": "npm run build && npm run lint",
+    "package": "vsce package",
+    "fullbuild": "npm run langium:generate && vsce package"
+  },
+  "dependencies": {
+    "@types/uuid": "^9.0.0",
+    "uuid": "^9.0.0",
+    "langium": "~2.1.0",
+    "vscode-languageclient": "~9.0.1",
+    "vscode-languageserver": "~9.0.1",
+    "chalk": "~5.3.0",
+    "commander": "~11.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "~16.18.41",
+    "@typescript-eslint/parser": "~6.4.1",
+    "@typescript-eslint/eslint-plugin": "~6.4.1",
+    "@vscode/vsce": "^2.21.0",
+    "eslint": "~8.47.0",
+    "langium-cli": "~2.1.0",
+    "typescript": "~5.1.6",
+    "@types/vscode": "~1.67.0",
+    "concurrently": "~8.2.1",
+    "esbuild": "~0.19.2",
+    "vitest": "^0.34.6"
+  },
+  "engines": {
+    "vscode": "^1.67.0",
+    "node": ">=16.0.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "model-modeling-language",
+        "aliases": [
+          "Model Modeling Language",
+          "model-modeling-language"
         ],
-        "grammars": [
-            {
-                "language": "model-modeling-language",
-                "scopeName": "source.model-modeling-language",
-                "path": "syntaxes/model-modeling-language.tmLanguage.json"
-            }
-        ]
-    },
-    "activationEvents": [
-        "onLanguage:model-modeling-language"
+        "extensions": [
+          ".mml"
+        ],
+        "configuration": "./language-configuration.json"
+      }
     ],
-    "main": "./out/extension/main.cjs",
-    "bin": {
-        "model-modeling-language-cli": "./bin/cli.js"
+    "grammars": [
+      {
+        "language": "model-modeling-language",
+        "scopeName": "source.model-modeling-language",
+        "path": "syntaxes/model-modeling-language.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "model-modeling-language.serializeToFile",
+        "title": "Serialize models in workspace",
+        "category": "Model Modeling Language"
+      },
+      {
+        "command": "model-modeling-language.serializeToEMF",
+        "title": "Generate Ecore/XMI in workspace",
+        "category": "Model Modeling Language"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "model-modeling-language.serializeToFile",
+          "when": "false"
+        },
+        {
+          "command": "model-modeling-language.serializeToEMF",
+          "when": "false"
+        }
+      ],
+      "explorer/context": [
+        {
+          "when": "resourceExtname == .mml",
+          "command": "model-modeling-language.serializeToFile",
+          "alt": "model-modeling-language.serializeToFile",
+          "group": "navigation"
+        },
+        {
+          "when": "resourceExtname == .mml",
+          "command": "model-modeling-language.serializeToEMF",
+          "alt": "model-modeling-language.serializeToEMF",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "when": "resourceLangId == model-modeling-language",
+          "command": "model-modeling-language.serializeToFile",
+          "alt": "model-modeling-language.serializeToFile",
+          "group": "navigation"
+        },
+        {
+          "when": "resourceLangId == model-modeling-language",
+          "command": "model-modeling-language.serializeToEMF",
+          "alt": "model-modeling-language.serializeToEMF",
+          "group": "navigation"
+        }
+      ]
     }
+  },
+  "activationEvents": [
+    "onLanguage:model-modeling-language"
+  ],
+  "main": "./out/extension/main.cjs",
+  "bin": {
+    "model-modeling-language-cli": "./bin/cli.js"
+  }
 }
