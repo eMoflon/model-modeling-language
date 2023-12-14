@@ -67,15 +67,12 @@ node ./out/language-server/main.js --stdio
 ```
 
 ## Using the VSCode Extension
-
-**Note:** The VSCode extension only supports the code editor of MML, but the automatic generation of the unifiered JSON
-does not take place automatically and would have to be implemented separately (e.g. via the CLI).
-
-### VSCode
-
 Open the Extensions tab and click on the three dots to open the context menu.
 Select "Install from VSIX..." and select the generated MML-VSIX file. Now the MML plugin will be
 installed and used automatically for _.mml_ files.
+
+To achieve the full range of functions, the [Model Modeling Language CLI](https://github.com/eMoflon/model-modeling-language-cli) must also be provided. 
+This enables interaction with EMF and thus the generation of Ecore/XMI files directly from VSCode.
 
 ## The Model Modeling Language
 
