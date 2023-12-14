@@ -69,6 +69,16 @@
         "path": "syntaxes/model-modeling-language.tmLanguage.json"
       }
     ],
+    "configuration": {
+      "title": "Model Modeling Language",
+      "properties": {
+        "model-modeling-language.cli.path": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Specifies the path to the [model-modeling-language-cli](https://github.com/eMoflon/model-modeling-language-cli) JAR-file"
+        }
+      }
+    },
     "commands": [
       {
         "command": "model-modeling-language.serializeToFile",
@@ -96,13 +106,11 @@
         {
           "when": "resourceExtname == .mml",
           "command": "model-modeling-language.serializeToFile",
-          "alt": "model-modeling-language.serializeToFile",
           "group": "navigation"
         },
         {
           "when": "resourceExtname == .mml",
           "command": "model-modeling-language.serializeToEMF",
-          "alt": "model-modeling-language.serializeToEMF",
           "group": "navigation"
         }
       ],
@@ -110,13 +118,11 @@
         {
           "when": "resourceLangId == model-modeling-language",
           "command": "model-modeling-language.serializeToFile",
-          "alt": "model-modeling-language.serializeToFile",
           "group": "navigation"
         },
         {
           "when": "resourceLangId == model-modeling-language",
           "command": "model-modeling-language.serializeToEMF",
-          "alt": "model-modeling-language.serializeToEMF",
           "group": "navigation"
         }
       ]
