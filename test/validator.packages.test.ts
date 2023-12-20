@@ -1,6 +1,6 @@
 import {describe, expect, test} from "vitest";
-import {getValidation} from "./testutils";
-import {IssueCodes} from "../src/language-server/model-modeling-language-validator";
+import {expectErrorCode, getValidation} from "./testutils.js";
+import {IssueCodes} from "../src/language/model-modeling-language-validator.js";
 
 
 describe('Package validator tests', () => {
@@ -13,7 +13,7 @@ describe('Package validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.PackageNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.PackageNameNotUnique);
     });
 
     test('Validator should notice non-unique sub-package names', async () => {
@@ -27,7 +27,7 @@ describe('Package validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.SubPackageNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.SubPackageNameNotUnique);
     });
 
     test('Validator should notice non-unique package and sub-package names', async () => {
@@ -43,8 +43,8 @@ describe('Package validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.PackageNameNotUnique);
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.SubPackageNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.PackageNameNotUnique);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.SubPackageNameNotUnique);
     });
 
     test('Validator should notice non-unique element names 1', async () => {
@@ -58,7 +58,7 @@ describe('Package validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ElementNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ElementNameNotUnique);
     });
 
     test('Validator should notice non-unique element names 2', async () => {
@@ -72,7 +72,7 @@ describe('Package validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ElementNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ElementNameNotUnique);
     });
 
     test('Validator should notice non-unique element names 3', async () => {
@@ -87,7 +87,7 @@ describe('Package validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ElementNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ElementNameNotUnique);
     });
 
     test('Validator should notice non-unique element names 4', async () => {
@@ -101,7 +101,7 @@ describe('Package validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ElementNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ElementNameNotUnique);
     });
 
     test('Validator should notice non-unique element names 5', async () => {
@@ -116,7 +116,7 @@ describe('Package validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ElementNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ElementNameNotUnique);
     });
 
     test('Validator should notice non-unique element names 6', async () => {
@@ -130,7 +130,7 @@ describe('Package validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ElementNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ElementNameNotUnique);
     });
 
     test('Validator should notice non-unique element names in subpackage 1', async () => {
@@ -146,7 +146,7 @@ describe('Package validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ElementNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ElementNameNotUnique);
     });
 
     test('Validator should notice non-unique element names in subpackage 2', async () => {
@@ -163,7 +163,7 @@ describe('Package validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ElementNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ElementNameNotUnique);
     });
 
     test('Validator succeed', async () => {

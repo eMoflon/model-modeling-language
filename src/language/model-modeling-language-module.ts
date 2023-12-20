@@ -1,21 +1,19 @@
-import {
-    createDefaultModule,
-    createDefaultSharedModule,
+import type {
     DefaultSharedModuleContext,
-    inject,
     LangiumServices,
     LangiumSharedServices,
     Module,
     PartialLangiumServices
 } from 'langium';
-import {ModelModelingLanguageGeneratedModule, ModelModelingLanguageGeneratedSharedModule} from './generated/module';
-import {ModelModelingLanguageValidator, registerValidationChecks} from './model-modeling-language-validator';
-import {ModelModelingLanguageScopeComputation} from "./model-modeling-language-scope-computation";
-import {ModelModelingLanguageSemanticTokenProvider} from "./model-modeling-language-semantic-token-provider";
-import {ModelModelingLanguageCodeActionProvider} from "./model-modeling-language-code-action-provider";
-import {ModelModelingLanguageFormatter} from "./model-modeling-language-formatter";
-import {ModelModelingLanguageScopeProvider} from "./model-modeling-language-scope-provider";
-import {ModelModelingLanguageCompletionProvider} from "./model-modeling-language-completion-provider";
+import {createDefaultModule, createDefaultSharedModule, inject} from 'langium';
+import {ModelModelingLanguageGeneratedModule, ModelModelingLanguageGeneratedSharedModule} from './generated/module.js';
+import {ModelModelingLanguageValidator, registerValidationChecks} from './model-modeling-language-validator.js';
+import {ModelModelingLanguageScopeComputation} from "./model-modeling-language-scope-computation.js";
+import {ModelModelingLanguageScopeProvider} from "./model-modeling-language-scope-provider.js";
+import {ModelModelingLanguageSemanticTokenProvider} from "./model-modeling-language-semantic-token-provider.js";
+import {ModelModelingLanguageCodeActionProvider} from "./model-modeling-language-code-action-provider.js";
+import {ModelModelingLanguageFormatter} from "./model-modeling-language-formatter.js";
+import {ModelModelingLanguageCompletionProvider} from "./model-modeling-language-completion-provider.js";
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -23,6 +21,16 @@ import {ModelModelingLanguageCompletionProvider} from "./model-modeling-language
 export type ModelModelingLanguageAddedServices = {
     validation: {
         ModelModelingLanguageValidator: ModelModelingLanguageValidator
+    },
+    references: {
+        ScopeComputation: ModelModelingLanguageScopeComputation,
+        ScopeProvider: ModelModelingLanguageScopeProvider,
+    },
+    lsp: {
+        SemanticTokenProvider: ModelModelingLanguageSemanticTokenProvider,
+        CodeActionProvider: ModelModelingLanguageCodeActionProvider,
+        Formatter: ModelModelingLanguageFormatter,
+        CompletionProvider: ModelModelingLanguageCompletionProvider
     }
 }
 
@@ -70,18 +78,18 @@ export const ModelModelingLanguageModule: Module<ModelModelingLanguageServices, 
  */
 export function createModelModelingLanguageServices(context: DefaultSharedModuleContext): {
     shared: LangiumSharedServices,
-    mmlServices: ModelModelingLanguageServices
+    MmlServices: ModelModelingLanguageServices
 } {
     const shared = inject(
         createDefaultSharedModule(context),
-        ModelModelingLanguageGeneratedSharedModule,
+        ModelModelingLanguageGeneratedSharedModule
     );
-    const mmlServices = inject(
+    const MmlServices = inject(
         createDefaultModule({shared}),
         ModelModelingLanguageGeneratedModule,
         ModelModelingLanguageModule
     );
-    shared.ServiceRegistry.register(mmlServices);
-    registerValidationChecks(mmlServices);
-    return {shared, mmlServices};
+    shared.ServiceRegistry.register(MmlServices);
+    registerValidationChecks(MmlServices);
+    return {shared, MmlServices};
 }

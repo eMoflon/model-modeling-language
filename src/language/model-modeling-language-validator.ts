@@ -40,10 +40,10 @@ import {
     Package,
     TypedVariable,
     VariableType
-} from './generated/ast';
-import type {ModelModelingLanguageServices} from './model-modeling-language-module';
+} from './generated/ast.js';
+import type {ModelModelingLanguageServices} from './model-modeling-language-module.js';
 import {URI} from "vscode-uri";
-import {ModelModelingLanguageUtils} from "./model-modeling-language-utils";
+import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
 
 /**
  * Register custom validation checks.

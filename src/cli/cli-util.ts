@@ -1,8 +1,8 @@
+import type {AstNode, LangiumDocument, LangiumServices} from 'langium';
+import {URI} from 'langium';
 import chalk from 'chalk';
-import path, {resolve} from 'path';
-import fs from 'fs';
-import {AstNode, LangiumDocument, LangiumServices} from 'langium';
-import {URI} from 'vscode-uri';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
 
 /**
  * Types of path targets
@@ -54,7 +54,7 @@ export function getFilesInDirRecursive(targetName: string, extensions: string[])
 export async function getFiles(dir: string): Promise<string[]> {
     const dirents = await fs.promises.readdir(dir, {withFileTypes: true});
     const files = await Promise.all(dirents.map((dirent) => {
-        const res = resolve(dir, dirent.name);
+        const res = path.resolve(dir, dirent.name);
         return dirent.isDirectory() ? getFiles(res) : res;
     }));
     return Array.prototype.concat(...files) as string[];
@@ -86,7 +86,7 @@ export async function extractDocuments(fileNames: string[], services: LangiumSer
         documents.push(document)
     }
 
-    await services.shared.workspace.DocumentBuilder.build(documents, {validationChecks: 'all'});
+    await services.shared.workspace.DocumentBuilder.build(documents, {validation: true});
 
     let containsError = false;
     for (const document of documents) {

@@ -1,4 +1,4 @@
-import {ObjectInstance} from "./mml-instance-templates";
+import {ObjectInstance} from "./mml-instance-templates.js";
 import {v4 as uuidv4} from 'uuid';
 
 /**

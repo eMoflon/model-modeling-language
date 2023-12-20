@@ -1,6 +1,6 @@
 import {describe, expect, test} from "vitest";
-import {getValidation} from "./testutils";
-import {IssueCodes} from "../src/language-server/model-modeling-language-validator";
+import {expectErrorCode, getValidation} from "./testutils.js";
+import {IssueCodes} from "../src/language/model-modeling-language-validator.js";
 
 
 describe('Class validator tests', () => {
@@ -13,7 +13,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ClassSelfExtension);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ClassSelfExtension);
     });
 
     test('Validator should notice non-unique extends 1', async () => {
@@ -27,7 +27,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.DuplicateClassExtension);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.DuplicateClassExtension);
     });
 
     test('Validator should notice non-unique extends 2', async () => {
@@ -43,7 +43,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.DuplicateClassExtension);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.DuplicateClassExtension);
     });
 
     test('Validator should notice interface self extends 1', async () => {
@@ -55,7 +55,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.InterfaceSelfExtension);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.InterfaceSelfExtension);
     });
 
     test('Validator should notice interface self extends 2', async () => {
@@ -69,7 +69,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.InterfaceSelfExtension);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.InterfaceSelfExtension);
     });
 
     test('Validator should notice non-unique implements 1', async () => {
@@ -83,7 +83,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.DuplicateClassImplements);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.DuplicateClassImplements);
     });
 
     test('Validator should notice non-unique implements 2', async () => {
@@ -99,7 +99,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.DuplicateClassImplements);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.DuplicateClassImplements);
     });
 
     test('Validator should notice non-unique class statement names 1', async () => {
@@ -113,7 +113,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ClassStatementNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ClassStatementNameNotUnique);
     });
 
     test('Validator should notice non-unique class statement names 2', async () => {
@@ -129,9 +129,9 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(3);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ClassStatementNameNotUnique);
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.OppositeAnnotationMissing);
-        expect(validationResult.diagnostics.at(2).code).toEqual(IssueCodes.OppositeAnnotationMissing);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ClassStatementNameNotUnique);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.OppositeAnnotationMissing);
+        expectErrorCode(validationResult, 2).toEqual(IssueCodes.OppositeAnnotationMissing);
     });
 
     test('Validator should notice non-unique class statement names 3', async () => {
@@ -147,8 +147,8 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.ClassStatementNameNotUnique);
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.OppositeAnnotationMissing);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.ClassStatementNameNotUnique);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.OppositeAnnotationMissing);
     });
 
     test('Validator should notice non-unique interface statement names 1', async () => {
@@ -162,7 +162,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.InterfaceStatementNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.InterfaceStatementNameNotUnique);
     });
 
     test('Validator should notice non-unique interface statement names 2', async () => {
@@ -178,9 +178,9 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(3);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.InterfaceStatementNameNotUnique);
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.OppositeAnnotationMissing);
-        expect(validationResult.diagnostics.at(2).code).toEqual(IssueCodes.OppositeAnnotationMissing);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.InterfaceStatementNameNotUnique);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.OppositeAnnotationMissing);
+        expectErrorCode(validationResult, 2).toEqual(IssueCodes.OppositeAnnotationMissing);
     });
 
     test('Validator should notice non-unique interface statement names 3', async () => {
@@ -196,8 +196,8 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.InterfaceStatementNameNotUnique);
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.OppositeAnnotationMissing);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.InterfaceStatementNameNotUnique);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.OppositeAnnotationMissing);
     });
 
     test('Validator should notice invalid multiplicities 1', async () => {
@@ -212,8 +212,8 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.InvalidMultiplicity);
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.OppositeAnnotationMissing);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.InvalidMultiplicity);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.OppositeAnnotationMissing);
     });
 
     test('Validator should notice invalid multiplicities 2', async () => {
@@ -228,8 +228,8 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.InvalidMultiplicity);
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.OppositeAnnotationMissing);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.InvalidMultiplicity);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.OppositeAnnotationMissing);
     });
 
     test('Validator should notice invalid multiplicities 3', async () => {
@@ -244,8 +244,8 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.InvalidMultiplicity);
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.OppositeAnnotationMissing);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.InvalidMultiplicity);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.OppositeAnnotationMissing);
     });
 
     test('Validator should notice missing opposites opposite annotation', async () => {
@@ -262,8 +262,8 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(2);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.OppositeAnnotationMissing);
-        expect(validationResult.diagnostics.at(1).code).toEqual(IssueCodes.OppositesOppositeAnnotationMissing);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.OppositeAnnotationMissing);
+        expectErrorCode(validationResult, 1).toEqual(IssueCodes.OppositesOppositeAnnotationMissing);
     });
 
     test('Validator should notice non-matching opposite annotations', async () => {
@@ -285,7 +285,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.OppositeAnnotationDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.OppositeAnnotationDoesNotMatch);
     });
 
     test('Validator should notice non-matching attribute type 1', async () => {
@@ -298,7 +298,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice non-matching attribute type 2', async () => {
@@ -311,7 +311,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice non-matching attribute type 3', async () => {
@@ -324,7 +324,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice non-matching attribute type 4', async () => {
@@ -341,7 +341,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice non-matching attribute type 5', async () => {
@@ -354,7 +354,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice non-matching attribute type 6', async () => {
@@ -367,7 +367,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice non-matching attribute type 7', async () => {
@@ -380,7 +380,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice non-matching attribute type 8', async () => {
@@ -397,7 +397,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice non-matching attribute type 9', async () => {
@@ -410,7 +410,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice non-matching attribute type 10', async () => {
@@ -423,7 +423,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice non-matching attribute type 11', async () => {
@@ -440,7 +440,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice non-matching attribute type 12', async () => {
@@ -453,7 +453,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice non-matching attribute type 13', async () => {
@@ -466,7 +466,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice non-matching attribute type 14', async () => {
@@ -479,7 +479,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
     });
 
     test('Validator should notice non-matching attribute type 15', async () => {
@@ -496,7 +496,7 @@ describe('Class validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.AttributeTypeDoesNotMatch);
     });
 
     test('Validator should succeed', async () => {

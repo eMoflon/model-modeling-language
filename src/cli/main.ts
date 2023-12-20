@@ -1,15 +1,21 @@
+import type { Model } from '../language/generated/ast.js';
 import chalk from 'chalk';
-import {Command} from 'commander';
-import {Model} from '../language-server/generated/ast';
-import {ModelModelingLanguageLanguageMetaData} from '../language-server/generated/module';
-import {createModelModelingLanguageServices} from '../language-server/model-modeling-language-module';
-import {extractAstNode, extractAstNodes, GeneratorTargetType, getFiles, getTargetType} from './cli-util';
-import {generateMultiModelSerialization, generateSingleModelSerialization} from './generator';
-import {NodeFileSystem} from 'langium/node';
-import path from "path";
+import { Command } from 'commander';
+import { ModelModelingLanguageLanguageMetaData } from '../language/generated/module.js';
+import { createModelModelingLanguageServices } from '../language/model-modeling-language-module.js';
+import {extractAstNode, extractAstNodes, GeneratorTargetType, getFiles, getTargetType} from './cli-util.js';
+import { NodeFileSystem } from 'langium/node';
+import * as url from 'node:url';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
+import {generateMultiModelSerialization, generateSingleModelSerialization} from "./generator.js";
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+
+const packagePath = path.resolve(__dirname, '..', '..', 'package.json');
+const packageContent = await fs.readFile(packagePath, 'utf-8');
 
 export const generateAction = async (targetName: string, opts: GenerateOptions): Promise<void> => {
-    const services = createModelModelingLanguageServices(NodeFileSystem).mmlServices;
+    const services = createModelModelingLanguageServices(NodeFileSystem).MmlServices;
     const targetType: GeneratorTargetType = getTargetType(targetName)
     let generatedFilePath = ""
     if (targetType == GeneratorTargetType.FILE) {
@@ -31,12 +37,10 @@ export type GenerateOptions = {
     destination?: string;
 }
 
-export default function (): void {
+export default function(): void {
     const program = new Command();
 
-    program
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        .version(require('../../package.json').version);
+    program.version(JSON.parse(packageContent).version);
 
     const fileExtensions = ModelModelingLanguageLanguageMetaData.fileExtensions.join(', ');
     program

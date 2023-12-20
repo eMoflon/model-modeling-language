@@ -1,6 +1,6 @@
 import {describe, expect, test} from "vitest";
-import {getValidation} from "./testutils";
-import {IssueCodes} from "../src/language-server/model-modeling-language-validator";
+import {expectErrorCode, getValidation} from "./testutils.js";
+import {IssueCodes} from "../src/language/model-modeling-language-validator.js";
 
 describe('Instance validator tests', () => {
     test('Validator should notice non-unique function name', async () => {
@@ -12,7 +12,7 @@ describe('Instance validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.InstanceNameNotUnique);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.InstanceNameNotUnique);
     });
 
     test('Validator should notice non-matching for loop type', async () => {
@@ -50,7 +50,7 @@ describe('Instance validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expect(validationResult.diagnostics.at(0).code).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
     });
 
     test('Validator should succeed', async () => {

@@ -1,6 +1,6 @@
 import {AstNodeDescription, DefaultScopeComputation, LangiumDocument, streamAllContents} from "langium";
-import {isClass, isCReference, isEnum, isInterface, isPackage} from "./generated/ast";
-import {ModelModelingLanguageUtils} from "./model-modeling-language-utils";
+import {isClass, isCReference, isEnum, isInterface, isPackage} from "./generated/ast.js";
+import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
 
 /**
  * The ScopeComputation deals with the calculation of the scope. At this point we implement

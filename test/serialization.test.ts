@@ -1,5 +1,5 @@
 import {describe, test} from "vitest";
-import {getSerialization} from "./testutils";
+import {getSerialization} from "./testutils.js";
 
 describe('Serializer tests', () => {
     test('test', async () => {

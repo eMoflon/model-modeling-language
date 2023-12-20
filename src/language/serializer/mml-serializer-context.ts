@@ -9,7 +9,7 @@ import {
     isStringExpr,
     isVariableValueExpr,
     Variable
-} from "../generated/ast";
+} from "../generated/ast.js";
 
 /**
  * The MmlSerializerContext is used for variable storage and resolution.

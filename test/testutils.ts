@@ -1,15 +1,17 @@
-import {ArithExpr, Attribute, Class, Model} from "../src/language-server/generated/ast";
+import {ArithExpr, Attribute, Class, Model} from "../src/language/generated/ast.js";
 import {parseDocument, validationHelper, ValidationResult} from "langium/test";
-import {AstNode, EmptyFileSystem} from "langium";
+import {AstNode, EmptyFileSystem, LangiumDocument} from "langium";
+import {serializeModel} from "../src/language/serializer/mml-serializer.js";
+import {MmlSerializerContext} from "../src/language/serializer/mml-serializer-context.js";
 import {
     createModelModelingLanguageServices,
     ModelModelingLanguageServices
-} from "../src/language-server/model-modeling-language-module";
-import {serializeModel} from "../src/language-server/generator/mml-serializer";
-import {MmlSerializerContext} from "../src/language-server/generator/mml-serializer-context";
+} from "../src/language/model-modeling-language-module.js";
+import {Assertion, expect} from "vitest";
+import {Diagnostic} from "vscode-languageserver";
 
 function getServices(): ModelModelingLanguageServices {
-    return createModelModelingLanguageServices(EmptyFileSystem).mmlServices;
+    return createModelModelingLanguageServices(EmptyFileSystem).MmlServices;
 }
 
 export async function getModel(code: string): Promise<Model> {
@@ -69,4 +71,21 @@ export function findNode(node: AstNode, path: string): AstNode | undefined {
 export async function getSerialization(code: string): Promise<string> {
     const model: Model = await getModel(code);
     return serializeModel(model, getServices());
+}
+
+export function expectErrorCode(validationResult: ValidationResult<AstNode>, idx: number): Assertion {
+    const diagnostic: Diagnostic | undefined = validationResult.diagnostics.at(idx);
+    if (diagnostic == undefined) {
+        throw new RangeError("Diagnostic index out of range!");
+    }
+    return expect(diagnostic.code);
+}
+
+export function expectParserErrorLength(model: Model): Assertion {
+    const document: LangiumDocument | undefined = model.$document;
+    if (document == undefined) {
+        throw new Error("Model with undefined document!");
+    }
+    const parserErrorLength = document.parseResult.parserErrors.length;
+    return expect(parserErrorLength);
 }
