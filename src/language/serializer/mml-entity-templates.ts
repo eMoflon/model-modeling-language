@@ -28,7 +28,7 @@ import {MmlSerializerContext} from "./mml-serializer-context.js";
  * The metamodel is being precomputed and all references are resolved.
  */
 
-class AttributeEntity {
+export class AttributeEntity {
     readonly referenceId: string;
     readonly name: string;
     readonly type: string;
@@ -65,7 +65,7 @@ class AttributeEntity {
     }
 }
 
-class AbstractClassEntity {
+export class AbstractClassEntity {
     readonly referenceId: string;
     readonly name: string;
     readonly isAbstract: boolean;
@@ -98,7 +98,7 @@ class AbstractClassEntity {
     }
 }
 
-class ReferenceEntity {
+export class ReferenceEntity {
     readonly referenceId: string;
     readonly name: string;
     readonly multiplicity: MultiplicityEntity;
@@ -121,7 +121,7 @@ class ReferenceEntity {
     }
 }
 
-class MultiplicityEntity {
+export class MultiplicityEntity {
     readonly hasUpperBound: boolean = false;
     readonly lowerIsN: boolean = false;
     readonly lowerIsN0: boolean = false;
@@ -147,7 +147,7 @@ class MultiplicityEntity {
     }
 }
 
-class ClassElementModifiers {
+export class ClassElementModifiers {
     readonly readonly: boolean = false;
     readonly volatile: boolean = false;
     readonly transient: boolean = false;
@@ -179,7 +179,7 @@ class ClassElementModifiers {
     }
 }
 
-class EnumEntity {
+export class EnumEntity {
     readonly referenceId: string;
     readonly name: string;
     readonly type: string;
@@ -194,7 +194,7 @@ class EnumEntity {
     }
 }
 
-class EnumEntryEntity {
+export class EnumEntryEntity {
     readonly referenceId: string;
     readonly name: string;
     readonly hasDefaultValue: boolean = false;
@@ -210,7 +210,7 @@ class EnumEntryEntity {
     }
 }
 
-class PackageEntity {
+export class PackageEntity {
     readonly referenceId: string;
     readonly name: string;
     readonly abstractClasses: AbstractClassEntity[] = [];
