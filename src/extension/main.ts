@@ -1,14 +1,9 @@
 import type {LanguageClientOptions, ServerOptions} from 'vscode-languageclient/node.js';
 import {LanguageClient, TransportKind} from 'vscode-languageclient/node.js';
-import {EnhancedSerializedWorkspace, MmlGeneratorRequest, SerializedWorkspace} from "../shared/MmlConnectorTypes.js";
 import * as vscode from 'vscode';
-import {Uri} from 'vscode';
 import * as path from 'node:path';
-import {showInteractiveUIMessage, showUIMessage} from "../shared/NotificationUtil.js";
-import {MessageType} from "../shared/MmlNotificationTypes.js";
-import fs from "fs";
-import {spawn} from "node:child_process";
-import * as os from "os";
+import {SerializeToFileCommand} from "./commands/serialize-to-file-command.js";
+import {SerializeToEmfCommand} from "./commands/serialize-to-emf-command.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
@@ -68,120 +63,7 @@ function startLanguageClient(context: vscode.ExtensionContext): LanguageClient {
     return client;
 }
 
-function getSerializedWorkspace(...args: any[]): Promise<EnhancedSerializedWorkspace> {
-    return new Promise<EnhancedSerializedWorkspace>(resolve => {
-        if (args.length == 0) {
-            showUIMessage(MessageType.ERROR, "Could not determine workspace!");
-            resolve({success: false, data: "Could not determine workspace!", documents: [], wsName: "", wsBasePath: ""})
-            return;
-        }
-
-        const {fsPath}: { fsPath: string } = args[0]
-        const fsPathUri: Uri = Uri.file(fsPath);
-
-        const workspace = vscode.workspace.getWorkspaceFolder(fsPathUri);
-
-        if (workspace == undefined) {
-            showUIMessage(MessageType.ERROR, "Could not determine workspace!");
-            resolve({success: false, data: "Could not determine workspace!", documents: [], wsName: "", wsBasePath: ""})
-            return;
-        }
-
-        const workspaceName: string = workspace!.name;
-        const workspacePath = workspace.uri.fsPath;
-
-        const req: MmlGeneratorRequest = {
-            wsBasePath: workspacePath,
-            wsName: workspaceName
-        }
-
-        client.sendRequest("model-modeling-language-get-serialized-workspace", req, undefined)
-            .then((uResponse) => {
-                const res: SerializedWorkspace = uResponse as SerializedWorkspace;
-                resolve({
-                    success: res.success,
-                    data: res.data,
-                    documents: res.documents,
-                    wsName: workspaceName,
-                    wsBasePath: workspacePath
-                });
-            })
-    });
-}
-
-function writeToFile(enhancedSerializedWorkspace: EnhancedSerializedWorkspace): void {
-    let fd;
-    try {
-        fd = fs.openSync(path.join(enhancedSerializedWorkspace.wsBasePath, `${enhancedSerializedWorkspace.wsName}.json`), "w");
-        fs.writeFileSync(fd, JSON.stringify(enhancedSerializedWorkspace.documents), {encoding: "utf-8"});
-    } catch (err) {
-        showUIMessage(MessageType.ERROR, err instanceof Error ? err.message : "Unknown Exception")
-    } finally {
-        if (fd !== undefined) {
-            fs.closeSync(fd);
-            showUIMessage(MessageType.INFO, `Stored serialized workspace in ${enhancedSerializedWorkspace.wsName}.json`)
-            return;
-        }
-    }
-}
-
 function registerCommands(context: vscode.ExtensionContext) {
-    context.subscriptions.push(vscode.commands.registerCommand("model-modeling-language.serializeToFile", function (...args) {
-        //showUIMessage(MessageType.INFO, "Got command!");
-        getSerializedWorkspace(...args).then(value => {
-            if (value.success) {
-                writeToFile(value);
-            } else {
-                showUIMessage(MessageType.ERROR, value.data);
-            }
-        })
-    }));
-
-    context.subscriptions.push(vscode.commands.registerCommand("model-modeling-language.serializeToEMF", function (...args) {
-        getSerializedWorkspace(...args).then(value => {
-            const workspaceConfiguration = vscode.workspace.getConfiguration('model-modeling-language');
-            const connectorPath: string | undefined = workspaceConfiguration.get('cli.path');
-
-            if (connectorPath == undefined || connectorPath == "" || !fs.existsSync(connectorPath)) {
-                showInteractiveUIMessage(MessageType.ERROR, "Could not find the model-modeling-language-cli! Check if the correct path is set!", ["Check settings"]).then((sel: string | undefined) => {
-                    if (sel != undefined && sel == "Check settings") {
-                        vscode.commands.executeCommand('workbench.action.openSettings', 'model-modeling-language.cli.path');
-                    }
-                });
-                return;
-            }
-
-            const connectorCommand = `java -jar ${connectorPath} generate ${value.wsName} ${value.wsBasePath}`;
-            const connectorMessage = JSON.stringify(value.documents);
-
-            logger.appendLine("[INFO] " + "======== Model Modeling Language CLI ========");
-            logger.appendLine("[INFO] " + connectorCommand);
-            logger.appendLine("[INFO] ");
-
-            const proc = spawn(connectorCommand, {shell: true});
-
-            proc.stdin.setDefaultEncoding('utf8');
-            proc.stdout.setEncoding('utf8');
-            proc.stdin.write(connectorMessage + os.EOL);
-
-            proc.stdout.on('data', (data) => {
-                logger.appendLine("[INFO] " + data);
-            });
-
-            proc.stderr.on('data', (data) => {
-                logger.appendLine("[ERROR] " + data);
-                showUIMessage(MessageType.ERROR, data);
-            });
-
-            proc.on('close', (code) => {
-                if (code == 0) {
-                    showUIMessage(MessageType.INFO, `Stored generated Ecore/XMI files in the model directory`);
-                } else if (code == 1) {
-                    showUIMessage(MessageType.ERROR, `Deserialization failed!`);
-                } else if (code == 2) {
-                    showUIMessage(MessageType.ERROR, `Input failed!`);
-                }
-            });
-        })
-    }));
+    new SerializeToFileCommand(client, logger).register(context);
+    new SerializeToEmfCommand(client, logger).register(context);
 }
