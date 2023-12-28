@@ -1,4 +1,4 @@
-import {ExtensionCommand, getSerializedWorkspace, writeToFile} from "./command-utils.js";
+import {ExtensionCommand, getSerializedWorkspace, writeSerializedWorkspaceToFile} from "./command-utils.js";
 import {LanguageClient} from "vscode-languageclient/node.js";
 import * as vscode from "vscode";
 import {showUIMessage} from "../../shared/NotificationUtil.js";
@@ -13,7 +13,7 @@ export class SerializeToFileCommand extends ExtensionCommand {
         //showUIMessage(MessageType.INFO, "Got command!");
         getSerializedWorkspace(this.client, ...args).then(value => {
             if (value.success) {
-                writeToFile(value);
+                writeSerializedWorkspaceToFile(value);
             } else {
                 showUIMessage(MessageType.ERROR, value.data);
             }
