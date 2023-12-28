@@ -68,17 +68,25 @@ export function getSerializedWorkspace(client: LanguageClient, ...args: any[]): 
 }
 
 export function writeToFile(enhancedSerializedWorkspace: EnhancedSerializedWorkspace): void {
+export function writeSerializedWorkspaceToFile(enhancedSerializedWorkspace: EnhancedSerializedWorkspace): void {
+    const content: string = JSON.stringify(enhancedSerializedWorkspace.documents);
+    if (writeToFile(enhancedSerializedWorkspace.wsBasePath, `${enhancedSerializedWorkspace.wsName}.json`, content)) {
+        showUIMessage(MessageType.INFO, `Stored serialized workspace in ${enhancedSerializedWorkspace.wsName}.json`);
+    }
+}
+function writeToFile(targetParentDir: string, targetFileName: string, content: string): boolean {
     let fd;
     try {
-        fd = fs.openSync(path.join(enhancedSerializedWorkspace.wsBasePath, `${enhancedSerializedWorkspace.wsName}.json`), "w");
-        fs.writeFileSync(fd, JSON.stringify(enhancedSerializedWorkspace.documents), {encoding: "utf-8"});
+        fs.mkdirSync(targetParentDir, {recursive: true});
+        fd = fs.openSync(path.join(targetParentDir, targetFileName), "w");
+        fs.writeFileSync(fd, content, {encoding: "utf-8"});
     } catch (err) {
-        showUIMessage(MessageType.ERROR, err instanceof Error ? err.message : "Unknown Exception")
+        showUIMessage(MessageType.ERROR, err instanceof Error ? err.message : "Unknown Exception (FILE_WRITE)")
+        return false;
     } finally {
         if (fd !== undefined) {
             fs.closeSync(fd);
-            showUIMessage(MessageType.INFO, `Stored serialized workspace in ${enhancedSerializedWorkspace.wsName}.json`)
-            return;
         }
     }
+    return true;
 }
