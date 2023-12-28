@@ -67,13 +67,28 @@ export function getSerializedWorkspace(client: LanguageClient, ...args: any[]): 
     });
 }
 
-export function writeToFile(enhancedSerializedWorkspace: EnhancedSerializedWorkspace): void {
 export function writeSerializedWorkspaceToFile(enhancedSerializedWorkspace: EnhancedSerializedWorkspace): void {
     const content: string = JSON.stringify(enhancedSerializedWorkspace.documents);
     if (writeToFile(enhancedSerializedWorkspace.wsBasePath, `${enhancedSerializedWorkspace.wsName}.json`, content)) {
         showUIMessage(MessageType.INFO, `Stored serialized workspace in ${enhancedSerializedWorkspace.wsName}.json`);
     }
 }
+
+export function writeGeneratedMmlFile(sourceEcoreFile: vscode.Uri, fileName: string, content: string): void {
+    const workspace = vscode.workspace.getWorkspaceFolder(sourceEcoreFile);
+
+    if (workspace == undefined) {
+        showUIMessage(MessageType.ERROR, "Could not determine workspace!");
+        return;
+    }
+
+    const workspacePath = workspace.uri.fsPath;
+    const targetPath: fs.PathLike = path.join(workspacePath, "generated",);
+    if (writeToFile(targetPath, `${fileName}.mml`, content)) {
+        showUIMessage(MessageType.INFO, `Translated Ecore file to MML (${targetPath})`);
+    }
+}
+
 function writeToFile(targetParentDir: string, targetFileName: string, content: string): boolean {
     let fd;
     try {

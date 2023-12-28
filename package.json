@@ -89,6 +89,11 @@
         "command": "model-modeling-language.serializeToEMF",
         "title": "Generate Ecore/XMI in workspace",
         "category": "Model Modeling Language"
+      },
+      {
+        "command": "model-modeling-language.deserializeEcoreToMML",
+        "title": "Translate Ecore Model to MML",
+        "category": "Model Modeling Language"
       }
     ],
     "menus": {
@@ -99,6 +104,10 @@
         },
         {
           "command": "model-modeling-language.serializeToEMF",
+          "when": "false"
+        },
+        {
+          "command": "model-modeling-language.deserializeEcoreToMML",
           "when": "false"
         }
       ],
@@ -112,6 +121,11 @@
           "when": "resourceExtname == .mml",
           "command": "model-modeling-language.serializeToEMF",
           "group": "navigation"
+        },
+        {
+          "when": "resourceExtname == .ecore",
+          "command": "model-modeling-language.deserializeEcoreToMML",
+          "group": "navigation"
         }
       ],
       "editor/context": [
@@ -123,6 +137,11 @@
         {
           "when": "resourceLangId == model-modeling-language",
           "command": "model-modeling-language.serializeToEMF",
+          "group": "navigation"
+        },
+        {
+          "when": "resourceExtname == .ecore && resourceScheme == file",
+          "command": "model-modeling-language.deserializeEcoreToMML",
           "group": "navigation"
         }
       ]
