@@ -4,7 +4,7 @@ import * as vscode from "vscode";
 import {showUIMessage} from "../../shared/NotificationUtil.js";
 import {MessageType} from "../../shared/MmlNotificationTypes.js";
 import {spawn} from "node:child_process";
-import {deserializeSerializedCLIDoc} from "../../language/deserializer/mml-deserializer.js";
+import {DeserializedCLIDoc, deserializeSerializedCLIDoc} from "../../language/deserializer/mml-deserializer.js";
 
 export class DeserializeEcoreToMmlCommand extends ExtensionCommand {
     constructor(client: LanguageClient, logger: vscode.OutputChannel) {
@@ -67,13 +67,12 @@ export class DeserializeEcoreToMmlCommand extends ExtensionCommand {
                 const trimmed: string = serializedEcore.trim();
                 if (trimmed.startsWith("[{") && trimmed.endsWith("}]")) {
                     this.logger.appendLine(`[COMPLETED] Start deserializing...`);
-                    const deserialized: {
-                        modelName: string,
-                        modelCode: string
-                    } = deserializeSerializedCLIDoc(trimmed);
-                    this.logger.appendLine(`[COMPLETED] ${deserialized.modelName}`);
-                    this.logger.appendLine(`[COMPLETED] ${deserialized.modelCode}`);
-                    writeGeneratedMmlFile(selection, deserialized.modelName, deserialized.modelCode);
+                    const deserializedCLIDocs: DeserializedCLIDoc[] = deserializeSerializedCLIDoc(trimmed);
+                    this.logger.appendLine(`[COMPLETED] Deserialized ${deserializedCLIDocs.length} documents!`);
+                    deserializedCLIDocs.forEach(dDoc => {
+                        this.logger.appendLine(`[COMPLETED] Writing model file: ${dDoc.modelName}`);
+                        writeGeneratedMmlFile(selection, dDoc.modelName, dDoc.modelCode);
+                    });
                 } else {
                     this.logger.appendLine("=== RECEIVED ===");
                     this.logger.appendLine(trimmed);

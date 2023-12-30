@@ -11,15 +11,22 @@ export function deserializeStringToMMLCode(serialized: string, idStorage: MmlIdS
     return toString(deserializeModel(typegraph, idStorage));
 }
 
-export function deserializeSerializedCLIDoc(cliDoc: string): { modelName: string, modelCode: string } {
+export type DeserializedCLIDoc = {
+    modelName: string;
+    modelCode: string
+}
+
+export function deserializeSerializedCLIDoc(cliDoc: string): DeserializedCLIDoc[] {
     const sDocs: SerializedDocument[] = JSON.parse(cliDoc);
     const idStorage: MmlIdStorage = new MmlIdStorage(sDocs);
     if (sDocs == undefined || sDocs.length != 1) {
         throw new Error("Unexpected number of serialized documents received!");
     }
-    const sDoc: SerializedDocument = sDocs.at(0)!;
-    const uniformUri: string = Uri.parse(sDoc.uri).path;
-    const modelName: string = uniformUri.substring(uniformUri.lastIndexOf("/") + 1).replace(".ecore", "").replace(".mml", "");
-    const modelCode: string = deserializeStringToMMLCode(sDoc.content, idStorage);
-    return {modelName: modelName, modelCode: modelCode};
+
+    return sDocs.map(sDoc => {
+        const uniformUri: string = Uri.parse(sDoc.uri).path;
+        const modelName: string = uniformUri.substring(uniformUri.lastIndexOf("/") + 1).replace(".ecore", "").replace(".mml", "");
+        const modelCode: string = deserializeStringToMMLCode(sDoc.content, idStorage);
+        return {modelName: modelName, modelCode: modelCode} as DeserializedCLIDoc;
+    })
 }
