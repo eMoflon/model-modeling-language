@@ -58,13 +58,21 @@ Statement:
 
 AttributeModifiers:
     readonly?='readonly' &
+    not_readonly?='!readonly' &
     volatile?='volatile' &
+    not_volatile?='!volatile' &
     transient?='transient' &
+    not_transient?='!transient' &
     unsettable?='unsettable' &
+    not_unsettable?='!unsettable' &
     derived?='derived' &
+    not_derived?='!derived' &
     unique?='unique' &
+    not_unique?='!unique' &
     ordered?='ordered' &
-    id?='id';
+    not_ordered?='!ordered' &
+    id?='id' &
+    not_id?='!id';
 
 AttributeType:
     ptype=DataType | etype=[Enum:QNAME];
@@ -74,13 +82,21 @@ Attribute:
 
 ReferenceModifiers:
     readonly?='readonly' &
+    not_readonly?='!readonly' &
     volatile?='volatile' &
+    not_volatile?='!volatile' &
     transient?='transient' &
+    not_transient?='!transient' &
     unsettable?='unsettable' &
+    not_unsettable?='!unsettable' &
     derived?='derived' &
+    not_derived?='!derived' &
     unique?='unique' &
+    not_unique?='!unique' &
     ordered?='ordered' &
-    resolve?='resolve';
+    not_ordered?='!ordered' &
+    resolve?='resolve' &
+    not_resolve?='!resolve';
 
 OppositeAnnotation:
     '@opposite' reference=[CReference:FQNAME];
