@@ -49,27 +49,49 @@ function deserializeAbstractClassEntity(ace: AbstractClassEntity, idStorage: Mml
 function deserializeAttribute(attribute: AttributeEntity, idStorage: MmlIdStorage): Generated {
     if (attribute.hasDefaultValue) {
         return toNode`
-        attribute ${attribute.isEnumType ? idStorage.resolveId(attribute.type) : attribute.type} ${attribute.name} = ${attribute.isEnumType ? idStorage.resolveId(attribute.defaultValue as string) : attribute.defaultValue}${deserializeClassElementModifiers(attribute.modifiers)};
+        attribute ${attribute.isEnumType ? idStorage.resolveId(attribute.type) : attribute.type} ${attribute.name} = ${attribute.isEnumType ? idStorage.resolveId(attribute.defaultValue as string) : attribute.defaultValue}${deserializeClassElementModifiers(attribute.modifiers, true)};
         `;
     } else {
         return toNode`
-        attribute ${attribute.isEnumType ? idStorage.resolveId(attribute.type) : attribute.type} ${attribute.name}${deserializeClassElementModifiers(attribute.modifiers)};
+        attribute ${attribute.isEnumType ? idStorage.resolveId(attribute.type) : attribute.type} ${attribute.name}${deserializeClassElementModifiers(attribute.modifiers, true)};
         `;
     }
 }
 
-function deserializeClassElementModifiers(cem: ClassElementModifiers): Generated {
-    const modifiers: string[] = [cem.readonly ? "readonly" : "", cem.volatile ? "volatile" : "", cem.transient ? "transient" : "", cem.unsettable ? "unsettable" : "", cem.derived ? "derived" : "", cem.unique ? "unique" : "", cem.ordered ? "ordered" : "", cem.resolve ? "resolve" : "", cem.id ? "id" : ""].filter(x => x != "");
+function deserializeClassElementModifiers(cem: ClassElementModifiers, isAttribute: boolean): Generated {
+    let modifiers: string[] = [];
+    modifiers.push(...modifierDefaultRealizer(cem.readonly, false, "readonly"));
+    modifiers.push(...modifierDefaultRealizer(cem.volatile, false, "volatile"));
+    modifiers.push(...modifierDefaultRealizer(cem.transient, false, "transient"));
+    modifiers.push(...modifierDefaultRealizer(cem.unsettable, false, "unsettable"));
+    modifiers.push(...modifierDefaultRealizer(cem.derived, false, "derived"));
+    modifiers.push(...modifierDefaultRealizer(cem.unique, true, "unique"));
+    modifiers.push(...modifierDefaultRealizer(cem.ordered, true, "ordered"));
+    if (isAttribute) {
+        modifiers.push(...modifierDefaultRealizer(cem.id, false, "id"));
+    } else {
+        modifiers.push(...modifierDefaultRealizer(cem.resolve, true, "resolve"));
+    }
     return modifiers.length == 0 ? toNode`` : toNode` {${modifiers.join(" ")}}`;
+}
+
+function modifierDefaultRealizer(modifierVal: boolean, defaultVal: boolean, modifierKeyword: string): string[] {
+    if (modifierVal != defaultVal) {
+        if (modifierVal) {
+            return [modifierKeyword];
+        }
+        return ["!" + modifierKeyword]
+    }
+    return [];
 }
 
 function deserializeReference(reference: ReferenceEntity, idStorage: MmlIdStorage): Generated {
     if (reference.hasOpposite) {
         return toNode`
         @opposite ${idStorage.resolveId(reference.opposite)}
-        reference ${idStorage.resolveId(reference.type)}${deserializeMultiplicity(reference.multiplicity)} ${reference.name}${deserializeClassElementModifiers(reference.modifiers)};`;
+        reference ${idStorage.resolveId(reference.type)}${deserializeMultiplicity(reference.multiplicity)} ${reference.name}${deserializeClassElementModifiers(reference.modifiers, false)};`;
     } else {
-        return toNode`reference ${idStorage.resolveId(reference.type)}${deserializeMultiplicity(reference.multiplicity)} ${reference.name}${deserializeClassElementModifiers(reference.modifiers)};`;
+        return toNode`reference ${idStorage.resolveId(reference.type)}${deserializeMultiplicity(reference.multiplicity)} ${reference.name}${deserializeClassElementModifiers(reference.modifiers, false)};`;
     }
 }
 
