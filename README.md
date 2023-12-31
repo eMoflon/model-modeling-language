@@ -153,19 +153,21 @@ reference <Type>[1..*] <Name>;
 ```
 
 Attributes and references can additionally be provided with a number of modifiers. These are appended as a simple
-enumeration in curly brackets.
+enumeration in curly brackets (separated by spaces). Note that the meaning of a modifier can be negated by 
+prefixing it with a `!` operator. Modifiers that reflect the default value (see table) do not have to be set explicitly. 
+Therefore, a negation should usually only be necessary for the modifiers `unique`, `ordered` and `resolve`.
 
-| Keyword    | Description | Applicability        |
-|------------|-------------|----------------------|
-| readonly   |             | Attribute, Reference |
-| volatile   |             | Attribute, Reference |
-| transient  |             | Attribute, Reference |
-| unsettable |             | Attribute, Reference |
-| derived    |             | Attribute, Reference |
-| unique     |             | Attribute, Reference |
-| ordered    |             | Attribute, Reference |
-| id         |             | Attribute            |
-| resolve    |             | Reference            |
+| Keyword    | Description | Applicability        | Default |
+|------------|-------------|----------------------|---------|
+| readonly   |             | Attribute, Reference | false   |
+| volatile   |             | Attribute, Reference | false   |
+| transient  |             | Attribute, Reference | false   |
+| unsettable |             | Attribute, Reference | false   |
+| derived    |             | Attribute, Reference | false   |
+| unique     |             | Attribute, Reference | true    |
+| ordered    |             | Attribute, Reference | true    |
+| id         |             | Attribute            | true    |
+| resolve    |             | Reference            | false   |
 
 ### On the specification of instances
 
