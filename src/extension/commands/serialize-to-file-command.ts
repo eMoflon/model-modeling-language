@@ -10,9 +10,11 @@ export class SerializeToFileCommand extends ExtensionCommand {
     }
 
     execute(...args: any[]): any {
-        //showUIMessage(MessageType.INFO, "Got command!");
         getSerializedWorkspace(this.client, ...args).then(value => {
             if (value.success) {
+                if (value.documents.filter(x => x.diagnostics.filter(y => y.severity == 1).length > 0).length > 0) {
+                    showUIMessage(MessageType.WARNING, "Generation was carried out, although there are still some problems of the highest severity!");
+                }
                 writeSerializedWorkspaceToFile(value);
             } else {
                 showUIMessage(MessageType.ERROR, value.data);

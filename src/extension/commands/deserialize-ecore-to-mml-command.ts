@@ -25,7 +25,6 @@ export class DeserializeEcoreToMmlCommand extends ExtensionCommand {
             showUIMessage(MessageType.ERROR, `Invalid selection scheme: ${selection.scheme}`);
             return;
         }
-        showUIMessage(MessageType.INFO, `Got command! Selection: ${selection.fsPath}`);
 
         const workspaceConfiguration = vscode.workspace.getConfiguration('model-modeling-language');
         const connectorPath: string | undefined = workspaceConfiguration.get('cli.path');

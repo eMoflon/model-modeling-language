@@ -27,6 +27,12 @@ export class SerializeToEmfCommand extends ExtensionCommand {
                 return;
             }
 
+            if (value.documents.filter(x => x.diagnostics.filter(y => y.severity == 1).length > 0).length > 0) {
+                showUIMessage(MessageType.ERROR, "Generation cannot be carried out as there are still some problems of the highest severity!");
+                vscode.commands.executeCommand("workbench.action.problems.focus");
+                return;
+            }
+
             const connectorCommand = `java -jar ${connectorPath} generate ${value.wsName} ${value.wsBasePath}`;
             const connectorMessage = JSON.stringify(value.documents);
 
