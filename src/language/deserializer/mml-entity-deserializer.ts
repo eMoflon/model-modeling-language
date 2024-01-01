@@ -49,7 +49,7 @@ function deserializeAbstractClassEntity(ace: AbstractClassEntity, idStorage: Mml
 function deserializeAttribute(attribute: AttributeEntity, idStorage: MmlIdStorage): Generated {
     if (attribute.hasDefaultValue) {
         return toNode`
-        attribute ${attribute.isEnumType ? idStorage.resolveId(attribute.type) : attribute.type} ${attribute.name} = ${attribute.isEnumType ? idStorage.resolveId(attribute.defaultValue as string) : attribute.defaultValue}${deserializeClassElementModifiers(attribute.modifiers, true)};
+        attribute ${attribute.isEnumType ? idStorage.resolveId(attribute.type) : attribute.type} ${attribute.name} = ${attribute.isEnumType ? idStorage.resolveId(attribute.defaultValue as string) : attribute.type == "string" ? `"${attribute.defaultValue}"` : attribute.defaultValue}${deserializeClassElementModifiers(attribute.modifiers, true)};
         `;
     } else {
         return toNode`
