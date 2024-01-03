@@ -96,7 +96,9 @@ ReferenceModifiers:
     ordered?='ordered' &
     not_ordered?='!ordered' &
     resolve?='resolve' &
-    not_resolve?='!resolve';
+    not_resolve?='!resolve' &
+    containment?='containment' &
+    not_containment?='!containment';
 
 OppositeAnnotation:
     '@opposite' reference=[CReference:FQNAME];

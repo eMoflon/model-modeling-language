@@ -71,6 +71,7 @@ function deserializeClassElementModifiers(cem: ClassElementModifiers, isAttribut
         modifiers.push(...modifierDefaultRealizer(cem.id, false, "id"));
     } else {
         modifiers.push(...modifierDefaultRealizer(cem.resolve, true, "resolve"));
+        modifiers.push(...modifierDefaultRealizer(cem.containment, false, "containment"));
     }
     return modifiers.length == 0 ? toNode`` : toNode` {${modifiers.join(" ")}}`;
 }

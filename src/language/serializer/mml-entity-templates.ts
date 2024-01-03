@@ -156,6 +156,7 @@ export class ClassElementModifiers {
     readonly unique: boolean = true;
     readonly ordered: boolean = true;
     readonly resolve: boolean = true;
+    readonly containment: boolean = false;
     readonly id: boolean = false;
 
 
@@ -172,6 +173,7 @@ export class ClassElementModifiers {
         this.ordered = (this.ordered || mod.ordered) && !mod.not_ordered;
         if (isReferenceModifiers(mod)) {
             this.resolve = (this.resolve || mod.resolve) && !mod.not_resolve;
+            this.containment = (this.containment || mod.containment) && !mod.not_containment;
         }
         if (isAttributeModifiers(mod)) {
             this.id = (this.id || mod.id) && !mod.not_id;
