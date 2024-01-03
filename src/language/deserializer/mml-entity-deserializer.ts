@@ -100,6 +100,9 @@ function deserializeMultiplicity(mult: MultiplicityEntity): Generated {
     const lower: string = mult.lowerIsN0 ? "*" : mult.lowerIsN ? "+" : mult.lower.toString();
     const upper: string = mult.upperIsN0 ? "*" : mult.upperIsN ? "+" : mult.upper.toString();
     if (mult.hasUpperBound) {
+        if (!mult.lowerIsN0 && !mult.lowerIsN && !mult.upperIsN0 && !mult.upperIsN && mult.lower == 0 && mult.upper == 1) {
+            return toNode``;
+        }
         return toNode`[${lower}..${upper}]`;
     } else {
         return toNode`[${lower}]`;

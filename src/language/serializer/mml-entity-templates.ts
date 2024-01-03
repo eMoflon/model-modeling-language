@@ -133,6 +133,9 @@ export class MultiplicityEntity {
 
     constructor(mult: Multiplicity | undefined) {
         if (mult == undefined) {
+            this.hasUpperBound = true;
+            this.lower = 0;
+            this.upper = 1;
             return;
         }
         this.lowerIsN = mult.mult.n;
