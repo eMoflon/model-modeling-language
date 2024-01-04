@@ -21,6 +21,7 @@ With the help of Langium, four different products are provided:
 * [The Model Modeling Language](#the-model-modeling-language)
   * [Specification of Metamodels](#on-the-specification-of-metamodels)
   * [Specification of Instances](#on-the-specification-of-instances)
+* [Translating from Ecore to MML](#translating-from-ecore-to-mml)
 * [File structure](#file-structure-where-can-i-find)
 
 ---
@@ -229,6 +230,12 @@ instance <Name> {
     }
 }
 ```
+
+## Translating from Ecore to MML
+The VSCode plugin supports the automatic translation of Ecore files into MML. To do this, right-click on an `.ecore` file 
+and select `Translate Ecore Model to MML`. If successful, the translated `.mml` file will be saved in the `generated` folder.
+
+**Note:** Currently there is no support for metamodels that import additional metamodels.
 
 ## File structure: Where can I find....
 
