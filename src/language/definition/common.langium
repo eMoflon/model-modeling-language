@@ -1,8 +1,3 @@
-grammar ModelModelingLanguage
-
-entry Model:
-    (imports+=Import | packages+=Package | macros+=IMacro | functions+=IFunction | instances+=IInstance)*;
-
 DataType returns string:
     'int' | 'string' | 'bool' | 'double' | 'float';
 
@@ -11,15 +6,8 @@ NumberExpr: value=(NUM | DOUBLE);
 StringExpr: value=STRING;
 BoolExpr: value?='true' | 'false';
 
-Import:
-    'import' target=STRING ('using' aliases+=ImportAlias (',' aliases+=ImportAlias)*)? ';';
-
-ImportAlias:
-    (ref=[Package:ID] | ref=[Package:QNAME]) 'as' alias=ID;
-
 MultiplicitySpec:
     num=NUM | n_0?='*' | n?='+';
-
 
 Multiplicity:
     '[' mult=MultiplicitySpec ('..' upperMult=MultiplicitySpec)? ']';
@@ -112,78 +100,6 @@ Enum:
 EnumEntry:
     name=ID ('=' value=ValueExpr)?;
 
-fragment InstanceParameters:
-    '(' (parameter+=TypedVariable (',' parameter+=TypedVariable)*)? ')';
-
-fragment MacroParameters:
-    '[' (parameter+=TypedVariable (',' parameter+=TypedVariable)*)? ']';
-
-VariableType:
-    type=[AbstractElement:QNAME] | dtype=DataType;
-
-Variable:
-    UntypedVariable | TypedVariable | FunctionVariable;
-
-UntypedVariable:
-    name=ID;
-
-TypedVariable:
-    typing=VariableType name=ID;
-
-FunctionVariable:
-    'tuple' name=ID;
-
-IMacro:
-    'macro' name=ID MacroParameters '{' (instances+=MacroInstance)* '}';
-
-MacroInstance:
-    (nInst=TypedVariable | iVar=[TypedVariable:ID]) '{' (statements+=MacroStatement)* '}';
-
-MacroStatement:
-    MacroAttributeStatement | MacroAssignStatement;
-
-MacroAttributeStatement:
-    attr=[Attribute:ID] '=' value=ArithExpr;
-
-MacroAssignStatement:
-    cref=[CReference:ID] '->' instance=[TypedVariable:ID];
-
-IFunction:
-    'function' name=ID InstanceParameters (returnsVar?='returns' typing=VariableType)? '{' (statements+=FunctionStatement)* (statements+=FunctionReturn)? '}';
-
-FunctionStatement:
-    FunctionCall | FunctionMacroCall | FunctionAssignment | FunctionLoop;
-
-FunctionArgument:
-    ref=[Variable:ID] | value=ArithExpr;
-
-FunctionCall:
-    func=[IFunction:ID] '(' (args+=FunctionArgument (',' args+=FunctionArgument)*)? ')';
-
-FunctionMacroCall:
-    macro=[IMacro:ID] '[' (args+=FunctionArgument (',' args+=FunctionArgument)*)? ']';
-
-FunctionAssignment:
-    var=(TypedVariable | FunctionVariable) '=' call=(FunctionCall | FunctionMacroCall) ('.' select=[TypedVariable:ID])?;
-
-ImplicitlyTypedValue:
-    val=ArithExpr;
-
-FunctionReturn:
-    'return' (var=[TypedVariable:ID]|val=ImplicitlyTypedValue);
-
-FunctionLoop:
-    'for' var=UntypedVariable 'in' lower=NUM ':' upper=NUM '{' (statements+=FunctionStatement)+ '}';
-
-IInstance:
-    'instance' name=ID '{' (statements+=(InstanceStatement | InstanceLoop))* '}';
-
-InstanceStatement:
-    FunctionCall | FunctionMacroCall | FunctionAssignment;
-
-InstanceLoop:
-    'for' var=[TypedVariable:ID] '-' ref=[CReference:ID] '->' ivar=UntypedVariable '{' (statements+=InstanceStatement)+ '}';
-
 ArithExpr:
     Addition;
 
@@ -211,6 +127,20 @@ VariableValueExpr:
 PrimaryArithExpr infers ArithExpr:
     '(' ArithExpr ')' | ValueExpr | EnumValueExpr | VariableValueExpr | FunctionVariableSelectorExpr;
 
+Variable:
+    UntypedVariable | TypedVariable | FunctionVariable;
+
+UntypedVariable:
+    name=ID;
+
+TypedVariable:
+    typing=VariableType name=ID;
+
+FunctionVariable:
+    'tuple' name=ID;
+
+VariableType:
+    type=[AbstractElement:QNAME] | dtype=DataType;
 
 hidden terminal WS: /\s+/;
 terminal DOUBLE returns number: /-?\d+\.\d+/;
