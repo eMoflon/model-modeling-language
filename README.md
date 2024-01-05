@@ -21,6 +21,7 @@ With the help of Langium, four different products are provided:
 * [The Model Modeling Language](#the-model-modeling-language)
   * [Specification of Metamodels](#on-the-specification-of-metamodels)
   * [Specification of Instances](#on-the-specification-of-instances)
+* [Translating from Ecore to MML](#translating-from-ecore-to-mml)
 * [File structure](#file-structure-where-can-i-find)
 
 ---
@@ -153,19 +154,21 @@ reference <Type>[1..*] <Name>;
 ```
 
 Attributes and references can additionally be provided with a number of modifiers. These are appended as a simple
-enumeration in curly brackets.
+enumeration in curly brackets (separated by spaces). Note that the meaning of a modifier can be negated by 
+prefixing it with a `!` operator. Modifiers that reflect the default value (see table) do not have to be set explicitly. 
+Therefore, a negation should usually only be necessary for the modifiers `unique`, `ordered` and `resolve`.
 
-| Keyword    | Description | Applicability        |
-|------------|-------------|----------------------|
-| readonly   |             | Attribute, Reference |
-| volatile   |             | Attribute, Reference |
-| transient  |             | Attribute, Reference |
-| unsettable |             | Attribute, Reference |
-| derived    |             | Attribute, Reference |
-| unique     |             | Attribute, Reference |
-| ordered    |             | Attribute, Reference |
-| id         |             | Attribute            |
-| resolve    |             | Reference            |
+| Keyword    | Description | Applicability        | Default |
+|------------|-------------|----------------------|---------|
+| readonly   |             | Attribute, Reference | false   |
+| volatile   |             | Attribute, Reference | false   |
+| transient  |             | Attribute, Reference | false   |
+| unsettable |             | Attribute, Reference | false   |
+| derived    |             | Attribute, Reference | false   |
+| unique     |             | Attribute, Reference | true    |
+| ordered    |             | Attribute, Reference | true    |
+| id         |             | Attribute            | true    |
+| resolve    |             | Reference            | false   |
 
 ### On the specification of instances
 
@@ -227,6 +230,12 @@ instance <Name> {
     }
 }
 ```
+
+## Translating from Ecore to MML
+The VSCode plugin supports the automatic translation of Ecore files into MML. To do this, right-click on an `.ecore` file 
+and select `Translate Ecore Model to MML`. If successful, the translated `.mml` file will be saved in the `generated` folder.
+
+**Note:** Currently there is no support for metamodels that import additional metamodels.
 
 ## File structure: Where can I find....
 

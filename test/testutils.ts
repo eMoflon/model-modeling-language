@@ -9,6 +9,9 @@ import {
 } from "../src/language/model-modeling-language-module.js";
 import {Assertion, expect} from "vitest";
 import {Diagnostic} from "vscode-languageserver";
+import {deserializeStringToMMLCode} from "../src/language/deserializer/mml-deserializer.js";
+import {SerializedDocument} from "../src/shared/MmlConnectorTypes.js";
+import {MmlIdStorage} from "../src/language/deserializer/mml-id-storage.js";
 
 function getServices(): ModelModelingLanguageServices {
     return createModelModelingLanguageServices(EmptyFileSystem).MmlServices;
@@ -71,6 +74,28 @@ export function findNode(node: AstNode, path: string): AstNode | undefined {
 export async function getSerialization(code: string): Promise<string> {
     const model: Model = await getModel(code);
     return serializeModel(model, getServices());
+}
+
+export function getDeserialization(serialized: string): string {
+    const sDoc: SerializedDocument = {uri: "", content: serialized, diagnostics: []};
+    const sDocs: SerializedDocument[] = [sDoc];
+    const idResolver: MmlIdStorage = new MmlIdStorage(sDocs);
+    return deserializeStringToMMLCode(serialized, idResolver);
+}
+
+function linebreakCleaning(input: string) {
+    return input.replace(/\r\n/g, "\n");
+}
+
+export function assertDeserializer(serialized: string, expected: string): void {
+    const sDoc: SerializedDocument = {uri: "", content: serialized, diagnostics: []};
+    const sDocs: SerializedDocument[] = [sDoc];
+    const idResolver: MmlIdStorage = new MmlIdStorage(sDocs);
+    const deserialized: string = deserializeStringToMMLCode(serialized, idResolver);
+    console.log(deserialized);
+    const cleanedDeserialized: string = linebreakCleaning(deserialized).trim();
+    const cleanedExpectation: string = linebreakCleaning(expected).trim();
+    expect(cleanedDeserialized).toEqual(cleanedExpectation);
 }
 
 export function expectErrorCode(validationResult: ValidationResult<AstNode>, idx: number): Assertion {

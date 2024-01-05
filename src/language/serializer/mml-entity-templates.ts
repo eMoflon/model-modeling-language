@@ -28,7 +28,7 @@ import {MmlSerializerContext} from "./mml-serializer-context.js";
  * The metamodel is being precomputed and all references are resolved.
  */
 
-class AttributeEntity {
+export class AttributeEntity {
     readonly referenceId: string;
     readonly name: string;
     readonly type: string;
@@ -65,7 +65,7 @@ class AttributeEntity {
     }
 }
 
-class AbstractClassEntity {
+export class AbstractClassEntity {
     readonly referenceId: string;
     readonly name: string;
     readonly isAbstract: boolean;
@@ -98,7 +98,7 @@ class AbstractClassEntity {
     }
 }
 
-class ReferenceEntity {
+export class ReferenceEntity {
     readonly referenceId: string;
     readonly name: string;
     readonly multiplicity: MultiplicityEntity;
@@ -121,7 +121,7 @@ class ReferenceEntity {
     }
 }
 
-class MultiplicityEntity {
+export class MultiplicityEntity {
     readonly hasUpperBound: boolean = false;
     readonly lowerIsN: boolean = false;
     readonly lowerIsN0: boolean = false;
@@ -133,6 +133,9 @@ class MultiplicityEntity {
 
     constructor(mult: Multiplicity | undefined) {
         if (mult == undefined) {
+            this.hasUpperBound = true;
+            this.lower = 0;
+            this.upper = 1;
             return;
         }
         this.lowerIsN = mult.mult.n;
@@ -147,15 +150,16 @@ class MultiplicityEntity {
     }
 }
 
-class ClassElementModifiers {
+export class ClassElementModifiers {
     readonly readonly: boolean = false;
     readonly volatile: boolean = false;
     readonly transient: boolean = false;
     readonly unsettable: boolean = false;
     readonly derived: boolean = false;
-    readonly unique: boolean = false;
-    readonly ordered: boolean = false;
-    readonly resolve: boolean = false;
+    readonly unique: boolean = true;
+    readonly ordered: boolean = true;
+    readonly resolve: boolean = true;
+    readonly containment: boolean = false;
     readonly id: boolean = false;
 
 
@@ -163,23 +167,24 @@ class ClassElementModifiers {
         if (mod == undefined) {
             return;
         }
-        this.readonly = mod.readonly;
-        this.volatile = mod.volatile;
-        this.transient = mod.transient;
-        this.unsettable = mod.unsettable;
-        this.derived = mod.derived;
-        this.unique = mod.unique;
-        this.ordered = mod.ordered;
+        this.readonly = (this.readonly || mod.readonly) && !mod.not_readonly;
+        this.volatile = (this.volatile || mod.volatile) && !mod.not_volatile;
+        this.transient = (this.transient || mod.transient) && !mod.not_transient;
+        this.unsettable = (this.unsettable || mod.unsettable) && !mod.not_unsettable;
+        this.derived = (this.derived || mod.derived) && !mod.not_derived;
+        this.unique = (this.unique || mod.unique) && !mod.not_unique;
+        this.ordered = (this.ordered || mod.ordered) && !mod.not_ordered;
         if (isReferenceModifiers(mod)) {
-            this.resolve = mod.resolve;
+            this.resolve = (this.resolve || mod.resolve) && !mod.not_resolve;
+            this.containment = (this.containment || mod.containment) && !mod.not_containment;
         }
         if (isAttributeModifiers(mod)) {
-            this.id = mod.id;
+            this.id = (this.id || mod.id) && !mod.not_id;
         }
     }
 }
 
-class EnumEntity {
+export class EnumEntity {
     readonly referenceId: string;
     readonly name: string;
     readonly type: string;
@@ -194,7 +199,7 @@ class EnumEntity {
     }
 }
 
-class EnumEntryEntity {
+export class EnumEntryEntity {
     readonly referenceId: string;
     readonly name: string;
     readonly hasDefaultValue: boolean = false;
@@ -210,7 +215,7 @@ class EnumEntryEntity {
     }
 }
 
-class PackageEntity {
+export class PackageEntity {
     readonly referenceId: string;
     readonly name: string;
     readonly abstractClasses: AbstractClassEntity[] = [];

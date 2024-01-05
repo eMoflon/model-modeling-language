@@ -3,6 +3,7 @@ import {
     AbstractElement,
     ArithExpr,
     Attribute,
+    AttributeModifiers,
     Class,
     CReference,
     Enum,
@@ -38,6 +39,7 @@ import {
     ModelModelingLanguageAstType,
     Multiplicity,
     Package,
+    ReferenceModifiers,
     TypedVariable,
     VariableType
 } from './generated/ast.js';
@@ -84,8 +86,16 @@ export function registerValidationChecks(services: ModelModelingLanguageServices
             validator.checkMissingOppositeAnnotation,
             validator.checkNonMatchingOppositeAnnotation
         ],
+        ReferenceModifiers: [
+            validator.checkReferenceModifiersValidity,
+            validator.checkReferenceModifiersNecessity
+        ],
         Attribute: [
             validator.checkAttributeTypes
+        ],
+        AttributeModifiers: [
+            validator.checkAttributeModifiersValidity,
+            validator.checkAttributeModifiersNecessity
         ],
         Enum: [
             validator.checkUniqueEnumType
@@ -188,6 +198,10 @@ export namespace IssueCodes {
     export const InstantiationOfAbstractClass = "instantiation-of-abstract-class";
     export const InstantiationOfEnum = "instantiation-of-enum";
     export const InstantiationOfPrimitiveType = "instantiation-of-primitive-type";
+    export const UnnecessaryAttributeModifier = "unnecessary-attribute-modifier";
+    export const InvalidAttributeModifierCombination = "invalid-attribute-modifier-combination";
+    export const UnnecessaryReferenceModifier = "unnecessary-reference-modifier";
+    export const InvalidReferenceModifierCombination = "invalid-reference-modifier-combination";
 }
 
 /**
@@ -1381,6 +1395,322 @@ export class ModelModelingLanguageValidator {
                     code: IssueCodes.InstantiationOfPrimitiveType
                 })
             }
+        }
+    }
+
+    checkAttributeModifiersValidity(aMod: AttributeModifiers, accept: ValidationAcceptor) {
+        if (aMod.readonly && aMod.not_readonly) {
+            accept('error', `You have set contradictory modifiers!`, {
+                node: aMod,
+                property: 'readonly',
+                code: IssueCodes.InvalidAttributeModifierCombination
+            })
+            accept('error', `You have set contradictory modifiers!`, {
+                node: aMod,
+                property: 'not_readonly',
+                code: IssueCodes.InvalidAttributeModifierCombination
+            })
+        }
+        if (aMod.volatile && aMod.not_volatile) {
+            accept('error', `You have set contradictory modifiers!`, {
+                node: aMod,
+                property: 'volatile',
+                code: IssueCodes.InvalidAttributeModifierCombination
+            })
+            accept('error', `You have set contradictory modifiers!`, {
+                node: aMod,
+                property: 'not_volatile',
+                code: IssueCodes.InvalidAttributeModifierCombination
+            })
+        }
+        if (aMod.transient && aMod.not_transient) {
+            accept('error', `You have set contradictory modifiers!`, {
+                node: aMod,
+                property: 'transient',
+                code: IssueCodes.InvalidAttributeModifierCombination
+            })
+            accept('error', `You have set contradictory modifiers!`, {
+                node: aMod,
+                property: 'not_transient',
+                code: IssueCodes.InvalidAttributeModifierCombination
+            })
+        }
+        if (aMod.unsettable && aMod.not_unsettable) {
+            accept('error', `You have set contradictory modifiers!`, {
+                node: aMod,
+                property: 'unsettable',
+                code: IssueCodes.InvalidAttributeModifierCombination
+            })
+            accept('error', `You have set contradictory modifiers!`, {
+                node: aMod,
+                property: 'not_unsettable',
+                code: IssueCodes.InvalidAttributeModifierCombination
+            })
+        }
+        if (aMod.derived && aMod.not_derived) {
+            accept('error', `You have set contradictory modifiers!`, {
+                node: aMod,
+                property: 'derived',
+                code: IssueCodes.InvalidAttributeModifierCombination
+            })
+            accept('error', `You have set contradictory modifiers!`, {
+                node: aMod,
+                property: 'not_derived',
+                code: IssueCodes.InvalidAttributeModifierCombination
+            })
+        }
+        if (aMod.unique && aMod.not_unique) {
+            accept('error', `You have set contradictory modifiers!`, {
+                node: aMod,
+                property: 'unique',
+                code: IssueCodes.InvalidAttributeModifierCombination
+            })
+            accept('error', `You have set contradictory modifiers!`, {
+                node: aMod,
+                property: 'not_unique',
+                code: IssueCodes.InvalidAttributeModifierCombination
+            })
+        }
+        if (aMod.ordered && aMod.not_ordered) {
+            accept('error', `You have set contradictory modifiers!`, {
+                node: aMod,
+                property: 'ordered',
+                code: IssueCodes.InvalidAttributeModifierCombination
+            })
+            accept('error', `You have set contradictory modifiers!`, {
+                node: aMod,
+                property: 'not_ordered',
+                code: IssueCodes.InvalidAttributeModifierCombination
+            })
+        }
+        if (aMod.id && aMod.not_id) {
+            accept('error', `You have set contradictory modifiers!`, {
+                node: aMod,
+                property: 'id',
+                code: IssueCodes.InvalidAttributeModifierCombination
+            })
+            accept('error', `You have set contradictory modifiers!`, {
+                node: aMod,
+                property: 'not_id',
+                code: IssueCodes.InvalidAttributeModifierCombination
+            })
+        }
+    }
+
+    checkAttributeModifiersNecessity(aMod: AttributeModifiers, accept: ValidationAcceptor) {
+        if (aMod.not_readonly) {
+            accept('info', `This is the default and does not have to be specifically defined!`, {
+                node: aMod,
+                property: 'not_readonly',
+                code: IssueCodes.UnnecessaryAttributeModifier
+            })
+        }
+        if (aMod.not_volatile) {
+            accept('info', `This is the default and does not have to be specifically defined!`, {
+                node: aMod,
+                property: 'not_volatile',
+                code: IssueCodes.UnnecessaryAttributeModifier
+            })
+        }
+        if (aMod.not_transient) {
+            accept('info', `This is the default and does not have to be specifically defined!`, {
+                node: aMod,
+                property: 'not_transient',
+                code: IssueCodes.UnnecessaryAttributeModifier
+            })
+        }
+        if (aMod.not_unsettable) {
+            accept('info', `This is the default and does not have to be specifically defined!`, {
+                node: aMod,
+                property: 'unsettable',
+                code: IssueCodes.UnnecessaryAttributeModifier
+            })
+        }
+        if (aMod.not_derived) {
+            accept('info', `This is the default and does not have to be specifically defined!`, {
+                node: aMod,
+                property: 'derived',
+                code: IssueCodes.UnnecessaryAttributeModifier
+            })
+        }
+        if (aMod.unique) {
+            accept('info', `This is the default and does not have to be specifically defined!`, {
+                node: aMod,
+                property: 'unique',
+                code: IssueCodes.UnnecessaryAttributeModifier
+            })
+        }
+        if (aMod.ordered) {
+            accept('info', `This is the default and does not have to be specifically defined!`, {
+                node: aMod,
+                property: 'ordered',
+                code: IssueCodes.UnnecessaryAttributeModifier
+            })
+        }
+        if (aMod.not_id) {
+            accept('info', `This is the default and does not have to be specifically defined!`, {
+                node: aMod,
+                property: 'not_id',
+                code: IssueCodes.UnnecessaryAttributeModifier
+            })
+        }
+    }
+
+    checkReferenceModifiersValidity(rMod: ReferenceModifiers, accept: ValidationAcceptor) {
+        if (rMod.readonly && rMod.not_readonly) {
+            accept('error', `You have set contradictory modifiers!`, {
+                node: rMod,
+                property: 'readonly',
+                code: IssueCodes.InvalidReferenceModifierCombination
+            })
+            accept('error', `You have set contradictory modifiers!`, {
+                node: rMod,
+                property: 'not_readonly',
+                code: IssueCodes.InvalidReferenceModifierCombination
+            })
+        }
+        if (rMod.volatile && rMod.not_volatile) {
+            accept('error', `You have set contradictory modifiers!`, {
+                node: rMod,
+                property: 'volatile',
+                code: IssueCodes.InvalidReferenceModifierCombination
+            })
+            accept('error', `You have set contradictory modifiers!`, {
+                node: rMod,
+                property: 'not_volatile',
+                code: IssueCodes.InvalidReferenceModifierCombination
+            })
+        }
+        if (rMod.transient && rMod.not_transient) {
+            accept('error', `You have set contradictory modifiers!`, {
+                node: rMod,
+                property: 'transient',
+                code: IssueCodes.InvalidReferenceModifierCombination
+            })
+            accept('error', `You have set contradictory modifiers!`, {
+                node: rMod,
+                property: 'not_transient',
+                code: IssueCodes.InvalidReferenceModifierCombination
+            })
+        }
+        if (rMod.unsettable && rMod.not_unsettable) {
+            accept('error', `You have set contradictory modifiers!`, {
+                node: rMod,
+                property: 'unsettable',
+                code: IssueCodes.InvalidReferenceModifierCombination
+            })
+            accept('error', `You have set contradictory modifiers!`, {
+                node: rMod,
+                property: 'not_unsettable',
+                code: IssueCodes.InvalidReferenceModifierCombination
+            })
+        }
+        if (rMod.derived && rMod.not_derived) {
+            accept('error', `You have set contradictory modifiers!`, {
+                node: rMod,
+                property: 'derived',
+                code: IssueCodes.InvalidReferenceModifierCombination
+            })
+            accept('error', `You have set contradictory modifiers!`, {
+                node: rMod,
+                property: 'not_derived',
+                code: IssueCodes.InvalidReferenceModifierCombination
+            })
+        }
+        if (rMod.unique && rMod.not_unique) {
+            accept('error', `You have set contradictory modifiers!`, {
+                node: rMod,
+                property: 'unique',
+                code: IssueCodes.InvalidReferenceModifierCombination
+            })
+            accept('error', `You have set contradictory modifiers!`, {
+                node: rMod,
+                property: 'not_unique',
+                code: IssueCodes.InvalidReferenceModifierCombination
+            })
+        }
+        if (rMod.ordered && rMod.not_ordered) {
+            accept('error', `You have set contradictory modifiers!`, {
+                node: rMod,
+                property: 'ordered',
+                code: IssueCodes.InvalidReferenceModifierCombination
+            })
+            accept('error', `You have set contradictory modifiers!`, {
+                node: rMod,
+                property: 'not_ordered',
+                code: IssueCodes.InvalidReferenceModifierCombination
+            })
+        }
+        if (rMod.resolve && rMod.not_resolve) {
+            accept('error', `You have set contradictory modifiers!`, {
+                node: rMod,
+                property: 'resolve',
+                code: IssueCodes.InvalidReferenceModifierCombination
+            })
+            accept('error', `You have set contradictory modifiers!`, {
+                node: rMod,
+                property: 'not_resolve',
+                code: IssueCodes.InvalidReferenceModifierCombination
+            })
+        }
+    }
+
+    checkReferenceModifiersNecessity(rMod: ReferenceModifiers, accept: ValidationAcceptor) {
+        if (rMod.not_readonly) {
+            accept('info', `This is the default and does not have to be specifically defined!`, {
+                node: rMod,
+                property: 'not_readonly',
+                code: IssueCodes.UnnecessaryReferenceModifier
+            })
+        }
+        if (rMod.not_volatile) {
+            accept('info', `This is the default and does not have to be specifically defined!`, {
+                node: rMod,
+                property: 'not_volatile',
+                code: IssueCodes.UnnecessaryReferenceModifier
+            })
+        }
+        if (rMod.not_transient) {
+            accept('info', `This is the default and does not have to be specifically defined!`, {
+                node: rMod,
+                property: 'not_transient',
+                code: IssueCodes.UnnecessaryReferenceModifier
+            })
+        }
+        if (rMod.not_unsettable) {
+            accept('info', `This is the default and does not have to be specifically defined!`, {
+                node: rMod,
+                property: 'unsettable',
+                code: IssueCodes.UnnecessaryReferenceModifier
+            })
+        }
+        if (rMod.not_derived) {
+            accept('info', `This is the default and does not have to be specifically defined!`, {
+                node: rMod,
+                property: 'derived',
+                code: IssueCodes.UnnecessaryReferenceModifier
+            })
+        }
+        if (rMod.unique) {
+            accept('info', `This is the default and does not have to be specifically defined!`, {
+                node: rMod,
+                property: 'unique',
+                code: IssueCodes.UnnecessaryReferenceModifier
+            })
+        }
+        if (rMod.ordered) {
+            accept('info', `This is the default and does not have to be specifically defined!`, {
+                node: rMod,
+                property: 'ordered',
+                code: IssueCodes.UnnecessaryReferenceModifier
+            })
+        }
+        if (rMod.resolve) {
+            accept('info', `This is the default and does not have to be specifically defined!`, {
+                node: rMod,
+                property: 'resolve',
+                code: IssueCodes.UnnecessaryReferenceModifier
+            })
         }
     }
 }

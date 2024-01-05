@@ -51,6 +51,14 @@ export class ModelModelingLanguageCodeActionProvider implements CodeActionProvid
             case IssueCodes.OppositesOppositeAnnotationMissing:
                 accept(this.fixMissingOppositesOppositeAnnotation(diagnostic, document));
                 break;
+            case IssueCodes.UnnecessaryAttributeModifier:
+            case IssueCodes.UnnecessaryReferenceModifier:
+                accept(this.fixUnnecessaryModifiers(diagnostic, document));
+                break;
+            case IssueCodes.InvalidAttributeModifierCombination:
+            case IssueCodes.InvalidReferenceModifierCombination:
+                accept(this.fixInvalidModifierCombination(diagnostic, document));
+                break;
         }
         return undefined;
     }
@@ -190,6 +198,48 @@ export class ModelModelingLanguageCodeActionProvider implements CodeActionProvid
         }
         return undefined;
     }
+
+    private fixUnnecessaryModifiers(diagnostic: Diagnostic, document: LangiumDocument): CodeAction | undefined {
+        const text = document.textDocument.getText(diagnostic.range);
+        if (text) {
+            return {
+                title: `Remove unnecessary modifier ${text}`,
+                kind: CodeActionKind.QuickFix,
+                diagnostics: [diagnostic],
+                edit: {
+                    changes: {
+                        [document.textDocument.uri]: [{
+                            range: diagnostic.range,
+                            newText: ""
+                        }]
+                    }
+                }
+            };
+        }
+        return undefined;
+    }
+
+    private fixInvalidModifierCombination(diagnostic: Diagnostic, document: LangiumDocument): CodeAction | undefined {
+        const text = document.textDocument.getText(diagnostic.range);
+        if (text) {
+            return {
+                title: `Remove invalid modifier ${text}`,
+                kind: CodeActionKind.QuickFix,
+                diagnostics: [diagnostic],
+                edit: {
+                    changes: {
+                        [document.textDocument.uri]: [{
+                            range: diagnostic.range,
+                            newText: ""
+                        }]
+                    }
+                }
+            };
+        }
+        return undefined;
+    }
+
+
 }
 
 /*
