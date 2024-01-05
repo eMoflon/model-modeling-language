@@ -39,12 +39,20 @@ function startLanguageClient(context: vscode.ExtensionContext): LanguageClient {
         debug: {module: serverModule, transport: TransportKind.ipc, options: debugOptions}
     };
 
-    const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*.mml');
+    const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*.(mml|gc)');
     context.subscriptions.push(fileSystemWatcher);
 
     // Options to control the language client
     const clientOptions: LanguageClientOptions = {
-        documentSelector: [{scheme: 'file', language: 'model-modeling-language'}],
+        documentSelector: [
+            {
+                scheme: 'file',
+                language: 'model-modeling-language'
+            },
+            {
+                scheme: 'file',
+                language: 'graph-constraint-language'
+            }],
         synchronize: {
             // Notify the server about file changes to files contained in the workspace
             fileEvents: fileSystemWatcher
@@ -53,8 +61,8 @@ function startLanguageClient(context: vscode.ExtensionContext): LanguageClient {
 
     // Create the language client and start the client.
     const client = new LanguageClient(
-        'model-modeling-language',
-        'Model Modeling Language',
+        'model-modeling-and-constraint-language',
+        'Model Modeling and Constraint Language',
         serverOptions,
         clientOptions
     );

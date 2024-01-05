@@ -1,21 +1,22 @@
-import type { Model } from '../language/generated/ast.js';
+import type {Model} from '../language/generated/ast.js';
 import chalk from 'chalk';
-import { Command } from 'commander';
-import { ModelModelingLanguageLanguageMetaData } from '../language/generated/module.js';
-import { createModelModelingLanguageServices } from '../language/model-modeling-language-module.js';
+import {Command} from 'commander';
+import {ModelModelingLanguageLanguageMetaData} from '../language/generated/module.js';
 import {extractAstNode, extractAstNodes, GeneratorTargetType, getFiles, getTargetType} from './cli-util.js';
-import { NodeFileSystem } from 'langium/node';
+import {NodeFileSystem} from 'langium/node';
 import * as url from 'node:url';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import {generateMultiModelSerialization, generateSingleModelSerialization} from "./generator.js";
+import {createMmlAndGclServices} from "../language/main-module.js";
+
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 const packagePath = path.resolve(__dirname, '..', '..', 'package.json');
 const packageContent = await fs.readFile(packagePath, 'utf-8');
 
 export const generateAction = async (targetName: string, opts: GenerateOptions): Promise<void> => {
-    const services = createModelModelingLanguageServices(NodeFileSystem).MmlServices;
+    const services = createMmlAndGclServices(NodeFileSystem).mmlServices;
     const targetType: GeneratorTargetType = getTargetType(targetName)
     let generatedFilePath = ""
     if (targetType == GeneratorTargetType.FILE) {
@@ -37,7 +38,7 @@ export type GenerateOptions = {
     destination?: string;
 }
 
-export default function(): void {
+export default function (): void {
     const program = new Command();
 
     program.version(JSON.parse(packageContent).version);

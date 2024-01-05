@@ -60,6 +60,17 @@
           ".mml"
         ],
         "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "graph-constraint-language",
+        "aliases": [
+          "Graph-Constraint Language",
+          "graph-constraint-language"
+        ],
+        "extensions": [
+          ".gc"
+        ],
+        "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
@@ -67,6 +78,11 @@
         "language": "model-modeling-language",
         "scopeName": "source.model-modeling-language",
         "path": "syntaxes/model-modeling-language.tmLanguage.json"
+      },
+      {
+        "language": "graph-constraint-language",
+        "scopeName": "source.graph-constraint-language",
+        "path": "syntaxes/graph-constraint-language.tmLanguage.json"
       }
     ],
     "configuration": {
@@ -148,7 +164,9 @@
     }
   },
   "activationEvents": [
-    "onLanguage:model-modeling-language"
+    "onLanguage:model-modeling-and-constraint-language",
+    "onLanguage:model-modeling-language",
+    "onLanguage:graph-constraint-language"
   ],
   "main": "./out/extension/main.cjs",
   "bin": {
