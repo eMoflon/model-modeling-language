@@ -651,8 +651,9 @@ export class ModelModelingLanguageValidator {
     }
 
     checkSelfImport(ip: Import, accept: ValidationAcceptor) {
-        const targetPath = ip.target;
-        if (targetPath == getDocument(ip).uri.path) {
+        const documentUri: URI = getDocument(ip).uri;
+        const importedDocURI: URI | undefined = ModelModelingLanguageUtils.resolveRelativeModelImport(ip.target, documentUri);
+        if (UriUtils.equals(documentUri, importedDocURI)) {
             accept('error', `Document imports itself!`, {
                 node: ip,
                 property: 'target',
