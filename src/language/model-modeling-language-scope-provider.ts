@@ -567,4 +567,15 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
         }
         return combinedResult;
     }
+
+    public getScopeFixingUris(referenceType: string, referenceName: string, parentDir: URI, excludedUris: Set<string>): string[] {
+        const possibleDocs: Set<string> = new Set([...this.services.shared.workspace.LangiumDocuments.all.filter(x => !excludedUris.has(x.uri.toString())).map(x => x.uri.toString())]);
+        const importableUris: string[] = [];
+        for (const element of this.indexManager.allElements(referenceType, possibleDocs)) {
+            if (element.name == referenceName) {
+                importableUris.push(UriUtils.relative(parentDir, element.documentUri));
+            }
+        }
+        return importableUris;
+    }
 }
