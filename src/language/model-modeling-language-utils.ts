@@ -1,4 +1,4 @@
-import {AstNode} from "langium";
+import {AstNode, URI, UriUtils} from "langium";
 import {
     AbstractElement,
     ArithExpr,
@@ -459,5 +459,17 @@ export class ModelModelingLanguageUtils {
             })
         }
         return abstElements
+    }
+
+    public static resolveRelativeModelImport(path: string, currentUri: URI): URI | undefined {
+        if (path === undefined || path.length === 0) {
+            return undefined;
+        }
+        const dirUri = UriUtils.dirname(currentUri);
+        let grammarPath = path;
+        if (!grammarPath.endsWith('.mml')) {
+            grammarPath += '.mml';
+        }
+        return UriUtils.resolvePath(dirUri, grammarPath);
     }
 }
