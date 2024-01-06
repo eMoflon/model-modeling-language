@@ -1,4 +1,4 @@
-import {AstNode, getDocument, LangiumDocument, ValidationAcceptor, ValidationChecks} from 'langium';
+import {AstNode, getDocument, LangiumDocument, URI, UriUtils, ValidationAcceptor, ValidationChecks} from 'langium';
 import {
     AbstractElement,
     ArithExpr,
@@ -44,7 +44,6 @@ import {
     VariableType
 } from './generated/ast.js';
 import type {ModelModelingLanguageServices} from './model-modeling-language-module.js';
-import {URI} from "vscode-uri";
 import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
 
 /**
@@ -303,40 +302,34 @@ export class ModelModelingLanguageValidator {
             ctnr = ctnr.$container;
         }
 
-        const documentURI = ctnr.$document?.uri;
+        const documentURI = getDocument(cls).uri;
 
-        let importedDocuments = new Set((ctnr as Model).imports.map(imprt => imprt.target));
+        let importedDocuments: Set<string> = new Set((ctnr as Model).imports.map(imprt => ModelModelingLanguageUtils.resolveRelativeModelImport(imprt.target, documentURI)).filter(x => x != undefined).map(x => x!.toString()));
 
         cls.extendedClasses.forEach(extCls => {
-            const extClassUri = extCls.$nodeDescription?.documentUri;
-            if (documentURI == undefined || extClassUri == undefined) {
-                console.error("Undefined class path!");
-            } else {
-                if (extClassUri.path != documentURI.path) {
-                    if (!importedDocuments.has(extClassUri.path)) {
-                        accept('error', `${extCls.ref?.name} with path ${extClassUri.path} is not imported'.`, {
-                            node: cls,
-                            property: 'extendedClasses',
-                            code: IssueCodes.ImportIsMissing
-                        })
-                    }
+            if (extCls.ref == undefined) {
+                const importableRelativePaths: string[] = this.services.references.ScopeProvider.getScopeFixingUris("Class", extCls.$refText, UriUtils.dirname(documentURI), new Set<string>(importedDocuments).add(documentURI.toString()));
+                if (importableRelativePaths.length > 0) {
+                    accept('error', `Create an import statement to include the referenced Definition!`, {
+                        node: cls,
+                        property: 'extendedClasses',
+                        code: IssueCodes.ImportIsMissing,
+                        data: importableRelativePaths
+                    })
                 }
             }
         })
 
         cls.implementedInterfaces.forEach(implIntrfc => {
-            const implIntrfcUri = implIntrfc.$nodeDescription?.documentUri;
-            if (documentURI == undefined || implIntrfcUri == undefined) {
-                console.error("Undefined class path!");
-            } else {
-                if (implIntrfcUri.path != documentURI.path) {
-                    if (!importedDocuments.has(implIntrfcUri.path)) {
-                        accept('error', `${implIntrfc.ref?.name} with path ${implIntrfcUri.path} is not imported'.`, {
-                            node: cls,
-                            property: 'implementedInterfaces',
-                            code: IssueCodes.ImportIsMissing
-                        })
-                    }
+            if (implIntrfc.ref == undefined) {
+                const importableRelativePaths: string[] = this.services.references.ScopeProvider.getScopeFixingUris("Interface", implIntrfc.$refText, UriUtils.dirname(documentURI), new Set<string>(importedDocuments).add(documentURI.toString()));
+                if (importableRelativePaths.length > 0) {
+                    accept('error', `Create an import statement to include the referenced Definition!`, {
+                        node: cls,
+                        property: 'implementedInterfaces',
+                        code: IssueCodes.ImportIsMissing,
+                        data: importableRelativePaths
+                    })
                 }
             }
         })
