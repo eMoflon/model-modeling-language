@@ -314,8 +314,18 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                 }
                 return result;
             }
+        } else if (isImportAlias(context.container)) {
+            if (context.property === "ref") {
+                const iprt: Import = context.container.$container;
+                const localDocumentUri: URI = getDocument(iprt).uri;
+                const importedDocURI: URI | undefined = ModelModelingLanguageUtils.resolveRelativeModelImport(iprt.target, localDocumentUri);
+                if (importedDocURI != undefined) {
+                    return new MapScope(this.indexManager.allElements("Package", new Set([importedDocURI.toString()])));
+                }
+                return EMPTY_SCOPE;
+            }
         }
-        console.log(`[GetScope] Return super scope [Container: ${context.container.$type} (${context.container.$cstNode?.range.start.line})]`);
+        //console.log(`[GetScope] Return super scope [Container: ${context.container.$type} (${context.container.$cstNode?.range.start.line})]`);
         return super.getScope(context);
     }
 
