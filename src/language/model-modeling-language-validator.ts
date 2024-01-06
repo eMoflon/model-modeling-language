@@ -366,38 +366,32 @@ export class ModelModelingLanguageValidator {
             ctnr = ctnr.$container;
         }
 
-        const documentURI = (ctnr as Model).$document?.uri;
+        const documentURI: URI = getDocument(ref).uri;
 
-        let importedDocuments = new Set((ctnr as Model).imports.map(imprt => imprt.target));
+        let importedDocuments: Set<string> = new Set((ctnr as Model).imports.map(imprt => ModelModelingLanguageUtils.resolveRelativeModelImport(imprt.target, documentURI)).filter(x => x != undefined).map(x => x!.toString()));
 
-        const refTypeUri = ref.type.$nodeDescription?.documentUri;
-        if (documentURI == undefined || refTypeUri == undefined) {
-            console.error("Undefined interface path!");
-        } else {
-            if (refTypeUri.path != documentURI.path) {
-                if (!importedDocuments.has(refTypeUri.path)) {
-                    accept('error', `${ref.type.ref?.name} with path ${refTypeUri.path} is not imported'.`, {
-                        node: ref,
-                        property: 'type',
-                        code: IssueCodes.ImportIsMissing
-                    })
-                }
+        if (ref.type.ref == undefined) {
+            const importableRelativePaths: string[] = this.services.references.ScopeProvider.getScopeFixingUris("Class", ref.type.$refText, UriUtils.dirname(documentURI), new Set<string>(importedDocuments).add(documentURI.toString()));
+            if (importableRelativePaths.length > 0) {
+                accept('error', `Create an import statement to include the referenced Definition!`, {
+                    node: ref,
+                    property: 'type',
+                    code: IssueCodes.ImportIsMissing,
+                    data: importableRelativePaths
+                })
             }
         }
 
         if (ref.opposite != undefined) {
-            const oppositeTypeUri = ref.opposite.reference.$nodeDescription?.documentUri;
-            if (documentURI == undefined || oppositeTypeUri == undefined) {
-                console.error("Undefined interface path!");
-            } else {
-                if (oppositeTypeUri.path != documentURI.path) {
-                    if (!importedDocuments.has(oppositeTypeUri.path)) {
-                        accept('error', `${ref.opposite.reference.ref?.name} with path ${oppositeTypeUri.path} is not imported'.`, {
-                            node: ref.opposite,
-                            property: 'reference',
-                            code: IssueCodes.ImportIsMissing
-                        })
-                    }
+            if (ref.opposite.reference.ref == undefined) {
+                const importableRelativePaths: string[] = this.services.references.ScopeProvider.getScopeFixingUris("CReference", ref.opposite.reference.$refText, UriUtils.dirname(documentURI), new Set<string>(importedDocuments).add(documentURI.toString()));
+                if (importableRelativePaths.length > 0) {
+                    accept('error', `Create an import statement to include the referenced Definition!`, {
+                        node: ref.opposite,
+                        property: 'reference',
+                        code: IssueCodes.ImportIsMissing,
+                        data: importableRelativePaths
+                    })
                 }
             }
         }
