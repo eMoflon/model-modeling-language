@@ -341,23 +341,20 @@ export class ModelModelingLanguageValidator {
             ctnr = ctnr.$container;
         }
 
-        const documentURI = ctnr.$document?.uri;
+        const documentURI: URI = getDocument(intrfc).uri;
 
-        let importedDocuments = new Set((ctnr as Model).imports.map(imprt => imprt.target));
+        let importedDocuments: Set<string> = new Set((ctnr as Model).imports.map(imprt => ModelModelingLanguageUtils.resolveRelativeModelImport(imprt.target, documentURI)).filter(x => x != undefined).map(x => x!.toString()));
 
         intrfc.extendedInterfaces.forEach(extIntrfc => {
-            const extIntrfcUri = extIntrfc.$nodeDescription?.documentUri;
-            if (documentURI == undefined || extIntrfcUri == undefined) {
-                console.error("Undefined interface path!");
-            } else {
-                if (extIntrfcUri.path != documentURI.path) {
-                    if (!importedDocuments.has(extIntrfcUri.path)) {
-                        accept('error', `${extIntrfc.ref?.name} with path ${extIntrfcUri.path} is not imported'.`, {
-                            node: intrfc,
-                            property: 'extendedInterfaces',
-                            code: IssueCodes.ImportIsMissing
-                        })
-                    }
+            if (extIntrfc.ref == undefined) {
+                const importableRelativePaths: string[] = this.services.references.ScopeProvider.getScopeFixingUris("Class", extIntrfc.$refText, UriUtils.dirname(documentURI), new Set<string>(importedDocuments).add(documentURI.toString()));
+                if (importableRelativePaths.length > 0) {
+                    accept('error', `Create an import statement to include the referenced Definition!`, {
+                        node: intrfc,
+                        property: 'extendedInterfaces',
+                        code: IssueCodes.ImportIsMissing,
+                        data: importableRelativePaths
+                    })
                 }
             }
         })
