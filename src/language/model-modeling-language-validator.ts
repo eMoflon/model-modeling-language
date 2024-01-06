@@ -663,23 +663,20 @@ export class ModelModelingLanguageValidator {
     }
 
     checkImportAliasRefsContained(ip: Import, accept: ValidationAcceptor) {
-        const importedDocURI: URI = URI.parse(ip.target);
-        ip.aliases.forEach((ipa, idx) => {
-            if (ipa.ref.$nodeDescription != undefined) {
-                if (ipa.ref.$nodeDescription.documentUri != undefined) {
-                    if (ipa.ref.$nodeDescription.documentUri.path != importedDocURI.path) {
-                        accept('error', `Package ${ipa.ref.$refText} is not defined in this document!`, {
-                            node: ip,
-                            property: 'aliases',
-                            index: idx,
-                            code: IssueCodes.AliasReferencesUnknownPackage
-                        })
-                    }
-                } else {
-                    console.error("[AliasRefsCheck] NodeDescription is undefined!");
+        const documentUri: URI = getDocument(ip).uri;
+        const importedDocURI: URI | undefined = ModelModelingLanguageUtils.resolveRelativeModelImport(ip.target, documentUri);
+        if (importedDocURI != undefined) {
+            ip.aliases.forEach((ipa, idx) => {
+                if (ipa.ref.ref == undefined || (!UriUtils.equals(getDocument(ipa.ref.ref).uri, importedDocURI))) {
+                    accept('error', `Package ${ipa.ref.$refText} is not defined in this document!`, {
+                        node: ip,
+                        property: 'aliases',
+                        index: idx,
+                        code: IssueCodes.AliasReferencesUnknownPackage
+                    })
                 }
-            }
-        });
+            });
+        }
     }
 
     checkMacroAttributeStatementType(mas: MacroAttributeStatement, accept: ValidationAcceptor) {
