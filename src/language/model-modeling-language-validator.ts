@@ -612,18 +612,27 @@ export class ModelModelingLanguageValidator {
 
     checkPackageShadowing(modl: Model, accept: ValidationAcceptor) {
         const shadowedPackageNames: Set<string> = new Set(modl.packages.map(p => p.name));
+        const documentUri: URI = getDocument(modl).uri;
         modl.imports.forEach(ip => {
-            const importedDocURI: URI = URI.parse(ip.target);
+            const importedDocURI: URI | undefined = ModelModelingLanguageUtils.resolveRelativeModelImport(ip.target, documentUri);
             const docShadowedPackageNames: Set<string> = new Set();
-            if (this.services.shared.workspace.LangiumDocuments.hasDocument(importedDocURI)) {
+            const unshadowedPackageNames: Set<string> = new Set();
+            if (importedDocURI != undefined && this.services.shared.workspace.LangiumDocuments.hasDocument(importedDocURI)) {
                 const importedDocument: LangiumDocument = this.services.shared.workspace.LangiumDocuments.getOrCreateDocument(importedDocURI);
                 const importedRoot: Model = importedDocument.parseResult.value as Model;
                 importedRoot.packages.forEach(pk => {
                     if (shadowedPackageNames.has(pk.name)) {
                         docShadowedPackageNames.add(pk.name);
                     }
-                    shadowedPackageNames.add(pk.name);
+                    unshadowedPackageNames.add(pk.name);
                 });
+                ip.aliases.forEach(alias => {
+                    if (alias.ref.ref != undefined) {
+                        docShadowedPackageNames.delete(alias.ref.ref.name);
+                        unshadowedPackageNames.delete(alias.ref.ref.name);
+                    }
+                })
+                unshadowedPackageNames.forEach(x => shadowedPackageNames.add(x));
                 if (docShadowedPackageNames.size > 0) {
                     accept('error', `Imported document shadows the following package names: [${[...docShadowedPackageNames].join(', ')}]`, {
                         node: ip,
