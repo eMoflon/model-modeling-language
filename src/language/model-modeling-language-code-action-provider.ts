@@ -30,14 +30,22 @@ export class ModelModelingLanguageCodeActionProvider implements CodeActionProvid
 
     getCodeActions(document: LangiumDocument, params: CodeActionParams): MaybePromise<Array<Command | CodeAction>> {
         const result: CodeAction[] = [];
-        const acceptor = (ca: CodeAction | undefined) => ca && result.push(ca);
+
+        const acceptor = (ca: CodeAction | CodeAction[] | undefined) => {
+            if (Array.isArray(ca)) {
+                result.push(...ca);
+            } else {
+                result.push(ca as CodeAction)
+            }
+            return ca;
+        };
         for (const diagnostic of params.context.diagnostics) {
             this.createCodeActions(diagnostic, document, acceptor);
         }
         return result;
     }
 
-    private createCodeActions(diagnostic: Diagnostic, document: LangiumDocument, accept: (ca: CodeAction | undefined) => void): void {
+    private createCodeActions(diagnostic: Diagnostic, document: LangiumDocument, accept: (ca: CodeAction | CodeAction[] | undefined) => void): void {
         switch (diagnostic.code) {
             case IssueCodes.ImportAlreadyExists:
                 accept(this.fixDuplicateImport(diagnostic, document));
