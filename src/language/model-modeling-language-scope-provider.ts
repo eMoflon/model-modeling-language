@@ -4,11 +4,14 @@ import {
     DefaultScopeProvider,
     EMPTY_SCOPE,
     getContainerOfType,
+    getDocument,
     LangiumDocument,
+    MapScope,
     ReferenceInfo,
     Scope,
     stream,
-    Stream
+    Stream,
+    UriUtils
 } from "langium";
 import {
     Attribute,
@@ -20,6 +23,7 @@ import {
     FunctionMacroCall,
     FunctionVariable,
     IMacro,
+    Import,
     Interface,
     isAttribute,
     isClass,
@@ -36,6 +40,7 @@ import {
     isIFunction,
     isIInstance,
     isIMacro,
+    isImportAlias,
     isInstanceLoop,
     isInterface,
     isMacroAssignStatement,
@@ -325,32 +330,45 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
         }
 
 
-        const globalScope: Scope = super.getGlobalScope(referenceType, _context);
+        const localDocumentUri: URI = getDocument(modl).uri;
+        const localUriSet: Set<string> = new Set([localDocumentUri.toString()]);
+        const mappedRelativeUris: Map<string, URI | undefined> = new Map(modl.imports.filter(ip => ip.aliases.length == 0).map(ip => [ip.target, ModelModelingLanguageUtils.resolveRelativeModelImport(ip.target, localDocumentUri)]));
+        const mappedAliasedRelativeUris: Map<string, URI | undefined> = new Map(modl.imports.filter(ip => ip.aliases.length > 0).map(ip => [ip.target, ModelModelingLanguageUtils.resolveRelativeModelImport(ip.target, localDocumentUri)]));
+        const importedUris: URI[] = [...mappedRelativeUris.values()].filter(x => x != undefined).map(x => x as URI);
+        const importedAliasedUris: URI[] = [...mappedAliasedRelativeUris.values()].filter(x => x != undefined).map(x => x as URI);
+        const importedUriSet: Set<string> = new Set(importedUris.map(x => x.toString()));
+        const importedAliasedUriSet: Set<string> = new Set(importedAliasedUris.map(x => x.toString()));
+        const localDocScope: Scope = new MapScope(this.indexManager.allElements(referenceType, localUriSet));
+        const importedDocScope: Scope = new MapScope(this.indexManager.allElements(referenceType, importedUriSet));
+        const importedAliasedDocScope: Scope = new MapScope(this.indexManager.allElements(referenceType, importedAliasedUriSet));
 
         const aliasDescriptions: AstNodeDescription[] = [];
-        modl.imports.forEach(ip => {
-            const importUri = URI.parse(ip.target);
-            ip.aliases.forEach(ipa => {
-                globalScope.getAllElements()
-                    .filter(x => x.name == ipa.ref.$refText || x.name.startsWith(ipa.ref.$refText))
-                    .filter(astNodeDesc => astNodeDesc.documentUri.path == importUri.path)
-                    .forEach(targetAstNodeDescription => {
-                        if (targetAstNodeDescription != undefined) {
-                            const targetAstNode = this.getAstNodeByPath(targetAstNodeDescription);
-                            if (targetAstNode != null) {
-                                const updatedName = targetAstNodeDescription.name.replace(ipa.ref.$refText, ipa.alias);
-                                aliasDescriptions.push(this.descriptions.createDescription(targetAstNode, updatedName));
-                            } else {
-                                console.warn(`[AliasResolution] TargetAstNode is null!`)
-                            }
-                        } else {
-                            console.warn(`[AliasResolution] Could not resolve ${ipa.ref.$refText}!`)
-                        }
-                    });
-            })
-        })
 
-        return this.createScope(aliasDescriptions, globalScope);
+        const aliasMap: Map<string, Import> = new Map(modl.imports.filter(ip => ip.aliases.length > 0).map(ip => [ModelModelingLanguageUtils.resolveRelativeModelImport(ip.target, localDocumentUri)!.toString(), ip]));
+
+
+        importedAliasedDocScope.getAllElements().forEach(nodeDesc => {
+            const ip: Import | undefined = aliasMap.get(nodeDesc.documentUri.toString());
+            if (ip != undefined) {
+                ip.aliases.forEach(alias => {
+                    if (nodeDesc.name == alias.ref.$refText || nodeDesc.name.startsWith(alias.ref.$refText)) {
+                        const targetAstNode = this.getAstNodeByPath(nodeDesc);
+                        if (targetAstNode != null) {
+                            const updatedName = nodeDesc.name.replace(alias.ref.$refText, alias.alias);
+                            aliasDescriptions.push(this.descriptions.createDescription(targetAstNode, updatedName));
+                        } else {
+                            console.warn(`[AliasResolution] TargetAstNode is null!`)
+                        }
+                    }
+                });
+            } else {
+                console.warn(`[AliasResolution] Could not determine correct import for ${nodeDesc.documentUri.toString()}!`)
+            }
+        });
+
+        const importedScope: AstNodeDescription[] = [...aliasDescriptions, ...importedDocScope.getAllElements()];
+
+        return this.createScope(importedScope, localDocScope)
     }
 
     getAvailableFunctionVariablesSelectors(fvar: FunctionVariable): TypedVariable[] | undefined {
