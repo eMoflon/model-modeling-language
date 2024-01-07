@@ -2,6 +2,7 @@ import type {LangiumServices, Module, PartialLangiumServices} from 'langium';
 import {GraphConstraintLanguageValidator} from "./graph-constraint-language-validator.js";
 import {GraphConstraintLanguageCompletionProvider} from "./graph-constraint-language-completion-provider.js";
 import {GraphConstraintLanguageFormatter} from "./graph-constraint-language-formatter.js";
+import {GraphConstraintLanguageSemanticTokenProvider} from "./graph-constraint-language-semantic-token-provider.js";
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -12,7 +13,8 @@ export type GraphConstraintLanguageAddedServices = {
     },
     lsp: {
         CompletionProvider: GraphConstraintLanguageCompletionProvider,
-        Formatter: GraphConstraintLanguageFormatter
+        Formatter: GraphConstraintLanguageFormatter,
+        SemanticTokenProvider: GraphConstraintLanguageSemanticTokenProvider
     }
 }
 
@@ -33,6 +35,7 @@ export const GraphConstraintLanguageModule: Module<GraphConstraintLanguageServic
     },
     lsp: {
         CompletionProvider: (services) => new GraphConstraintLanguageCompletionProvider(services),
-        Formatter: () => new GraphConstraintLanguageFormatter()
+        Formatter: () => new GraphConstraintLanguageFormatter(),
+        SemanticTokenProvider: (services) => new GraphConstraintLanguageSemanticTokenProvider(services)
     }
 };
