@@ -27,7 +27,7 @@ PatternObject:
     var=TypedVariable '{' (connections+=PatternObjectReference)* '}';
 
 PatternObjectReference:
-    ref=[CReference:ID] '->' patternObj=[TypedVariable:ID];
+    ref=[CReference:ID] ('->' | '-' alias=ID '->') patternObj=[TypedVariable:ID];
 
 PatternAttributeConstraint:
     '#' tmp?='true';
