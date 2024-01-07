@@ -3,18 +3,16 @@ import {parseDocument, validationHelper, ValidationResult} from "langium/test";
 import {AstNode, EmptyFileSystem, LangiumDocument} from "langium";
 import {serializeModel} from "../src/language/serializer/mml-serializer.js";
 import {MmlSerializerContext} from "../src/language/serializer/mml-serializer-context.js";
-import {
-    createModelModelingLanguageServices,
-    ModelModelingLanguageServices
-} from "../src/language/model-modeling-language-module.js";
+import {ModelModelingLanguageServices} from "../src/language/model-modeling-language-module.js";
 import {Assertion, expect} from "vitest";
 import {Diagnostic} from "vscode-languageserver";
 import {deserializeStringToMMLCode} from "../src/language/deserializer/mml-deserializer.js";
 import {SerializedDocument} from "../src/shared/MmlConnectorTypes.js";
 import {MmlIdStorage} from "../src/language/deserializer/mml-id-storage.js";
+import {createMmlAndGclServices} from "../src/language/main-module.js";
 
 function getServices(): ModelModelingLanguageServices {
-    return createModelModelingLanguageServices(EmptyFileSystem).MmlServices;
+    return createMmlAndGclServices(EmptyFileSystem).mmlServices;
 }
 
 export async function getModel(code: string): Promise<Model> {
