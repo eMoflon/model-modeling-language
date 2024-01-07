@@ -11,7 +11,7 @@ CompactBindingStatement:
     selfVar=[TypedVariable:ID] '=' otherVar=[TypedVariable:ID];
 
 fragment SupportPatternAnnotationBody:
-    pattern=[Pattern:ID] (',' '[' binding+=CompactBindingStatement (binding+=CompactBindingStatement)* ']')?;
+    pattern=[Pattern:ID] (',' '[' binding+=CompactBindingStatement (',' binding+=CompactBindingStatement)* ']')?;
 
 EnforceAnnotation:
     '@Enforce' '(' SupportPatternAnnotationBody ')';
