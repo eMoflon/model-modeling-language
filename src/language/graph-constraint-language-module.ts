@@ -3,6 +3,7 @@ import {GraphConstraintLanguageValidator} from "./graph-constraint-language-vali
 import {GraphConstraintLanguageCompletionProvider} from "./graph-constraint-language-completion-provider.js";
 import {GraphConstraintLanguageFormatter} from "./graph-constraint-language-formatter.js";
 import {GraphConstraintLanguageSemanticTokenProvider} from "./graph-constraint-language-semantic-token-provider.js";
+import {GraphConstraintLanguageScopeProvider} from "./graph-constraint-language-scope-provider.js";
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -10,6 +11,9 @@ import {GraphConstraintLanguageSemanticTokenProvider} from "./graph-constraint-l
 export type GraphConstraintLanguageAddedServices = {
     validation: {
         GraphConstraintLanguageValidator: GraphConstraintLanguageValidator
+    },
+    references:{
+      ScopeProvider: GraphConstraintLanguageScopeProvider
     },
     lsp: {
         CompletionProvider: GraphConstraintLanguageCompletionProvider,
@@ -32,6 +36,9 @@ export type GraphConstraintLanguageServices = LangiumServices & GraphConstraintL
 export const GraphConstraintLanguageModule: Module<GraphConstraintLanguageServices, PartialLangiumServices & GraphConstraintLanguageAddedServices> = {
     validation: {
         GraphConstraintLanguageValidator: (services) => new GraphConstraintLanguageValidator(services),
+    },
+    references: {
+        ScopeProvider: (services) => new GraphConstraintLanguageScopeProvider(services),
     },
     lsp: {
         CompletionProvider: (services) => new GraphConstraintLanguageCompletionProvider(services),
