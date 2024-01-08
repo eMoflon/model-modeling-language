@@ -8,7 +8,7 @@ Annotation:
     EnforceAnnotation | ForbidAnnotation;
 
 CompactBindingStatement:
-    selfVar=[TypedVariable:ID] '=' otherVar=[TypedVariable:ID];
+    otherVar=[TypedVariable:ID] '=' selfVar=[TypedVariable:ID];
 
 fragment SupportPatternAnnotationBody:
     pattern=[Pattern:ID] (',' '[' binding+=CompactBindingStatement (',' binding+=CompactBindingStatement)* ']')?;
