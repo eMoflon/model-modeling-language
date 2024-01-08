@@ -14,9 +14,7 @@ import {
     UriUtils
 } from "langium";
 import {
-    Attribute,
     Class,
-    CReference,
     Enum,
     EnumValueExpr,
     FunctionAssignment,
@@ -24,10 +22,7 @@ import {
     FunctionVariable,
     IMacro,
     Import,
-    Interface,
-    isAttribute,
     isClass,
-    isCReference,
     isEnum,
     isEnumValueExpr,
     isFunctionArgument,
@@ -42,7 +37,6 @@ import {
     isIMacro,
     isImportAlias,
     isInstanceLoop,
-    isInterface,
     isMacroAssignStatement,
     isMacroAttributeStatement,
     isModel,
@@ -52,6 +46,7 @@ import {
 import {URI} from "vscode-uri";
 import {ModelModelingLanguageServices} from "./model-modeling-language-module.js";
 import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
+import {ScopingUtils} from "./scoping-utils.js";
 
 /**
  * The ScopeProvider searches scopes and is used to calculate custom scopes for individual
@@ -84,7 +79,7 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
             if (refInstVar.typing.type != undefined && refInstVar.typing.type.ref != undefined && isClass(refInstVar.typing.type.ref)) {
                 const containerClass: Class = refInstVar.typing.type.ref;
                 const scopes: Array<Stream<AstNodeDescription>> = [];
-                scopes.push(stream(this.getAllInheritedAttributes(containerClass).map(a => {
+                scopes.push(stream(ScopingUtils.getAllInheritedAttributes(containerClass).map(a => {
                     const name = this.nameProvider.getName(a);
                     if (name != undefined) {
                         return this.descriptions.createDescription(a, name);
@@ -116,7 +111,7 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                 const containerClass: Class = refInstVar.typing.type.ref;
                 const scopes: Array<Stream<AstNodeDescription>> = [];
                 if (context.property === "cref") {
-                    scopes.push(stream(this.getAllInheritedReferences(containerClass).map(a => {
+                    scopes.push(stream(ScopingUtils.getAllInheritedReferences(containerClass).map(a => {
                         const name = this.nameProvider.getName(a);
                         if (name != undefined) {
                             return this.descriptions.createDescription(a, name);
@@ -205,7 +200,7 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                 const scopes: Array<Stream<AstNodeDescription>> = [];
                 if (instLoop.var.ref != undefined && instLoop.var.ref.typing.type != undefined && instLoop.var.ref.typing.type.ref != undefined && isClass(instLoop.var.ref.typing.type.ref)) {
                     const sourceClass = instLoop.var.ref.typing.type.ref;
-                    scopes.push(stream(this.getAllInheritedReferences(sourceClass)).map(v => {
+                    scopes.push(stream(ScopingUtils.getAllInheritedReferences(sourceClass)).map(v => {
                         if (v != undefined) {
                             const name = this.nameProvider.getName(v);
                             if (name != undefined) {
@@ -500,72 +495,6 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
             }
         }
         return undefined;
-    }
-
-    private getAllInheritedAttributes(aclass: Class | Interface): Attribute[] {
-        let combinedResult: Attribute[] = [];
-        if (isClass(aclass)) {
-            aclass.body.forEach(stmt => {
-                if (isAttribute(stmt)) {
-                    combinedResult.push(stmt);
-                }
-            });
-            aclass.extendedClasses.forEach(extClass => {
-                if (extClass.ref != undefined) {
-                    combinedResult.push(...this.getAllInheritedAttributes(extClass.ref))
-                }
-            });
-            aclass.implementedInterfaces.forEach(implInterface => {
-                if (implInterface.ref != undefined) {
-                    combinedResult.push(...this.getAllInheritedAttributes(implInterface.ref))
-                }
-            });
-        } else if (isInterface(aclass)) {
-            aclass.body.forEach(stmt => {
-                if (isAttribute(stmt)) {
-                    combinedResult.push(stmt);
-                }
-            });
-            aclass.extendedInterfaces.forEach(implInterface => {
-                if (implInterface.ref != undefined) {
-                    combinedResult.push(...this.getAllInheritedAttributes(implInterface.ref))
-                }
-            });
-        }
-        return combinedResult;
-    }
-
-    private getAllInheritedReferences(aclass: Class | Interface): CReference[] {
-        let combinedResult: CReference[] = [];
-        if (isClass(aclass)) {
-            aclass.body.forEach(stmt => {
-                if (isCReference(stmt)) {
-                    combinedResult.push(stmt);
-                }
-            });
-            aclass.extendedClasses.forEach(extClass => {
-                if (extClass.ref != undefined) {
-                    combinedResult.push(...this.getAllInheritedReferences(extClass.ref))
-                }
-            });
-            aclass.implementedInterfaces.forEach(implInterface => {
-                if (implInterface.ref != undefined) {
-                    combinedResult.push(...this.getAllInheritedReferences(implInterface.ref))
-                }
-            });
-        } else if (isInterface(aclass)) {
-            aclass.body.forEach(stmt => {
-                if (isCReference(stmt)) {
-                    combinedResult.push(stmt);
-                }
-            });
-            aclass.extendedInterfaces.forEach(implInterface => {
-                if (implInterface.ref != undefined) {
-                    combinedResult.push(...this.getAllInheritedReferences(implInterface.ref))
-                }
-            });
-        }
-        return combinedResult;
     }
 
     public getScopeFixingUris(referenceType: string, referenceName: string, parentDir: URI, excludedUris: Set<string>): string[] {

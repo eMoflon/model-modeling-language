@@ -1,18 +1,17 @@
 import {AstNodeDescription, DefaultScopeProvider, EMPTY_SCOPE, ReferenceInfo, Scope, stream, Stream} from "langium";
 import {
     AbstractElement,
-    CReference,
     EnforceAnnotation,
     ForbidAnnotation,
     isClass,
     isCompactBindingStatement,
-    isCReference,
     isInterface,
     isPatternObjectReference,
     Pattern,
     PatternObject
 } from "./generated/ast.js";
 import {GraphConstraintLanguageServices} from "./graph-constraint-language-module.js";
+import {ScopingUtils} from "./scoping-utils.js";
 
 /**
  * The ScopeProvider searches scopes and is used to calculate custom scopes for individual
@@ -59,8 +58,7 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
                 if (patternObj.var.typing.type != undefined && patternObj.var.typing.type.ref != undefined) {
                     const abstractEl: AbstractElement = patternObj.var.typing.type.ref;
                     if (isClass(abstractEl) || isInterface(abstractEl)) {
-                        const refs: CReference[] = abstractEl.body.filter(stmt => isCReference(stmt)).map(stmt => stmt as CReference);
-                        scopes.push(stream(refs).map(v => {
+                        scopes.push(stream(ScopingUtils.getAllInheritedReferences(abstractEl)).map(v => {
                             if (v != undefined) {
                                 return this.descriptions.createDescription(v, v.name);
                             }
