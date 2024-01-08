@@ -2,12 +2,17 @@ import {ValidationAcceptor, ValidationChecks} from 'langium';
 import {GraphConstraintLanguageServices} from "./graph-constraint-language-module.js";
 import {
     AbstractElement,
+    Class,
     CompactBindingStatement,
     ConstraintDocument,
+    CReference,
+    isClass,
     isIInstance,
     ModelModelingLanguageAstType,
     Pattern,
     PatternObject,
+    PatternObjectReference,
+    TypedVariable,
     VariableType
 } from "./generated/ast.js";
 
@@ -29,6 +34,9 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
         ],
         PatternObject: [
             validator.checkPatternObjectVariableTypeValidity
+        ],
+        PatternObjectReference: [
+            validator.checkPatternObjectReferenceTypeMatch
         ]
     };
     registry.register(checks, validator);
@@ -43,6 +51,7 @@ export namespace IssueCodes {
     export const PatternObjectVariableIsInterface = "pattern-object-variable-is-interface";
     export const PatternNameNotUnique = "pattern-name-not-unique";
     export const PatternObjectNameNotUnique = "pattern-object-name-not-unique";
+    export const PatternObjectReferenceTypeDoesNotMatch = "pattern-object-reference-type-does-not-match";
 }
 
 /**
@@ -119,5 +128,24 @@ export class GraphConstraintLanguageValidator {
             }
             reportedElements.add(elmt.var.name);
         });
+    }
+
+    checkPatternObjectReferenceTypeMatch(pRef: PatternObjectReference, accept: ValidationAcceptor) {
+        const selectedRef: CReference | undefined = pRef.ref.ref;
+        const selectedPatternObjVar: TypedVariable | undefined = pRef.patternObj.ref;
+        if (selectedRef != undefined && selectedPatternObjVar != undefined) {
+            const refClass: Class | undefined = selectedRef.type.ref;
+            const patternObjVarType: VariableType = selectedPatternObjVar.typing;
+            if (refClass != undefined && patternObjVarType.type != undefined && patternObjVarType.type.ref != undefined && isClass(patternObjVarType.type.ref)) {
+                const varTypeClass: Class = patternObjVarType.type.ref;
+                if (varTypeClass != refClass) {
+                    accept('error', `${selectedPatternObjVar.name} [type: ${varTypeClass.name}] does not match reference [type: ${refClass.name}].`, {
+                        node: pRef,
+                        property: 'patternObj',
+                        code: IssueCodes.PatternObjectReferenceTypeDoesNotMatch
+                    })
+                }
+            }
+        }
     }
 }
