@@ -75,6 +75,9 @@ export class GraphConstraintLanguageValidator {
     }
 
     checkCompactBindingTypeValidity(cbs: CompactBindingStatement, accept: ValidationAcceptor) {
+        if (cbs.selfVar == undefined || cbs.otherVar == undefined) {
+            return;
+        }
         if (cbs.selfVar.ref != undefined && cbs.otherVar.ref != undefined) {
             const selfVarTyping: VariableType = cbs.selfVar.ref.typing;
             const otherVarTyping: VariableType = cbs.otherVar.ref.typing;

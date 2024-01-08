@@ -2,6 +2,8 @@ import {AstNodeDescription, DefaultScopeProvider, EMPTY_SCOPE, ReferenceInfo, Sc
 import {
     AbstractElement,
     CReference,
+    EnforceAnnotation,
+    ForbidAnnotation,
     isClass,
     isCompactBindingStatement,
     isCReference,
@@ -29,12 +31,13 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
         if (isCompactBindingStatement(context.container)) {
             const scopes: Array<Stream<AstNodeDescription>> = [];
             let validPatternObjects: Array<PatternObject> = [];
+            const annotation: EnforceAnnotation | ForbidAnnotation = context.container.$container;
             if (context.property === "selfVar") {
-                const annotatedPattern: Pattern = context.container.$container.$container;
+                const annotatedPattern: Pattern = annotation.$container;
                 validPatternObjects = annotatedPattern.objs;
             } else if (context.property === "otherVar") {
-                const referencesPattern: Pattern | undefined = context.container.$container.pattern.ref;
-                if (referencesPattern != undefined) {
+                if (annotation.pattern != undefined && annotation.pattern.ref != undefined) {
+                    const referencesPattern: Pattern | undefined = annotation.pattern.ref;
                     validPatternObjects = referencesPattern.objs;
                 }
             }
