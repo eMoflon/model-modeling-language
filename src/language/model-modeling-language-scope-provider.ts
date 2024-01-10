@@ -11,6 +11,7 @@ import {
     Scope,
     stream,
     Stream,
+    URI,
     UriUtils
 } from "langium";
 import {
@@ -43,7 +44,6 @@ import {
     TypedVariable,
     Variable
 } from "./generated/ast.js";
-import {URI} from "vscode-uri";
 import {ModelModelingLanguageServices} from "./model-modeling-language-module.js";
 import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
 import {ScopingUtils} from "./scoping-utils.js";
@@ -78,21 +78,9 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
             }
             if (refInstVar.typing.type != undefined && refInstVar.typing.type.ref != undefined && isClass(refInstVar.typing.type.ref)) {
                 const containerClass: Class = refInstVar.typing.type.ref;
-                const scopes: Array<Stream<AstNodeDescription>> = [];
-                scopes.push(stream(ScopingUtils.getAllInheritedAttributes(containerClass).map(a => {
-                    const name = this.nameProvider.getName(a);
-                    if (name != undefined) {
-                        return this.descriptions.createDescription(a, name);
-                    }
-                    return undefined;
-                })).filter(d => d != undefined) as Stream<AstNodeDescription>);
-                let result: Scope = EMPTY_SCOPE;
-                for (let i = scopes.length - 1; i >= 0; i--) {
-                    result = this.createScope(scopes[i], result);
-                }
-                return result;
+                return ScopingUtils.computeCustomScope(ScopingUtils.getAllInheritedAttributes(containerClass), this.descriptions, (x) => this.nameProvider.getName(x), x => x, this.createScope);
             }
-            console.log(`[getScope] ${context.property} | ${context.index}`)
+            //console.log(`[getScope] ${context.property} | ${context.index}`)
         } else if (isMacroAssignStatement(context.container)) {
             const attr = context.container;
             const macroInst = attr.$container;
@@ -111,47 +99,21 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                 const containerClass: Class = refInstVar.typing.type.ref;
                 const scopes: Array<Stream<AstNodeDescription>> = [];
                 if (context.property === "cref") {
-                    scopes.push(stream(ScopingUtils.getAllInheritedReferences(containerClass).map(a => {
-                        const name = this.nameProvider.getName(a);
-                        if (name != undefined) {
-                            return this.descriptions.createDescription(a, name);
-                        }
-                        return undefined;
-                    })).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                    scopes.push(ScopingUtils.createScopeElementStream(ScopingUtils.getAllInheritedReferences(containerClass), this.descriptions, x => this.nameProvider.getName(x), x => x));
                 } else if (context.property === "instance") {
-                    scopes.push(stream(macroInst.$container.instances.filter(inst => inst.nInst != undefined && inst.iVar == undefined).map(mi => {
-                        if (mi != undefined && mi.nInst != undefined) {
-                            const tVar: TypedVariable = mi.nInst;
-                            const name = this.nameProvider.getName(tVar);
-                            if (name != undefined) {
-                                return this.descriptions.createDescription(tVar, name);
-                            }
-                        }
-                        return undefined;
-                    })).filter(d => d != undefined) as Stream<AstNodeDescription>);
-                    scopes.push(stream(macroInst.$container.parameter.map(tVar => {
-                        const name = this.nameProvider.getName(tVar);
-                        if (name != undefined) {
-                            return this.descriptions.createDescription(tVar, name);
-                        }
-                        return undefined;
-                    })).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                    scopes.push(ScopingUtils.createScopeElementStream(macroInst.$container.instances.filter(inst => inst.nInst != undefined && inst.iVar == undefined).map(x => x.nInst), this.descriptions, x => this.nameProvider.getName(x), x => x));
+                    scopes.push(ScopingUtils.createScopeElementStream(macroInst.$container.parameter, this.descriptions, x => this.nameProvider.getName(x), x => x));
                 }
-                let result = EMPTY_SCOPE;
-                for (let i = scopes.length - 1; i >= 0; i--) {
-                    result = this.createScope(scopes[i], result);
-                }
-                return result;
+                return ScopingUtils.buildScopeFromAstNodeDesc(scopes, this.createScope);
             }
         } else if (isFunctionAssignment(context.container)) {
             const assgnmt = context.container;
             if (isFunctionMacroCall(assgnmt.call)) {
                 const mcrCll = assgnmt.call;
-                const scopes: Array<Stream<AstNodeDescription>> = [];
                 if (mcrCll.macro.ref != undefined) {
                     const mcr = mcrCll.macro.ref;
                     if (context.property === "select") {
-                        scopes.push(stream(mcr.instances).map(
+                        return ScopingUtils.computeCustomScope(mcr.instances.map(
                             inst => {
                                 if (inst.nInst != undefined && inst.iVar == undefined) {
                                     return inst.nInst;
@@ -160,97 +122,30 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                                 }
                                 return undefined;
                             }
-                        ).map(v => {
-                            if (v != undefined) {
-                                const name = this.nameProvider.getName(v);
-                                if (name != undefined) {
-                                    return this.descriptions.createDescription(v, name);
-                                }
-                            }
-                            return undefined;
-                        }).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                        ), this.descriptions, (x) => this.nameProvider.getName(x), x => x, this.createScope);
                     }
                 }
-                let result = EMPTY_SCOPE;
-                for (let i = scopes.length - 1; i >= 0; i--) {
-                    result = this.createScope(scopes[i], result);
-                }
-                return result;
+                return EMPTY_SCOPE;
             }
         } else if (isInstanceLoop(context.container)) {
             const instLoop = context.container;
             if (context.property === "var") {
-                const scopes: Array<Stream<AstNodeDescription>> = [];
                 const inst = context.container.$container;
-                scopes.push(stream(inst.statements).filter(x => isFunctionAssignment(x)).map(x => (x as FunctionAssignment).var).map(v => {
-                    if (v != undefined) {
-                        const name = this.nameProvider.getName(v);
-                        if (name != undefined) {
-                            return this.descriptions.createDescription(v, name);
-                        }
-                    }
-                    return undefined;
-                }).filter(d => d != undefined) as Stream<AstNodeDescription>);
-                let result = EMPTY_SCOPE;
-                for (let i = scopes.length - 1; i >= 0; i--) {
-                    result = this.createScope(scopes[i], result);
-                }
-                return result;
+                return ScopingUtils.computeCustomScope(inst.statements.filter(x => isFunctionAssignment(x)).map(x => (x as FunctionAssignment).var), this.descriptions, x => this.nameProvider.getName(x), x => x, this.createScope);
             } else if (context.property === "ref") {
-                const scopes: Array<Stream<AstNodeDescription>> = [];
                 if (instLoop.var.ref != undefined && instLoop.var.ref.typing.type != undefined && instLoop.var.ref.typing.type.ref != undefined && isClass(instLoop.var.ref.typing.type.ref)) {
                     const sourceClass = instLoop.var.ref.typing.type.ref;
-                    scopes.push(stream(ScopingUtils.getAllInheritedReferences(sourceClass)).map(v => {
-                        if (v != undefined) {
-                            const name = this.nameProvider.getName(v);
-                            if (name != undefined) {
-                                return this.descriptions.createDescription(v, name);
-                            }
-                        }
-                        return undefined;
-                    }).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                    return ScopingUtils.computeCustomScope(ScopingUtils.getAllInheritedReferences(sourceClass), this.descriptions, x => this.nameProvider.getName(x), x => x, this.createScope);
                 }
-                let result = EMPTY_SCOPE;
-                for (let i = scopes.length - 1; i >= 0; i--) {
-                    result = this.createScope(scopes[i], result);
-                }
-                return result;
+                return EMPTY_SCOPE;
             }
         } else if (isFunctionReturn(context.container)) {
             if (context.property === "var") {
-                const scopes: Array<Stream<AstNodeDescription>> = [];
-                scopes.push(stream(this.getLocalInstanceVariablesInScope(context.container).map(v => {
-                    if (v != undefined) {
-                        const name = this.nameProvider.getName(v);
-                        if (name != undefined) {
-                            return this.descriptions.createDescription(v, name);
-                        }
-                    }
-                    return undefined;
-                })).filter(d => d != undefined) as Stream<AstNodeDescription>);
-                let result = EMPTY_SCOPE;
-                for (let i = scopes.length - 1; i >= 0; i--) {
-                    result = this.createScope(scopes[i], result);
-                }
-                return result;
+                return ScopingUtils.computeCustomScope(this.getLocalInstanceVariablesInScope(context.container), this.descriptions, x => this.nameProvider.getName(x), x => x, this.createScope);
             }
         } else if (isFunctionArgument(context.container)) {
             if (context.property === "ref") {
-                const scopes: Array<Stream<AstNodeDescription>> = [];
-                scopes.push(stream(this.getLocalInstanceVariablesInScope(context.container).map(v => {
-                    if (v != undefined) {
-                        const name = this.nameProvider.getName(v);
-                        if (name != undefined) {
-                            return this.descriptions.createDescription(v, name);
-                        }
-                    }
-                    return undefined;
-                })).filter(d => d != undefined) as Stream<AstNodeDescription>);
-                let result = EMPTY_SCOPE;
-                for (let i = scopes.length - 1; i >= 0; i--) {
-                    result = this.createScope(scopes[i], result);
-                }
-                return result;
+                return ScopingUtils.computeCustomScope(this.getLocalInstanceVariablesInScope(context.container), this.descriptions, x => this.nameProvider.getName(x), x => x, this.createScope);
             }
         } else if (isEnumValueExpr(context.container)) {
             //console.log(`[EVExp] isEnumValue | ${context.property}`);
@@ -258,26 +153,11 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                 //console.log("[EVExp] isVal");
                 const containerEnum: Enum | undefined = this._getEnumEntryValueType(context.container, context);
                 //console.log(`[EVExp] > ${containerEnum == undefined ? "undefined" : containerEnum.name}`);
-                const scopes: Array<Stream<AstNodeDescription>> = [];
                 if (containerEnum != undefined) {
                     //console.log(`[EVExp] >> ${containerEnum.entries.map(e => e.name).join(",")}`);
-                    scopes.push(stream(containerEnum.entries.map(v => {
-                        if (v != undefined) {
-                            //console.log(`[EVExp] |> ${v.name}`);
-                            const name = ModelModelingLanguageUtils.getFullyQualifiedEnumEntryName(v, v.name);
-                            if (name != undefined) {
-                                //console.log(`[EVExp] |>|> ${name}`);
-                                return this.descriptions.createDescription(v, name);
-                            }
-                        }
-                        return undefined;
-                    })).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                    return ScopingUtils.computeCustomScope(containerEnum.entries, this.descriptions, x => ModelModelingLanguageUtils.getFullyQualifiedEnumEntryName(x, x.name), x => x, this.createScope);
                 }
-                let result = EMPTY_SCOPE;
-                for (let i = scopes.length - 1; i >= 0; i--) {
-                    result = this.createScope(scopes[i], result);
-                }
-                return result;
+                return EMPTY_SCOPE;
             }
         } else if (isFunctionVariableSelectorExpr(context.container)) {
             console.log(`[FSelExprEval] isFunctionArgument | ${context.property}`);
@@ -302,12 +182,7 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                         })).filter(d => d != undefined) as Stream<AstNodeDescription>);
                     }
                 });
-
-                let result = EMPTY_SCOPE;
-                for (let i = scopes.length - 1; i >= 0; i--) {
-                    result = this.createScope(scopes[i], result);
-                }
-                return result;
+                return ScopingUtils.buildScopeFromAstNodeDesc(scopes, this.createScope);
             }
         } else if (isImportAlias(context.container)) {
             if (context.property === "ref") {

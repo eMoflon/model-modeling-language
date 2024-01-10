@@ -1,4 +1,4 @@
-import {AstNodeDescription, DefaultScopeProvider, EMPTY_SCOPE, ReferenceInfo, Scope, stream, Stream} from "langium";
+import {AstNodeDescription, DefaultScopeProvider, ReferenceInfo, Scope, Stream} from "langium";
 import {
     AbstractElement,
     EnforceAnnotation,
@@ -28,7 +28,6 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
 
     override getScope(context: ReferenceInfo): Scope {
         if (isCompactBindingStatement(context.container)) {
-            const scopes: Array<Stream<AstNodeDescription>> = [];
             let validPatternObjects: Array<PatternObject> = [];
             const annotation: EnforceAnnotation | ForbidAnnotation = context.container.$container;
             if (context.property === "selfVar") {
@@ -40,17 +39,7 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
                     validPatternObjects = referencesPattern.objs;
                 }
             }
-            scopes.push(stream(validPatternObjects).map(v => {
-                if (v != undefined) {
-                    return this.descriptions.createDescription(v.var, v.var.name);
-                }
-                return undefined;
-            }).filter(d => d != undefined) as Stream<AstNodeDescription>);
-            let result: Scope = EMPTY_SCOPE;
-            for (let i = scopes.length - 1; i >= 0; i--) {
-                result = this.createScope(scopes[i], result);
-            }
-            return result;
+            return ScopingUtils.computeCustomScope(validPatternObjects, this.descriptions, x => x.var.name, x => x.var, this.createScope);
         } else if (isPatternObjectReference(context.container)) {
             const scopes: Array<Stream<AstNodeDescription>> = [];
             const patternObj: PatternObject = context.container.$container;
@@ -58,28 +47,14 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
                 if (patternObj.var.typing.type != undefined && patternObj.var.typing.type.ref != undefined) {
                     const abstractEl: AbstractElement = patternObj.var.typing.type.ref;
                     if (isClass(abstractEl) || isInterface(abstractEl)) {
-                        scopes.push(stream(ScopingUtils.getAllInheritedReferences(abstractEl)).map(v => {
-                            if (v != undefined) {
-                                return this.descriptions.createDescription(v, v.name);
-                            }
-                            return undefined;
-                        }).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                        scopes.push(ScopingUtils.createScopeElementStream(ScopingUtils.getAllInheritedReferences(abstractEl), this.descriptions, x => x.name, x => x));
                     }
                 }
             } else if (context.property === "patternObj") {
                 const pattern: Pattern = patternObj.$container;
-                scopes.push(stream(pattern.objs).map(v => {
-                    if (v != undefined) {
-                        return this.descriptions.createDescription(v.var, v.var.name);
-                    }
-                    return undefined;
-                }).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                scopes.push(ScopingUtils.createScopeElementStream(pattern.objs, this.descriptions, x => x.var.name, x => x.var));
             }
-            let result: Scope = EMPTY_SCOPE;
-            for (let i = scopes.length - 1; i >= 0; i--) {
-                result = this.createScope(scopes[i], result);
-            }
-            return result;
+            return ScopingUtils.buildScopeFromAstNodeDesc(scopes, this.createScope);
         }
 
         return super.getScope(context);

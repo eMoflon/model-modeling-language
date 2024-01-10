@@ -8,6 +8,7 @@ import {
     isCReference,
     isInterface
 } from "./generated/ast.js";
+import {AstNode, AstNodeDescription, AstNodeDescriptionProvider, EMPTY_SCOPE, Scope, stream, Stream} from "langium";
 
 export class ScopingUtils {
     public static getAllInheritedAttributes(aclass: Class | Interface): Attribute[] {
@@ -74,5 +75,31 @@ export class ScopingUtils {
             });
         }
         return combinedResult;
+    }
+
+    public static computeCustomScope<A extends AstNode, B extends AstNode>(elements: (A | undefined)[], descriptionProvider: AstNodeDescriptionProvider, nameExtractor: (e: A) => string | undefined, nodeExtractor: (e: A) => B, scopeGenerator: (elements: Iterable<AstNodeDescription>, outerScope?: Scope | undefined) => Scope): Scope {
+        const scopes: Array<Stream<AstNodeDescription>> = [];
+        scopes.push(this.createScopeElementStream(elements, descriptionProvider, nameExtractor, nodeExtractor));
+        return this.buildScopeFromAstNodeDesc(scopes, scopeGenerator);
+    }
+
+    public static createScopeElementStream<A extends AstNode, B extends AstNode>(elements: (A | undefined)[], descriptionProvider: AstNodeDescriptionProvider, nameExtractor: (e: A) => string | undefined, nodeExtractor: (e: A) => B): Stream<AstNodeDescription> {
+        return stream(elements.map((v: A | undefined) => {
+            if (v != undefined) {
+                const name = nameExtractor(v);
+                if (name != undefined) {
+                    return descriptionProvider.createDescription(nodeExtractor(v), name);
+                }
+            }
+            return undefined;
+        })).filter(d => d != undefined) as Stream<AstNodeDescription>;
+    }
+
+    public static buildScopeFromAstNodeDesc(nodeDescStream: Array<Stream<AstNodeDescription>>, scopeGenerator: (elements: Iterable<AstNodeDescription>, outerScope?: Scope | undefined) => Scope): Scope {
+        let result = EMPTY_SCOPE;
+        for (let i = nodeDescStream.length - 1; i >= 0; i--) {
+            result = scopeGenerator(nodeDescStream[i], result);
+        }
+        return result;
     }
 }
