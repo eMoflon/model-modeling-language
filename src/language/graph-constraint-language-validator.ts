@@ -158,7 +158,7 @@ export class GraphConstraintLanguageValidator {
     checkReferenceModelIsKnown(refModel: ReferencedModelStatement, accept: ValidationAcceptor) {
         const documentUri: URI = getDocument(refModel).uri;
         const importedDocURI: URI | undefined = ModelModelingLanguageUtils.resolveRelativeModelImport(refModel.path, documentUri);
-        if (importedDocURI == undefined || this.services.shared.workspace.LangiumDocuments.hasDocument(importedDocURI)) {
+        if (importedDocURI == undefined || !this.services.shared.workspace.LangiumDocuments.hasDocument(importedDocURI)) {
             accept('error', `Document currently not managed by langium services`, {
                 node: refModel,
                 property: 'path',
