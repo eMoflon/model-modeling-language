@@ -9,7 +9,6 @@ import {
     MapScope,
     ReferenceInfo,
     Scope,
-    stream,
     Stream,
     URI,
     UriUtils
@@ -160,26 +159,17 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                 return EMPTY_SCOPE;
             }
         } else if (isFunctionVariableSelectorExpr(context.container)) {
-            console.log(`[FSelExprEval] isFunctionArgument | ${context.property}`);
+            //console.log(`[FSelExprEval] isFunctionArgument | ${context.property}`);
             if (context.property === "val") {
-                console.log("[FSelExprEval] isSelectedRef");
+                //console.log("[FSelExprEval] isSelectedRef");
                 const scopes: Array<Stream<AstNodeDescription>> = [];
                 const functionVarsInScope: FunctionVariable[] = this.getLocalInstanceVariablesInScope(context.container).filter(x => isFunctionVariable(x)).map(x => x as FunctionVariable);
-                console.log(`[FSelExprEval] VarsInScope: ${functionVarsInScope.map(x => x.name).join(", ")}`);
+                //console.log(`[FSelExprEval] VarsInScope: ${functionVarsInScope.map(x => x.name).join(", ")}`);
                 functionVarsInScope.forEach(fVar => {
                     const availableSelectors: TypedVariable[] | undefined = this.getAvailableFunctionVariablesSelectors(fVar);
                     if (availableSelectors != undefined) {
-                        console.log(`[FSelExprEval] Selectors (-> ${fVar.name}): ${availableSelectors.map(x => x.name).join(", ")}`);
-                        scopes.push(stream(availableSelectors.map(selector => {
-                            if (selector != undefined) {
-                                const name = fVar.name + "." + selector.name;
-                                if (name != undefined) {
-                                    console.log(`[FSelExprEval] |>|> ${name}`);
-                                    return this.descriptions.createDescription(selector, name);
-                                }
-                            }
-                            return undefined;
-                        })).filter(d => d != undefined) as Stream<AstNodeDescription>);
+                        //console.log(`[FSelExprEval] Selectors (-> ${fVar.name}): ${availableSelectors.map(x => x.name).join(", ")}`);
+                        scopes.push(ScopingUtils.createScopeElementStream(availableSelectors, this.descriptions, x => fVar.name + "." + x.name, x => x));
                     }
                 });
                 return ScopingUtils.buildScopeFromAstNodeDesc(scopes, this.createScope);
