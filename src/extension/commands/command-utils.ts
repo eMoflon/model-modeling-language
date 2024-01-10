@@ -6,6 +6,7 @@ import {MessageType} from "../../shared/MmlNotificationTypes.js";
 import fs from "fs";
 import path from "node:path";
 import {LanguageClient} from "vscode-languageclient/node.js";
+import {GclSerializerRequest, GclSerializerResponse} from "../../shared/GclConnectorTypes.js";
 
 export abstract class ExtensionCommand {
     protected readonly command: string;
@@ -104,4 +105,21 @@ function writeToFile(targetParentDir: string, targetFileName: string, content: s
         }
     }
     return true;
+}
+
+export function getSerializedConstraintDocument(client: LanguageClient, request: GclSerializerRequest): Promise<GclSerializerResponse> {
+    return new Promise<GclSerializerResponse>(resolve => {
+        client.sendRequest("graph-constraint-language-serialize-constraint-file", request, undefined)
+            .then((response) => {
+                const res: GclSerializerResponse = response as GclSerializerResponse;
+                resolve(res);
+            })
+    });
+}
+
+export function writeSerializedConstraintDocToFile(serializerResponse: GclSerializerResponse): void {
+    const targetPath: fs.PathLike = path.join(serializerResponse.parentDirPath, `${serializerResponse.filename}.json`);
+    if (writeToFile(serializerResponse.parentDirPath, `${serializerResponse.filename}.json`, serializerResponse.data)) {
+        showUIMessage(MessageType.INFO, `Stored serialized constraints (${targetPath})`);
+    }
 }

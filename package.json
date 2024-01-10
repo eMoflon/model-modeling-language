@@ -110,6 +110,11 @@
         "command": "model-modeling-language.deserializeEcoreToMML",
         "title": "Translate Ecore Model to MML",
         "category": "Model Modeling Language"
+      },
+      {
+        "command": "model-modeling-language.serializeConstraintFileToFile",
+        "title": "Serialize constraint file",
+        "category": "Model Modeling Language"
       }
     ],
     "menus": {
@@ -124,6 +129,10 @@
         },
         {
           "command": "model-modeling-language.deserializeEcoreToMML",
+          "when": "false"
+        },
+        {
+          "command": "model-modeling-language.serializeConstraintFileToFile",
           "when": "false"
         }
       ],
@@ -142,6 +151,11 @@
           "when": "resourceExtname == .ecore",
           "command": "model-modeling-language.deserializeEcoreToMML",
           "group": "navigation"
+        },
+        {
+          "when": "resourceExtname == .gc",
+          "command": "model-modeling-language.serializeConstraintFileToFile",
+          "group": "navigation"
         }
       ],
       "editor/context": [
@@ -158,6 +172,11 @@
         {
           "when": "resourceExtname == .ecore && resourceScheme == file",
           "command": "model-modeling-language.deserializeEcoreToMML",
+          "group": "navigation"
+        },
+        {
+          "when": "resourceLangId == graph-constraint-language",
+          "command": "model-modeling-language.serializeConstraintFileToFile",
           "group": "navigation"
         }
       ]

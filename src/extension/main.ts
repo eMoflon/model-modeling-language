@@ -5,6 +5,7 @@ import * as path from 'node:path';
 import {SerializeToFileCommand} from "./commands/serialize-to-file-command.js";
 import {SerializeToEmfCommand} from "./commands/serialize-to-emf-command.js";
 import {DeserializeEcoreToMmlCommand} from "./commands/deserialize-ecore-to-mml-command.js";
+import {SerializeConstraintFileToFileCommand} from "./commands/serialize-constraint-file-to-file-command.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
@@ -76,4 +77,5 @@ function registerCommands(context: vscode.ExtensionContext) {
     new SerializeToFileCommand(client, logger).register(context);
     new SerializeToEmfCommand(client, logger).register(context);
     new DeserializeEcoreToMmlCommand(client, logger).register(context);
+    new SerializeConstraintFileToFileCommand(client, logger).register(context);
 }
