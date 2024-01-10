@@ -1,4 +1,4 @@
-import {ValidationAcceptor, ValidationChecks} from 'langium';
+import {getDocument, URI, ValidationAcceptor, ValidationChecks} from 'langium';
 import {GraphConstraintLanguageServices} from "./graph-constraint-language-module.js";
 import {
     AbstractElement,
@@ -12,9 +12,11 @@ import {
     Pattern,
     PatternObject,
     PatternObjectReference,
+    ReferencedModelStatement,
     TypedVariable,
     VariableType
 } from "./generated/ast.js";
+import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
 
 /**
  * Register custom validation checks.
@@ -37,6 +39,9 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
         ],
         PatternObjectReference: [
             validator.checkPatternObjectReferenceTypeMatch
+        ],
+        ReferencedModelStatement: [
+            validator.checkReferenceModelIsKnown
         ]
     };
     registry.register(checks, validator);
@@ -52,6 +57,7 @@ export namespace IssueCodes {
     export const PatternNameNotUnique = "pattern-name-not-unique";
     export const PatternObjectNameNotUnique = "pattern-object-name-not-unique";
     export const PatternObjectReferenceTypeDoesNotMatch = "pattern-object-reference-type-does-not-match";
+    export const UnknownDocument = "unknown-document";
 }
 
 /**
@@ -146,6 +152,18 @@ export class GraphConstraintLanguageValidator {
                     })
                 }
             }
+        }
+    }
+
+    checkReferenceModelIsKnown(refModel: ReferencedModelStatement, accept: ValidationAcceptor) {
+        const documentUri: URI = getDocument(refModel).uri;
+        const importedDocURI: URI | undefined = ModelModelingLanguageUtils.resolveRelativeModelImport(refModel.path, documentUri);
+        if (importedDocURI == undefined || this.services.shared.workspace.LangiumDocuments.hasDocument(importedDocURI)) {
+            accept('error', `Document currently not managed by langium services`, {
+                node: refModel,
+                property: 'path',
+                code: IssueCodes.UnknownDocument
+            })
         }
     }
 }

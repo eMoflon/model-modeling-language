@@ -2,7 +2,11 @@ grammar GraphConstraintLanguage
 import "./common"
 
 entry ConstraintDocument:
+    model=ReferencedModelStatement
     (patterns+=Pattern)*;
+
+ReferencedModelStatement:
+    'model' path=STRING ';';
 
 Annotation:
     EnforceAnnotation | ForbidAnnotation;
