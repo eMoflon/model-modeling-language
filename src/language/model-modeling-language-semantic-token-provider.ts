@@ -52,7 +52,7 @@ export class ModelModelingLanguageSemanticTokenProvider extends AbstractSemantic
             acceptor({node, property: "extendedClasses", type: SemanticTokenTypes.class});
             acceptor({node, property: "implementedInterfaces", type: SemanticTokenTypes.interface});
         } else if (isOppositeAnnotation(node)) {
-            acceptor({node, keyword: "@opposite", type: SemanticTokenTypes.keyword})
+            acceptor({node, keyword: "@opposite", type: SemanticTokenTypes.decorator})
             acceptor({node, property: "reference", type: SemanticTokenTypes.property})
         } else if (isPackage(node)) {
             acceptor({node, keyword: "package", type: SemanticTokenTypes.keyword})
