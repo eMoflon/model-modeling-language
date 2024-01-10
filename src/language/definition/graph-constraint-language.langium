@@ -2,7 +2,7 @@ grammar GraphConstraintLanguage
 import "./common"
 
 entry ConstraintDocument:
-    model=ReferencedModelStatement
+    (model=ReferencedModelStatement)?
     (patterns+=Pattern)*;
 
 ReferencedModelStatement:

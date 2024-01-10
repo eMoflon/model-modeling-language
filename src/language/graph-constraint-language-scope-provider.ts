@@ -1,10 +1,21 @@
-import {AstNodeDescription, DefaultScopeProvider, ReferenceInfo, Scope, Stream} from "langium";
+import {
+    AstNodeDescription,
+    DefaultScopeProvider,
+    getContainerOfType,
+    getDocument,
+    MapScope,
+    ReferenceInfo,
+    Scope,
+    Stream,
+    URI
+} from "langium";
 import {
     AbstractElement,
     EnforceAnnotation,
     ForbidAnnotation,
     isClass,
     isCompactBindingStatement,
+    isConstraintDocument,
     isInterface,
     isPatternObjectReference,
     Pattern,
@@ -12,6 +23,7 @@ import {
 } from "./generated/ast.js";
 import {GraphConstraintLanguageServices} from "./graph-constraint-language-module.js";
 import {ScopingUtils} from "./scoping-utils.js";
+import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
 
 /**
  * The ScopeProvider searches scopes and is used to calculate custom scopes for individual
@@ -58,5 +70,27 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
         }
 
         return super.getScope(context);
+    }
+
+    protected override getGlobalScope(referenceType: string, _context: ReferenceInfo): Scope {
+        const cDoc = getContainerOfType(_context.container, isConstraintDocument);
+        if (!cDoc) {
+            return super.getGlobalScope(referenceType, _context);
+        }
+
+        const localDocumentUri: URI = getDocument(cDoc).uri;
+        const localUriSet: Set<string> = new Set([localDocumentUri.toString()]);
+        const localDocScope: Scope = new MapScope(this.indexManager.allElements(referenceType, localUriSet));
+
+        if (cDoc.model != undefined) {
+            const mappedRelativeRefDocUri: URI | undefined = ModelModelingLanguageUtils.resolveRelativeModelImport(cDoc.model.path, localDocumentUri)
+            if (mappedRelativeRefDocUri != undefined) {
+                const importedUriSet: Set<string> = new Set([mappedRelativeRefDocUri.toString()]);
+                const importedDocScope: Scope = new MapScope(this.indexManager.allElements(referenceType, importedUriSet));
+
+                return this.createScope([...importedDocScope.getAllElements()], localDocScope);
+            }
+        }
+        return localDocScope;
     }
 }
