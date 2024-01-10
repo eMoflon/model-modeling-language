@@ -1,4 +1,4 @@
-import {AstNode, getDocument, LangiumDocument, ValidationAcceptor, ValidationChecks} from 'langium';
+import {AstNode, getDocument, LangiumDocument, URI, UriUtils, ValidationAcceptor, ValidationChecks} from 'langium';
 import {
     AbstractElement,
     ArithExpr,
@@ -44,7 +44,6 @@ import {
     VariableType
 } from './generated/ast.js';
 import type {ModelModelingLanguageServices} from './model-modeling-language-module.js';
-import {URI} from "vscode-uri";
 import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
 
 /**
@@ -303,40 +302,34 @@ export class ModelModelingLanguageValidator {
             ctnr = ctnr.$container;
         }
 
-        const documentURI = ctnr.$document?.uri;
+        const documentURI = getDocument(cls).uri;
 
-        let importedDocuments = new Set((ctnr as Model).imports.map(imprt => imprt.target));
+        let importedDocuments: Set<string> = new Set((ctnr as Model).imports.map(imprt => ModelModelingLanguageUtils.resolveRelativeModelImport(imprt.target, documentURI)).filter(x => x != undefined).map(x => x!.toString()));
 
         cls.extendedClasses.forEach(extCls => {
-            const extClassUri = extCls.$nodeDescription?.documentUri;
-            if (documentURI == undefined || extClassUri == undefined) {
-                console.error("Undefined class path!");
-            } else {
-                if (extClassUri.path != documentURI.path) {
-                    if (!importedDocuments.has(extClassUri.path)) {
-                        accept('error', `${extCls.ref?.name} with path ${extClassUri.path} is not imported'.`, {
-                            node: cls,
-                            property: 'extendedClasses',
-                            code: IssueCodes.ImportIsMissing
-                        })
-                    }
+            if (extCls.ref == undefined) {
+                const importableRelativePaths: string[] = this.services.references.ScopeProvider.getScopeFixingUris("Class", extCls.$refText, UriUtils.dirname(documentURI), new Set<string>(importedDocuments).add(documentURI.toString()));
+                if (importableRelativePaths.length > 0) {
+                    accept('error', `Create an import statement to include the referenced Definition!`, {
+                        node: cls,
+                        property: 'extendedClasses',
+                        code: IssueCodes.ImportIsMissing,
+                        data: importableRelativePaths
+                    })
                 }
             }
         })
 
         cls.implementedInterfaces.forEach(implIntrfc => {
-            const implIntrfcUri = implIntrfc.$nodeDescription?.documentUri;
-            if (documentURI == undefined || implIntrfcUri == undefined) {
-                console.error("Undefined class path!");
-            } else {
-                if (implIntrfcUri.path != documentURI.path) {
-                    if (!importedDocuments.has(implIntrfcUri.path)) {
-                        accept('error', `${implIntrfc.ref?.name} with path ${implIntrfcUri.path} is not imported'.`, {
-                            node: cls,
-                            property: 'implementedInterfaces',
-                            code: IssueCodes.ImportIsMissing
-                        })
-                    }
+            if (implIntrfc.ref == undefined) {
+                const importableRelativePaths: string[] = this.services.references.ScopeProvider.getScopeFixingUris("Interface", implIntrfc.$refText, UriUtils.dirname(documentURI), new Set<string>(importedDocuments).add(documentURI.toString()));
+                if (importableRelativePaths.length > 0) {
+                    accept('error', `Create an import statement to include the referenced Definition!`, {
+                        node: cls,
+                        property: 'implementedInterfaces',
+                        code: IssueCodes.ImportIsMissing,
+                        data: importableRelativePaths
+                    })
                 }
             }
         })
@@ -348,23 +341,20 @@ export class ModelModelingLanguageValidator {
             ctnr = ctnr.$container;
         }
 
-        const documentURI = ctnr.$document?.uri;
+        const documentURI: URI = getDocument(intrfc).uri;
 
-        let importedDocuments = new Set((ctnr as Model).imports.map(imprt => imprt.target));
+        let importedDocuments: Set<string> = new Set((ctnr as Model).imports.map(imprt => ModelModelingLanguageUtils.resolveRelativeModelImport(imprt.target, documentURI)).filter(x => x != undefined).map(x => x!.toString()));
 
         intrfc.extendedInterfaces.forEach(extIntrfc => {
-            const extIntrfcUri = extIntrfc.$nodeDescription?.documentUri;
-            if (documentURI == undefined || extIntrfcUri == undefined) {
-                console.error("Undefined interface path!");
-            } else {
-                if (extIntrfcUri.path != documentURI.path) {
-                    if (!importedDocuments.has(extIntrfcUri.path)) {
-                        accept('error', `${extIntrfc.ref?.name} with path ${extIntrfcUri.path} is not imported'.`, {
-                            node: intrfc,
-                            property: 'extendedInterfaces',
-                            code: IssueCodes.ImportIsMissing
-                        })
-                    }
+            if (extIntrfc.ref == undefined) {
+                const importableRelativePaths: string[] = this.services.references.ScopeProvider.getScopeFixingUris("Class", extIntrfc.$refText, UriUtils.dirname(documentURI), new Set<string>(importedDocuments).add(documentURI.toString()));
+                if (importableRelativePaths.length > 0) {
+                    accept('error', `Create an import statement to include the referenced Definition!`, {
+                        node: intrfc,
+                        property: 'extendedInterfaces',
+                        code: IssueCodes.ImportIsMissing,
+                        data: importableRelativePaths
+                    })
                 }
             }
         })
@@ -376,38 +366,32 @@ export class ModelModelingLanguageValidator {
             ctnr = ctnr.$container;
         }
 
-        const documentURI = (ctnr as Model).$document?.uri;
+        const documentURI: URI = getDocument(ref).uri;
 
-        let importedDocuments = new Set((ctnr as Model).imports.map(imprt => imprt.target));
+        let importedDocuments: Set<string> = new Set((ctnr as Model).imports.map(imprt => ModelModelingLanguageUtils.resolveRelativeModelImport(imprt.target, documentURI)).filter(x => x != undefined).map(x => x!.toString()));
 
-        const refTypeUri = ref.type.$nodeDescription?.documentUri;
-        if (documentURI == undefined || refTypeUri == undefined) {
-            console.error("Undefined interface path!");
-        } else {
-            if (refTypeUri.path != documentURI.path) {
-                if (!importedDocuments.has(refTypeUri.path)) {
-                    accept('error', `${ref.type.ref?.name} with path ${refTypeUri.path} is not imported'.`, {
-                        node: ref,
-                        property: 'type',
-                        code: IssueCodes.ImportIsMissing
-                    })
-                }
+        if (ref.type.ref == undefined) {
+            const importableRelativePaths: string[] = this.services.references.ScopeProvider.getScopeFixingUris("Class", ref.type.$refText, UriUtils.dirname(documentURI), new Set<string>(importedDocuments).add(documentURI.toString()));
+            if (importableRelativePaths.length > 0) {
+                accept('error', `Create an import statement to include the referenced Definition!`, {
+                    node: ref,
+                    property: 'type',
+                    code: IssueCodes.ImportIsMissing,
+                    data: importableRelativePaths
+                })
             }
         }
 
         if (ref.opposite != undefined) {
-            const oppositeTypeUri = ref.opposite.reference.$nodeDescription?.documentUri;
-            if (documentURI == undefined || oppositeTypeUri == undefined) {
-                console.error("Undefined interface path!");
-            } else {
-                if (oppositeTypeUri.path != documentURI.path) {
-                    if (!importedDocuments.has(oppositeTypeUri.path)) {
-                        accept('error', `${ref.opposite.reference.ref?.name} with path ${oppositeTypeUri.path} is not imported'.`, {
-                            node: ref.opposite,
-                            property: 'reference',
-                            code: IssueCodes.ImportIsMissing
-                        })
-                    }
+            if (ref.opposite.reference.ref == undefined) {
+                const importableRelativePaths: string[] = this.services.references.ScopeProvider.getScopeFixingUris("CReference", ref.opposite.reference.$refText, UriUtils.dirname(documentURI), new Set<string>(importedDocuments).add(documentURI.toString()));
+                if (importableRelativePaths.length > 0) {
+                    accept('error', `Create an import statement to include the referenced Definition!`, {
+                        node: ref.opposite,
+                        property: 'reference',
+                        code: IssueCodes.ImportIsMissing,
+                        data: importableRelativePaths
+                    })
                 }
             }
         }
@@ -628,18 +612,27 @@ export class ModelModelingLanguageValidator {
 
     checkPackageShadowing(modl: Model, accept: ValidationAcceptor) {
         const shadowedPackageNames: Set<string> = new Set(modl.packages.map(p => p.name));
+        const documentUri: URI = getDocument(modl).uri;
         modl.imports.forEach(ip => {
-            const importedDocURI: URI = URI.parse(ip.target);
+            const importedDocURI: URI | undefined = ModelModelingLanguageUtils.resolveRelativeModelImport(ip.target, documentUri);
             const docShadowedPackageNames: Set<string> = new Set();
-            if (this.services.shared.workspace.LangiumDocuments.hasDocument(importedDocURI)) {
+            const unshadowedPackageNames: Set<string> = new Set();
+            if (importedDocURI != undefined && this.services.shared.workspace.LangiumDocuments.hasDocument(importedDocURI)) {
                 const importedDocument: LangiumDocument = this.services.shared.workspace.LangiumDocuments.getOrCreateDocument(importedDocURI);
                 const importedRoot: Model = importedDocument.parseResult.value as Model;
                 importedRoot.packages.forEach(pk => {
                     if (shadowedPackageNames.has(pk.name)) {
                         docShadowedPackageNames.add(pk.name);
                     }
-                    shadowedPackageNames.add(pk.name);
+                    unshadowedPackageNames.add(pk.name);
                 });
+                ip.aliases.forEach(alias => {
+                    if (alias.ref.ref != undefined) {
+                        docShadowedPackageNames.delete(alias.ref.ref.name);
+                        unshadowedPackageNames.delete(alias.ref.ref.name);
+                    }
+                })
+                unshadowedPackageNames.forEach(x => shadowedPackageNames.add(x));
                 if (docShadowedPackageNames.size > 0) {
                     accept('error', `Imported document shadows the following package names: [${[...docShadowedPackageNames].join(', ')}]`, {
                         node: ip,
@@ -658,8 +651,9 @@ export class ModelModelingLanguageValidator {
     }
 
     checkSelfImport(ip: Import, accept: ValidationAcceptor) {
-        const targetPath = ip.target;
-        if (targetPath == getDocument(ip).uri.path) {
+        const documentUri: URI = getDocument(ip).uri;
+        const importedDocURI: URI | undefined = ModelModelingLanguageUtils.resolveRelativeModelImport(ip.target, documentUri);
+        if (UriUtils.equals(documentUri, importedDocURI)) {
             accept('error', `Document imports itself!`, {
                 node: ip,
                 property: 'target',
@@ -669,23 +663,20 @@ export class ModelModelingLanguageValidator {
     }
 
     checkImportAliasRefsContained(ip: Import, accept: ValidationAcceptor) {
-        const importedDocURI: URI = URI.parse(ip.target);
-        ip.aliases.forEach((ipa, idx) => {
-            if (ipa.ref.$nodeDescription != undefined) {
-                if (ipa.ref.$nodeDescription.documentUri != undefined) {
-                    if (ipa.ref.$nodeDescription.documentUri.path != importedDocURI.path) {
-                        accept('error', `Package ${ipa.ref.$refText} is not defined in this document!`, {
-                            node: ip,
-                            property: 'aliases',
-                            index: idx,
-                            code: IssueCodes.AliasReferencesUnknownPackage
-                        })
-                    }
-                } else {
-                    console.error("[AliasRefsCheck] NodeDescription is undefined!");
+        const documentUri: URI = getDocument(ip).uri;
+        const importedDocURI: URI | undefined = ModelModelingLanguageUtils.resolveRelativeModelImport(ip.target, documentUri);
+        if (importedDocURI != undefined) {
+            ip.aliases.forEach((ipa, idx) => {
+                if (ipa.ref.ref == undefined || (!UriUtils.equals(getDocument(ipa.ref.ref).uri, importedDocURI))) {
+                    accept('error', `Package ${ipa.ref.$refText} is not defined in this document!`, {
+                        node: ip,
+                        property: 'aliases',
+                        index: idx,
+                        code: IssueCodes.AliasReferencesUnknownPackage
+                    })
                 }
-            }
-        });
+            });
+        }
     }
 
     checkMacroAttributeStatementType(mas: MacroAttributeStatement, accept: ValidationAcceptor) {

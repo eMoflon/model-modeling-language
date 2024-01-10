@@ -30,17 +30,28 @@ export class ModelModelingLanguageCodeActionProvider implements CodeActionProvid
 
     getCodeActions(document: LangiumDocument, params: CodeActionParams): MaybePromise<Array<Command | CodeAction>> {
         const result: CodeAction[] = [];
-        const acceptor = (ca: CodeAction | undefined) => ca && result.push(ca);
+
+        const acceptor = (ca: CodeAction | CodeAction[] | undefined) => {
+            if (Array.isArray(ca)) {
+                result.push(...ca);
+            } else {
+                result.push(ca as CodeAction)
+            }
+            return ca;
+        };
         for (const diagnostic of params.context.diagnostics) {
             this.createCodeActions(diagnostic, document, acceptor);
         }
         return result;
     }
 
-    private createCodeActions(diagnostic: Diagnostic, document: LangiumDocument, accept: (ca: CodeAction | undefined) => void): void {
+    private createCodeActions(diagnostic: Diagnostic, document: LangiumDocument, accept: (ca: CodeAction | CodeAction[] | undefined) => void): void {
         switch (diagnostic.code) {
             case IssueCodes.ImportAlreadyExists:
                 accept(this.fixDuplicateImport(diagnostic, document));
+                break;
+            case IssueCodes.ImportIsMissing:
+                accept(this.fixMissingImport(diagnostic, document));
                 break;
             case IssueCodes.OppositeAnnotationMissing:
                 accept(this.fixMissingOppositeAnnotation(diagnostic, document));
@@ -239,6 +250,27 @@ export class ModelModelingLanguageCodeActionProvider implements CodeActionProvid
         return undefined;
     }
 
+    private fixMissingImport(diagnostic: Diagnostic, document: LangiumDocument): CodeAction[] | undefined {
+        const possibleImports: string[] = diagnostic.data as string[];
+        if (possibleImports.length == 0) {
+            return undefined;
+        }
+        return possibleImports.map(pimport => {
+            return ({
+                title: `Import ${pimport}`,
+                kind: CodeActionKind.QuickFix,
+                diagnostics: [diagnostic],
+                edit: {
+                    changes: {
+                        [document.textDocument.uri]: [{
+                            range: {start: {character: 0, line: 0}, end: {character: 0, line: 0}},
+                            newText: `import "${pimport}";\n`
+                        }]
+                    }
+                }
+            } as CodeAction)
+        })
+    }
 
 }
 
