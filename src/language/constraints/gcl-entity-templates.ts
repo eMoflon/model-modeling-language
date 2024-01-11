@@ -14,6 +14,7 @@ import {GclReferenceStorage} from "./gcl-reference-storage.js";
 
 export class PatternEntity {
     readonly name: string;
+    readonly patternId: string;
     readonly pac: SupportPatternInvocationEntity[] = [];
     readonly nac: SupportPatternInvocationEntity[] = [];
     readonly nodes: PatternNodeEntity[] = [];
@@ -22,6 +23,7 @@ export class PatternEntity {
 
     constructor(pattern: Pattern, resolver: GclReferenceStorage) {
         this.name = pattern.name;
+        this.patternId = resolver.resolveNode(pattern);
         pattern.annotations.forEach(annotation => {
             if (isEnforceAnnotation(annotation)) {
                 this.pac.push(new SupportPatternInvocationEntity(annotation, resolver));
