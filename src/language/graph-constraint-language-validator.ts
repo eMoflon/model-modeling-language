@@ -1,4 +1,4 @@
-import {getDocument, URI, ValidationAcceptor, ValidationChecks} from 'langium';
+import {getDocument, LangiumDocument, URI, ValidationAcceptor, ValidationChecks} from 'langium';
 import {GraphConstraintLanguageServices} from "./graph-constraint-language-module.js";
 import {
     AbstractElement,
@@ -8,6 +8,7 @@ import {
     CReference,
     isClass,
     isIInstance,
+    Model,
     ModelModelingLanguageAstType,
     Pattern,
     PatternObject,
@@ -41,7 +42,8 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
             validator.checkPatternObjectReferenceTypeMatch
         ],
         ReferencedModelStatement: [
-            validator.checkReferenceModelIsKnown
+            validator.checkReferenceModelIsKnown,
+            validator.checkReferenceModelIsSupported
         ]
     };
     registry.register(checks, validator);
@@ -58,6 +60,7 @@ export namespace IssueCodes {
     export const PatternObjectNameNotUnique = "pattern-object-name-not-unique";
     export const PatternObjectReferenceTypeDoesNotMatch = "pattern-object-reference-type-does-not-match";
     export const UnknownDocument = "unknown-document";
+    export const UnsupportedDocument = "unsupported-document";
 }
 
 /**
@@ -164,6 +167,29 @@ export class GraphConstraintLanguageValidator {
                 property: 'path',
                 code: IssueCodes.UnknownDocument
             })
+        }
+    }
+
+    checkReferenceModelIsSupported(refModel: ReferencedModelStatement, accept: ValidationAcceptor) {
+        const documentUri: URI = getDocument(refModel).uri;
+        const importedDocURI: URI | undefined = ModelModelingLanguageUtils.resolveRelativeModelImport(refModel.path, documentUri);
+        if (importedDocURI != undefined && this.services.shared.workspace.LangiumDocuments.hasDocument(importedDocURI)) {
+            const importedDocument: LangiumDocument = this.services.shared.workspace.LangiumDocuments.getOrCreateDocument(importedDocURI);
+            const importedRoot: Model = importedDocument.parseResult.value as Model;
+            if (importedRoot.packages.length > 1) {
+                accept('error', `GCL does not currently support MML files that define multiple top-level packages!`, {
+                    node: refModel,
+                    property: 'path',
+                    code: IssueCodes.UnsupportedDocument
+                })
+            }
+            if (importedRoot.imports.length > 0) {
+                accept('error', `GCL currently does not support MML files containing imports!`, {
+                    node: refModel,
+                    property: 'path',
+                    code: IssueCodes.UnsupportedDocument
+                })
+            }
         }
     }
 }
