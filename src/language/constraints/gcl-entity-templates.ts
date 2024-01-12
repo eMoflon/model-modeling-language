@@ -55,8 +55,17 @@ export class NodeBindingEntity {
     readonly node2: string;
 
     constructor(binding: CompactBindingStatement, resolver: GclReferenceStorage) {
-        this.node1 = resolver.resolve(binding.selfVar);
-        this.node2 = resolver.resolve(binding.otherVar);
+        if (binding.selfVar.ref != undefined && isPatternObject(binding.selfVar.ref.$container)) {
+            this.node1 = resolver.resolveNode(binding.selfVar.ref.$container);
+            binding.selfVar.ref.$container
+        } else {
+            this.node1 = "UNKNOWN"
+        }
+        if (binding.otherVar.ref != undefined && isPatternObject(binding.otherVar.ref.$container)) {
+            this.node2 = resolver.resolveNode(binding.otherVar.ref.$container);
+        } else {
+            this.node2 = "UNKNOWN"
+        }
     }
 }
 
