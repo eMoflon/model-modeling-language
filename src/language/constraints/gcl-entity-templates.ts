@@ -1,4 +1,5 @@
 import {
+    AbstractElement,
     CompactBindingStatement,
     ConstraintDocument,
     EnforceAnnotation,
@@ -11,6 +12,7 @@ import {
     PatternObjectReference
 } from "../generated/ast.js";
 import {GclReferenceStorage} from "./gcl-reference-storage.js";
+import {ModelModelingLanguageUtils} from "../model-modeling-language-utils.js";
 
 export class PatternEntity {
     readonly name: string;
@@ -72,13 +74,14 @@ export class NodeBindingEntity {
 export class PatternNodeEntity {
     readonly nodeId: string;
     readonly name: string;
-    readonly className: string;
+    readonly fqname: string;
 
     constructor(node: PatternObject, edgeRegister: (edge: EdgeEntity) => void, resolver: GclReferenceStorage) {
         this.nodeId = resolver.getNodeReferenceId(node);
         this.name = node.var.name;
         if (node.var.typing.type != undefined && node.var.typing.type.ref != undefined) {
-            this.className = node.var.typing.type.ref.name;
+            const abstractElement: AbstractElement = node.var.typing.type.ref;
+            this.fqname = ModelModelingLanguageUtils.getQualifiedClassName(abstractElement, abstractElement.name);
         } else {
             throw new Error("Could not resolve EClass name");
         }
