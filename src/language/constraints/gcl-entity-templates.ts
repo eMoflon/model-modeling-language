@@ -113,8 +113,10 @@ export class AttributeConstraintEntity {
 
 export class ConstraintDocumentEntity {
     readonly patterns: PatternEntity[];
+    readonly packageName: string;
 
-    constructor(constraintDoc: ConstraintDocument, resolver: GclReferenceStorage) {
+    constructor(constraintDoc: ConstraintDocument, packageName: string, resolver: GclReferenceStorage) {
         this.patterns = constraintDoc.patterns.map(x => new PatternEntity(x, resolver));
+        this.packageName = packageName;
     }
 }
