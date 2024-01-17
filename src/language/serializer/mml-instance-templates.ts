@@ -48,6 +48,7 @@ function executeMacroCall(macroCall: FunctionMacroCall, referenceStorage: MmlRef
         })
 
         macro.instances.forEach(inst => createInstance(inst, referenceStorage, innerContext, serializer, instanceRegistry));
+        macro.instances.forEach(inst => initializeInstance(inst, referenceStorage, innerContext))
     }
     return innerContext;
 }
@@ -185,6 +186,22 @@ function createInstance(initializer: MacroInstance, referenceStorage: MmlReferen
     }
 }
 
+function initializeInstance(initializer: MacroInstance, referenceStorage: MmlReferenceStorage, context: MmlSerializerContext) {
+    let objInstance: ObjectInstance;
+    if (initializer.nInst != undefined && initializer.iVar == undefined) {
+        objInstance = context.resolve(initializer.nInst);
+    } else if (initializer.nInst == undefined && initializer.iVar != undefined && initializer.iVar.ref != undefined) {
+        objInstance = context.resolve(initializer.iVar.ref);
+    }
+    initializer.statements.forEach(stmt => {
+        if (isMacroAssignStatement(stmt)) {
+            objInstance.addReference(stmt, context, referenceStorage);
+        } else if (isMacroAttributeStatement(stmt)) {
+            objInstance.addAttribute(stmt, context, referenceStorage);
+        }
+    })
+}
+
 export class ObjectInstance {
     readonly referenceId: string;
     readonly referenceTypeId: string;
@@ -201,13 +218,6 @@ export class ObjectInstance {
             this.referenceTypeId = "$$UNKNOWN$$";
             this.name = "$$UNKNOWN$$";
         }
-        initializer.statements.forEach(stmt => {
-            if (isMacroAssignStatement(stmt)) {
-                this.addReference(stmt, context, referenceStorage)
-            } else if (isMacroAttributeStatement(stmt)) {
-                this.addAttribute(stmt, context, referenceStorage);
-            }
-        })
         serializer.instances.push(this);
     }
 
