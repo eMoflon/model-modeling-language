@@ -27,6 +27,9 @@ connection.onRequest("model-modeling-language-get-serialized-workspace", (params
         }
 
         shared.workspace.LangiumDocuments.all.forEach(doc => {
+            if (UriUtils.extname(doc.uri) != ".mml") {
+                return;
+            }
             const docModel: Model = doc.parseResult.value as Model;
             const serializedDoc: SerializedDocument = {
                 uri: doc.uri.toString(),
