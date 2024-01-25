@@ -29,6 +29,26 @@ export class GraphConstraintLanguageCompletionProvider extends DefaultCompletion
                     insertText: 'pattern ${1:name} {\n}',
                     documentation: 'Define a new pattern',
                     insertTextFormat: InsertTextFormat.Snippet
+                },
+                {
+                    label: 'node',
+                    labelDetails: {
+                        detail: ' Define a new node'
+                    },
+                    kind: CompletionItemKind.Snippet,
+                    insertText: '${1:type} ${2:name} {\n}',
+                    documentation: 'Define a new node',
+                    insertTextFormat: InsertTextFormat.Snippet
+                },
+                {
+                    label: 'local node',
+                    labelDetails: {
+                        detail: ' Define a new local node'
+                    },
+                    kind: CompletionItemKind.Snippet,
+                    insertText: 'local ${1:type} ${2:name} {\n}',
+                    documentation: 'Define a new local node',
+                    insertTextFormat: InsertTextFormat.Snippet
                 }
             ];
             list.items.push(...snippets);

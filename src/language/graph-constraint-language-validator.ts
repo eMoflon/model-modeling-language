@@ -8,6 +8,7 @@ import {
     CReference,
     isClass,
     isIInstance,
+    isPatternObject,
     Model,
     ModelModelingLanguageAstType,
     Pattern,
@@ -33,7 +34,8 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
             validator.checkUniquePatternObjectNames
         ],
         CompactBindingStatement: [
-            validator.checkCompactBindingTypeValidity
+            validator.checkCompactBindingTypeValidity,
+            validator.checkBindedPatternObjectIsNotLocal
         ],
         PatternObject: [
             validator.checkPatternObjectVariableTypeValidity
@@ -61,6 +63,7 @@ export namespace IssueCodes {
     export const PatternObjectReferenceTypeDoesNotMatch = "pattern-object-reference-type-does-not-match";
     export const UnknownDocument = "unknown-document";
     export const UnsupportedDocument = "unsupported-document";
+    export const BindedLocalPatternObject = "binded-local-pattern-object";
 }
 
 /**
@@ -190,6 +193,16 @@ export class GraphConstraintLanguageValidator {
                     code: IssueCodes.UnsupportedDocument
                 })
             }
+        }
+    }
+
+    checkBindedPatternObjectIsNotLocal(cbs: CompactBindingStatement, accept: ValidationAcceptor) {
+        if (cbs.otherVar != undefined && cbs.otherVar.ref != undefined && isPatternObject(cbs.otherVar.ref.$container) && cbs.otherVar.ref.$container.local) {
+            accept('error', `Local pattern objects cannot be bound`, {
+                node: cbs,
+                property: 'otherVar',
+                code: IssueCodes.BindedLocalPatternObject
+            })
         }
     }
 }

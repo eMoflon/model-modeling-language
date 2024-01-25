@@ -75,10 +75,12 @@ export class PatternNodeEntity {
     readonly nodeId: string;
     readonly name: string;
     readonly fqname: string;
+    readonly local: boolean;
 
     constructor(node: PatternObject, edgeRegister: (edge: EdgeEntity) => void, resolver: GclReferenceStorage) {
         this.nodeId = resolver.getNodeReferenceId(node);
         this.name = node.var.name;
+        this.local = node.local;
         if (node.var.typing.type != undefined && node.var.typing.type.ref != undefined) {
             const abstractElement: AbstractElement = node.var.typing.type.ref;
             this.fqname = ModelModelingLanguageUtils.getQualifiedClassName(abstractElement, abstractElement.name);

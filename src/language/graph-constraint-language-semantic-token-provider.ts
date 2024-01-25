@@ -5,6 +5,7 @@ import {
     isForbidAnnotation,
     isPattern,
     isPatternAttributeConstraint,
+    isPatternObject,
     isPatternObjectReference,
     isTypedVariable
 } from "./generated/ast.js";
@@ -49,6 +50,10 @@ export class GraphConstraintLanguageSemanticTokenProvider extends AbstractSemant
         } else if (isTypedVariable(node)) {
             acceptor({node, property: "typing", type: SemanticTokenTypes.type});
             acceptor({node, property: "name", type: SemanticTokenTypes.property});
+        } else if (isPatternObject(node)) {
+            if (node.local) {
+                acceptor({node, keyword: "local", type: SemanticTokenTypes.modifier});
+            }
         }
     }
 

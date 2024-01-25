@@ -47,11 +47,16 @@ export class GraphConstraintLanguageFormatter extends AbstractFormatter {
             formatter.keywords(',').prepend(Formatting.noSpace()).append(Formatting.oneSpace());
         } else if (isPatternObject(node)) {
             const formatter = this.getNodeFormatter(node);
+            const varFormatter = this.getNodeFormatter(node.var);
             const bracesOpen = formatter.keyword('{');
             const bracesClose = formatter.keyword('}');
             formatter.interior(bracesOpen, bracesClose).prepend(Formatting.indent());
             bracesOpen.prepend(Formatting.oneSpace());
             bracesClose.prepend(Formatting.newLine());
+            if (node.local) {
+                formatter.keyword('local').append(Formatting.oneSpace());
+            }
+            varFormatter.property('name').prepend(Formatting.oneSpace());
         } else if (isPatternObjectReference(node)) {
             const formatter = this.getNodeFormatter(node);
             if (node.alias != undefined) {
