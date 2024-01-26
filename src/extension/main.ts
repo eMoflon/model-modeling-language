@@ -6,15 +6,21 @@ import {SerializeToFileCommand} from "./commands/serialize-to-file-command.js";
 import {SerializeToEmfCommand} from "./commands/serialize-to-emf-command.js";
 import {DeserializeEcoreToMmlCommand} from "./commands/deserialize-ecore-to-mml-command.js";
 import {SerializeConstraintFileToFileCommand} from "./commands/serialize-constraint-file-to-file-command.js";
+import {TestModelServerCommand} from "./commands/test-model-server-command.js";
+import {ModelServerConnector} from "./model-server-connector.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
+let modelServerLogger: vscode.OutputChannel;
+let modelServerConnector: ModelServerConnector;
 
 
 // This function is called when the extension is activated.
 export function activate(context: vscode.ExtensionContext): void {
     client = startLanguageClient(context);
     logger = vscode.window.createOutputChannel("Model Modeling Language CLI")
+    modelServerLogger = vscode.window.createOutputChannel("Model Modeling Language Model Server")
+    modelServerConnector = new ModelServerConnector(modelServerLogger);
     registerCommands(context);
 }
 
@@ -78,4 +84,5 @@ function registerCommands(context: vscode.ExtensionContext) {
     new SerializeToEmfCommand(client, logger).register(context);
     new DeserializeEcoreToMmlCommand(client, logger).register(context);
     new SerializeConstraintFileToFileCommand(client, logger).register(context);
+    new TestModelServerCommand(client, logger, modelServerConnector).register(context);
 }

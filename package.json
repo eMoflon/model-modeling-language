@@ -122,6 +122,11 @@
         "command": "model-modeling-language.serializeConstraintFileToFile",
         "title": "Serialize constraint file",
         "category": "Model Modeling Language"
+      },
+      {
+        "command": "model-modeling-language.testModelServer",
+        "title": "Test Model Server",
+        "category": "Model Modeling Language"
       }
     ],
     "menus": {
