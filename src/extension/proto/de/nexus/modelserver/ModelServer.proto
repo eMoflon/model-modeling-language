@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package de.nexus.modelserver.proto;
+
+option java_multiple_files = true;
+option java_package = "de.nexus.modelserver.proto";
+option java_outer_classname = "ModelServerProto";
+option objc_class_prefix = "MS";
+
+import "de/nexus/modelserver/ModelServerManagement.proto";
+import "de/nexus/modelserver/ModelServerPatterns.proto";
+import "de/nexus/modelserver/ModelServerConstraints.proto";
+
+service ModelServerManagement {
+  rpc GetState(GetStateRequest) returns (GetStateResponse);
+  rpc TerminateServer(TerminateServerRequest) returns (TerminateServerResponse);
+}
+
+service ModelServerPattern {
+  rpc GetPatterns(GetPatternsRequest) returns (GetPatternsResponse);
+}
+
+service ModelServerConstraints {
+  rpc GetConstraints(GetConstraintsRequest) returns (GetConstraintsResponse);
+}

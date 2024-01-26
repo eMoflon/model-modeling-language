@@ -6,6 +6,7 @@
 node_modules/
 out/
 src/language/generated/
+src/extension/generated/
 static/bundle/
 static/monaco-editor-workers/
 static/worker/

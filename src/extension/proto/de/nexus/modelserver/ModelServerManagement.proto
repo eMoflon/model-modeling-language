@@ -1,0 +1,18 @@
+syntax = "proto3";
+package de.nexus.modelserver.proto;
+
+message GetStateRequest{
+
+}
+
+message GetStateResponse{
+
+}
+
+message TerminateServerRequest{
+
+}
+
+message TerminateServerResponse{
+
+}
