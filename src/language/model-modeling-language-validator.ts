@@ -13,7 +13,6 @@ import {
     FunctionCall,
     FunctionLoop,
     FunctionMacroCall,
-    FunctionVariableSelectorExpr,
     IFunction,
     IMacro,
     Import,
@@ -28,7 +27,6 @@ import {
     isFunctionReturn,
     isFunctionStatement,
     isFunctionVariable,
-    isFunctionVariableSelectorExpr,
     isInterface,
     isModel,
     isNegatedExpression,
@@ -40,6 +38,7 @@ import {
     ModelModelingLanguageAstType,
     Multiplicity,
     Package,
+    QualifiedValueExpr,
     ReferenceModifiers,
     TypedVariable,
     VariableType
@@ -139,7 +138,7 @@ export function registerValidationChecks(services: ModelModelingLanguageServices
         Expression: [
             validator.checkExpressionOperations
         ],
-        FunctionVariableSelectorExpr: [
+        QualifiedValueExpr: [
             validator.checkFunctionArgumentSelector
         ]
     };
@@ -195,6 +194,7 @@ export namespace IssueCodes {
     export const InstanceLoopTypeMismatch = "instance-loop-type-mismatch";
     export const ExpressionUnsupportedOperation = "expression-unsupported-operation";
     export const InvalidTupleSelectorInParameter = "invalid-tuple-selector-in-parameter";
+    export const InvalidUseOfAttributeInvocations = "invalid-use-of-attribute-invocations";
     export const InstantiationOfInterface = "instantiation-of-interface";
     export const InstantiationOfAbstractClass = "instantiation-of-abstract-class";
     export const InstantiationOfEnum = "instantiation-of-enum";
@@ -961,9 +961,9 @@ export class ModelModelingLanguageValidator {
                                         });
                                     }
                                 }
-                            } else if (isFunctionVariableSelectorExpr(arg.value) && arg.value.val.ref != undefined) {
+                            } else if (arg.value != undefined && ExprUtils.isFunctionVariableInvocationExpr(arg.value)) {
                                 // provided value is variable selector
-                                if (macroParamVarTyping.type != ExprUtils.getVariableTyping(arg.value.val.ref).type) {
+                                if (macroParamVarTyping.type != ExprUtils.getVariableTyping(arg.value.val.ref as TypedVariable).type) {
                                     // provided value does not match selector type
                                     accept('error', `Macro expects reference to ${macroParamVarTyping.typeAsAbstractElement!.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(macroParamVarTyping.typeAsAbstractElement!, macroParamVarTyping.typeAsAbstractElement!.name)}"`, {
                                         node: fmc,
@@ -1110,9 +1110,9 @@ export class ModelModelingLanguageValidator {
                                         })
                                     }
                                 }
-                            } else if (isFunctionVariableSelectorExpr(arg.value) && arg.value.val.ref != undefined) {
+                            } else if (arg.value != undefined && ExprUtils.isFunctionVariableInvocationExpr(arg.value)) {
                                 // provided value is variable selector
-                                if (!funcParamVarTyping.equals(ExprUtils.getVariableTyping(arg.value.val.ref))) {
+                                if (!funcParamVarTyping.equals(ExprUtils.getVariableTyping(arg.value.val.ref as TypedVariable))) {
                                     // provided value does not match selector type
                                     accept('error', `Function expects reference to ${funcParamVarTyping.typeAsAbstractElement!.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(funcParamVarTyping.typeAsAbstractElement!, funcParamVarTyping.typeAsAbstractElement!.name)}"`, {
                                         node: fmc,
@@ -1365,16 +1365,23 @@ export class ModelModelingLanguageValidator {
         }
     }
 
-    checkFunctionArgumentSelector(fSelectorExpr: FunctionVariableSelectorExpr, accept: ValidationAcceptor) {
-        console.log(`[FVARSELEXPRCHECK] ${fSelectorExpr.val.ref?.name} |${fSelectorExpr.$cstNode?.range.start.line}`)
-        if (fSelectorExpr.val != undefined) {
-            const matches = fSelectorExpr.val.$refText.match(/\./g);
-            if (matches != null && matches.length != 1) {
-                accept('error', `Invalid tuple selector`, {
-                    node: fSelectorExpr,
-                    code: IssueCodes.InvalidTupleSelectorInParameter
-                })
+    checkFunctionArgumentSelector(fSelectorExpr: QualifiedValueExpr, accept: ValidationAcceptor) {
+        console.log(`[QVALUEEXPR] ${fSelectorExpr.val.ref?.name} |${fSelectorExpr.$cstNode?.range.start.line}`)
+        if (ExprUtils.isFunctionVariableInvocationExpr(fSelectorExpr)) {
+            if (fSelectorExpr.val != undefined) {
+                const matches = fSelectorExpr.val.$refText.match(/\./g);
+                if (matches != null && matches.length != 1) {
+                    accept('error', `Invalid tuple selector`, {
+                        node: fSelectorExpr,
+                        code: IssueCodes.InvalidTupleSelectorInParameter
+                    })
+                }
             }
+        } else if (ExprUtils.isAttributeInvocationVariableExpr(fSelectorExpr)) {
+            accept('error', `You cannot use attribute invocations here!`, {
+                node: fSelectorExpr,
+                code: IssueCodes.InvalidUseOfAttributeInvocations
+            })
         }
     }
 

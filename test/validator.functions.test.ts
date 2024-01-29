@@ -852,10 +852,9 @@ describe('Function validator tests', () => {
         }
         `);
 
-        expect(validationResult.diagnostics.length).toEqual(3);
+        expect(validationResult.diagnostics.length).toEqual(2);
         expectErrorCode(validationResult, 0).toEqual(undefined);
         expectErrorCode(validationResult, 1).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
-        expectErrorCode(validationResult, 2).toEqual(IssueCodes.InvalidTupleSelectorInParameter);
     });
 
     test('Validator should notice invalid function variable selector type in function call', async () => {

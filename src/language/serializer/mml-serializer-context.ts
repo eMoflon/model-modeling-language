@@ -1,15 +1,16 @@
 import {
     Expression,
-    FunctionVariableSelectorExpr,
     isBinaryExpression,
     isBoolExpr,
     isEnumValueExpr,
-    isFunctionVariableSelectorExpr,
     isNumberExpr,
     isStringExpr,
     isVariableValueExpr,
+    QualifiedValueExpr,
+    TypedVariable,
     Variable
 } from "../generated/ast.js";
+import {ExprUtils} from "../expr-utils.js";
 
 /**
  * The MmlSerializerContext is used for variable storage and resolution.
@@ -72,10 +73,10 @@ export class MmlSerializerContext {
             return expr.value;
         } else if (isVariableValueExpr(expr) && expr.val.ref != undefined) {
             return this.resolve(expr.val.ref);
-        } else if (isFunctionVariableSelectorExpr(expr) && expr.val.ref != undefined) {
+        } else if (ExprUtils.isFunctionVariableInvocationExpr(expr) && expr.val.ref != undefined) {
             const resolver: MmlSerializerContext | undefined = this.findFunctionVariableSelectorBase(expr);
             if (resolver != undefined) {
-                return resolver.resolve(expr.val.ref);
+                return resolver.resolve(expr.val.ref as TypedVariable);
             }
         } else if (isEnumValueExpr(expr)) {
             const enumEntry = expr.val.ref;
@@ -128,7 +129,10 @@ export class MmlSerializerContext {
         return "$$UNKNOWN$$"
     }
 
-    private findFunctionVariableSelectorBase(fExpr: FunctionVariableSelectorExpr): MmlSerializerContext | undefined {
+    private findFunctionVariableSelectorBase(fExpr: QualifiedValueExpr): MmlSerializerContext | undefined {
+        if (!ExprUtils.isFunctionVariableInvocationExpr(fExpr)) {
+            return undefined;
+        }
         const baseName = fExpr.val.$refText.split(".")[0];
         for (let [key, value] of this.variableMap) {
             if (key.name == baseName && value instanceof MmlSerializerContext) {

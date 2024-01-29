@@ -31,7 +31,6 @@ import {
     isFunctionMacroCall,
     isFunctionReturn,
     isFunctionVariable,
-    isFunctionVariableSelectorExpr,
     isIFunction,
     isIInstance,
     isIMacro,
@@ -40,6 +39,7 @@ import {
     isMacroAssignStatement,
     isMacroAttributeStatement,
     isModel,
+    isQualifiedValueExpr,
     TypedVariable,
     Variable
 } from "./generated/ast.js";
@@ -158,7 +158,7 @@ export class ModelModelingLanguageScopeProvider extends DefaultScopeProvider {
                 }
                 return EMPTY_SCOPE;
             }
-        } else if (isFunctionVariableSelectorExpr(context.container)) {
+        } else if (isQualifiedValueExpr(context.container)) {
             //console.log(`[FSelExprEval] isFunctionArgument | ${context.property}`);
             if (context.property === "val") {
                 //console.log("[FSelExprEval] isSelectedRef");

@@ -1,24 +1,30 @@
 import {
     AbstractElement,
+    BoolExpr,
     Class,
     Enum,
     EnumValueExpr,
+    Expression,
     ImplicitlyTypedValue,
     Interface,
+    isAttribute,
     isBinaryExpression,
     isBoolExpr,
     isEnumValueExpr,
     isFunctionLoop,
     isFunctionVariable,
-    isFunctionVariableSelectorExpr,
     isInstanceLoop,
     isNegatedExpression,
     isNumberExpr,
+    isQualifiedValueExpr,
     isStringExpr,
     isTypedVariable,
     isUntypedVariable,
     isVariableValueExpr,
-    Expression,
+    NumberExpr,
+    QualifiedValueExpr,
+    StringExpr,
+    TypedVariable,
     Variable
 } from "./generated/ast.js";
 
@@ -65,9 +71,9 @@ export class ExprUtils {
         if (isNegatedExpression(expr)) {
             return this.evaluateExpressionType(expr.right);
         }
-        if (isVariableValueExpr(expr) || isFunctionVariableSelectorExpr(expr)) {
+        if (isVariableValueExpr(expr) || this.isFunctionVariableInvocationExpr(expr)) {
             if (expr.val.ref != undefined) {
-                const varTyping = this.getVariableTyping(expr.val.ref);
+                const varTyping = this.getVariableTyping(expr.val.ref as TypedVariable);
                 if (varTyping.isValidPrimitive) {
                     return varTyping.typeAsPrimitive;
                 }
@@ -186,28 +192,28 @@ export class ExprUtils {
     /**
      * Check if Expression resolves to an integer value
      * To do so, interpret the expression, check for number expr and check for remainder
-     * @param arith Expression to be checked
+     * @param expr Expression to be checked
      */
-    public static isIntExpression(arith: Expression): boolean {
-        if (arith.$type === "BinaryExpression") {
-            return this.isIntExpression(arith.left) && this.isIntExpression(arith.right);
-        } else if (isVariableValueExpr(arith)) {
-            if (arith.val.ref != undefined) {
-                const varTyping = this.getVariableTyping(arith.val.ref);
+    public static isIntExpression(expr: Expression): expr is NumberExpr {
+        if (expr.$type === "BinaryExpression") {
+            return this.isIntExpression(expr.left) && this.isIntExpression(expr.right);
+        } else if (isVariableValueExpr(expr)) {
+            if (expr.val.ref != undefined) {
+                const varTyping = this.getVariableTyping(expr.val.ref);
                 if (varTyping.isValidPrimitive && varTyping.type == ExprType.INTEGER) {
                     return true;
                 }
             }
             return false;
         }
-        return isNumberExpr(arith) && arith.value % 1 === 0;
+        return isNumberExpr(expr) && expr.value % 1 === 0;
     }
 
     /**
      * Check if Expression resolves to a boolean value
      * @param expr Expression to be checked
      */
-    public static isBoolExpression(expr: Expression): boolean {
+    public static isBoolExpression(expr: Expression): expr is BoolExpr {
         return isBoolExpr(expr) || this.evaluateExpressionType(expr) == ExprType.BOOLEAN;
     }
 
@@ -216,7 +222,7 @@ export class ExprUtils {
      * This can be any kind of number, use isIntExpression() to check for integers
      * @param expr Expression to be checked
      */
-    public static isNumberExpression(expr: Expression): boolean {
+    public static isNumberExpression(expr: Expression): expr is NumberExpr {
         return isNumberExpr(expr) || this.isNumberExpressionType(this.evaluateExpressionType(expr));
     }
 
@@ -224,7 +230,7 @@ export class ExprUtils {
      * Check if Expression resolves to a string value
      * @param expr Expression to be checked
      */
-    public static isStringExpression(expr: Expression): boolean {
+    public static isStringExpression(expr: Expression): expr is StringExpr {
         return isStringExpr(expr) || this.evaluateExpressionType(expr) == ExprType.STRING;
     }
 
@@ -232,16 +238,24 @@ export class ExprUtils {
      * Check if Expression resolves to an enum value
      * @param expr Expression to be checked
      */
-    public static isEnumValueExpression(expr: Expression): boolean {
+    public static isEnumValueExpression(expr: Expression): expr is EnumValueExpr {
         return isEnumValueExpr(expr);
     }
 
     /**
-     * Check if Expression resolves to a function variable selector value
+     * Check if Expression resolves to a function variable invocation value
      * @param expr Expression to be checked
      */
-    public static isFunctionVariableSelectorExpression(expr: Expression): boolean {
-        return isFunctionVariableSelectorExpr(expr);
+    public static isFunctionVariableInvocationExpr(expr: Expression): expr is QualifiedValueExpr {
+        return isQualifiedValueExpr(expr) && isTypedVariable(expr.val.ref);
+    }
+
+    /**
+     * Check if Expression resolves to an attribute invocation for attribute constraints
+     * @param expr Expression to be checked
+     */
+    public static isAttributeInvocationVariableExpr(expr: Expression): expr is QualifiedValueExpr {
+        return isQualifiedValueExpr(expr) && isAttribute(expr.val.ref);
     }
 }
 

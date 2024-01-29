@@ -131,13 +131,16 @@ LogicNegation infers Expression:
     PrimaryExpression | ({infer NegatedExpression} operator='!' right=PrimaryExpression);
 
 PrimaryExpression infers Expression:
-    '(' Expression ')' | ValueExpr | EnumValueExpr | VariableValueExpr | FunctionVariableSelectorExpr;
+    '(' Expression ')' | ValueExpr | EnumValueExpr | VariableValueExpr | QualifiedValueExpr;
+
+QualifiedNamedUsableValue:
+    Attribute | TypedVariable;
+
+QualifiedValueExpr:
+    val=[QualifiedNamedUsableValue:QNAME];
 
 EnumValueExpr:
     val=[EnumEntry:FQNAME];
-
-FunctionVariableSelectorExpr:
-    val=[TypedVariable:QNAME];
 
 VariableValueExpr:
     val=[Variable:ID];
