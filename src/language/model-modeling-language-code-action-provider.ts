@@ -13,6 +13,7 @@ import {Attribute, CReference, EnumEntry, EnumValueExpr} from "./generated/ast.j
 import {CodeAction, CodeActionKind, CodeActionParams, Command, Diagnostic} from "vscode-languageserver";
 import {IssueCodes} from "./model-modeling-language-validator.js";
 import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
+import {ExprUtils} from "./expr-utils.js";
 
 /**
  * The CodeActionProvider deals with code actions (also known as quick fixes).
@@ -86,15 +87,15 @@ export class ModelModelingLanguageCodeActionProvider implements CodeActionProvid
             const container: Attribute | undefined = getContainerOfType(cstNode?.astNode, ast.isAttribute);
             if (container && container.$cstNode && container.defaultValue != undefined) {
                 let newType: string = "";
-                if (ModelModelingLanguageUtils.isStringArithExpr(container.defaultValue)) {
+                if (ExprUtils.isStringExpression(container.defaultValue)) {
                     newType = "string";
-                } else if (ModelModelingLanguageUtils.isIntArithExpr(container.defaultValue)) {
+                } else if (ExprUtils.isIntExpression(container.defaultValue)) {
                     newType = "int";
-                } else if (ModelModelingLanguageUtils.isNumberArithExpr(container.defaultValue)) {
+                } else if (ExprUtils.isNumberExpression(container.defaultValue)) {
                     newType = "double";
-                } else if (ModelModelingLanguageUtils.isBoolArithExpr(container.defaultValue)) {
+                } else if (ExprUtils.isBoolExpression(container.defaultValue)) {
                     newType = "bool"
-                } else if (ModelModelingLanguageUtils.isEnumValueArithExpr(container.defaultValue)) {
+                } else if (ExprUtils.isEnumValueExpression(container.defaultValue)) {
                     const defValueEnumEntry: EnumEntry | undefined = (container.defaultValue as EnumValueExpr).val.ref;
                     if (defValueEnumEntry != undefined) {
                         newType = ModelModelingLanguageUtils.getQualifiedClassName(defValueEnumEntry.$container, defValueEnumEntry.$container.name);

@@ -20,8 +20,8 @@ import {
     ReferenceModifiers
 } from "../generated/ast.js";
 import {MmlReferenceStorage} from "./mml-reference-storage.js";
-import {ModelModelingLanguageUtils} from "../model-modeling-language-utils.js";
 import {MmlSerializerContext} from "./mml-serializer-context.js";
+import {ExprType, ExprUtils} from "../expr-utils.js";
 
 /**
  * These dataclasses define the structure of the serialized metamodel output.
@@ -194,7 +194,7 @@ export class EnumEntity {
     constructor(enm: Enum, referenceStorage: MmlReferenceStorage) {
         this.referenceId = referenceStorage.getNodeReferenceId(enm);
         this.name = enm.name;
-        this.type = ModelModelingLanguageUtils.getEnumType(enm);
+        this.type = ExprType.toMMLType(ExprUtils.getEnumType(enm)) ?? "UNKNOWN";
         enm.entries.forEach(entry => this.entries.push(new EnumEntryEntity(entry, referenceStorage)));
     }
 }

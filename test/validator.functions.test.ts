@@ -952,7 +952,7 @@ describe('Function validator tests', () => {
         `);
 
         expect(validationResult.diagnostics.length).toEqual(1);
-        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionCallArgumentTypeMismatch);
+        expectErrorCode(validationResult, 0).toEqual(IssueCodes.FunctionMacroCallArgumentTypeMismatch);
     });
 
     test('Validator should notice invalid selector on non-function variable in macro call', async () => {

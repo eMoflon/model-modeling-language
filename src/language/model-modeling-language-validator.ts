@@ -1,7 +1,6 @@
 import {AstNode, getDocument, LangiumDocument, URI, UriUtils, ValidationAcceptor, ValidationChecks} from 'langium';
 import {
     AbstractElement,
-    ArithExpr,
     Attribute,
     AttributeModifiers,
     Class,
@@ -9,6 +8,7 @@ import {
     Enum,
     EnumEntry,
     EnumValueExpr,
+    Expression,
     FunctionAssignment,
     FunctionCall,
     FunctionLoop,
@@ -31,6 +31,7 @@ import {
     isFunctionVariableSelectorExpr,
     isInterface,
     isModel,
+    isNegatedExpression,
     isVariableValueExpr,
     MacroAssignStatement,
     MacroAttributeStatement,
@@ -45,6 +46,7 @@ import {
 } from './generated/ast.js';
 import type {ModelModelingLanguageServices} from './model-modeling-language-module.js';
 import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
+import {ExprType, ExprUtils} from "./expr-utils.js";
 
 /**
  * Register custom validation checks.
@@ -134,8 +136,8 @@ export function registerValidationChecks(services: ModelModelingLanguageServices
         InstanceLoop: [
             validator.checkInstanceLoops
         ],
-        ArithExpr: [
-            validator.checkArithExprOperations
+        Expression: [
+            validator.checkExpressionOperations
         ],
         FunctionVariableSelectorExpr: [
             validator.checkFunctionArgumentSelector
@@ -191,7 +193,7 @@ export namespace IssueCodes {
     export const FunctionLoopBoundaryMismatch = "function-loop-boundary-mismatch";
     export const InstanceNameNotUnique = "instance-name-not-unique";
     export const InstanceLoopTypeMismatch = "instance-loop-type-mismatch";
-    export const ArithExpressionUnsupportedOperation = "arith-expression-unsupported-operation";
+    export const ExpressionUnsupportedOperation = "expression-unsupported-operation";
     export const InvalidTupleSelectorInParameter = "invalid-tuple-selector-in-parameter";
     export const InstantiationOfInterface = "instantiation-of-interface";
     export const InstantiationOfAbstractClass = "instantiation-of-abstract-class";
@@ -424,28 +426,28 @@ export class ModelModelingLanguageValidator {
             // attribute has default value
             if (attr.type.ptype != undefined && attr.type.etype == undefined) {
                 // attribute has primitive type, not enum type
-                if (attr.type.ptype == "bool" && !ModelModelingLanguageUtils.isBoolArithExpr(attr.defaultValue)) {
+                if (attr.type.ptype == "bool" && !ExprUtils.isBoolExpression(attr.defaultValue)) {
                     // bool type but default value is not
                     accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                         node: attr,
                         property: 'type',
                         code: IssueCodes.AttributeTypeDoesNotMatch
                     })
-                } else if (attr.type.ptype == "string" && !ModelModelingLanguageUtils.isStringArithExpr(attr.defaultValue)) {
+                } else if (attr.type.ptype == "string" && !ExprUtils.isStringExpression(attr.defaultValue)) {
                     // string type but default value is not
                     accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                         node: attr,
                         property: 'type',
                         code: IssueCodes.AttributeTypeDoesNotMatch
                     })
-                } else if (attr.type.ptype == "int" && !ModelModelingLanguageUtils.isIntArithExpr(attr.defaultValue)) {
+                } else if (attr.type.ptype == "int" && !ExprUtils.isIntExpression(attr.defaultValue)) {
                     // int type but default value is not
                     accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                         node: attr,
                         property: 'type',
                         code: IssueCodes.AttributeTypeDoesNotMatch
                     })
-                } else if ((attr.type.ptype == "double" || attr.type.ptype == "float") && !ModelModelingLanguageUtils.isNumberArithExpr(attr.defaultValue)) {
+                } else if ((attr.type.ptype == "double" || attr.type.ptype == "float") && !ExprUtils.isNumberExpressionType(ExprUtils.evaluateExpressionType(attr.defaultValue))) {
                     // number type but default value is not
                     accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                         node: attr,
@@ -453,7 +455,7 @@ export class ModelModelingLanguageValidator {
                         code: IssueCodes.AttributeTypeDoesNotMatch
                     })
                 }
-            } else if (attr.type.ptype == undefined && attr.type.etype != undefined && attr.type.etype.ref != undefined && !ModelModelingLanguageUtils.isEnumValueArithExpr(attr.defaultValue)) {
+            } else if (attr.type.ptype == undefined && attr.type.etype != undefined && attr.type.etype.ref != undefined && !ExprUtils.isEnumValueExpression(attr.defaultValue)) {
                 // attribute has enum type, not primitive type, but default value is no enum value
                 accept('error', `Default value does not match specified attribute type (${ModelModelingLanguageUtils.getQualifiedClassName(attr.type.etype.ref, attr.type.etype.ref.name)})`, {
                     node: attr,
@@ -687,7 +689,7 @@ export class ModelModelingLanguageValidator {
                 // attribute has primitive datatype, not enum type
                 if (isVariableValueExpr(mas.value) && mas.value.val.ref != undefined) {
                     // value is known variable
-                    if (attr.type.ptype != ModelModelingLanguageUtils.getVariableTyping(mas.value.val.ref).dtype) {
+                    if (!ExprType.equals(ExprType.fromMMLType(attr.type.ptype), ExprUtils.getVariableTyping(mas.value.val.ref).typeAsPrimitive)) {
                         // typing of variable does not match the defined attribute type
                         accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                             node: mas,
@@ -695,28 +697,28 @@ export class ModelModelingLanguageValidator {
                             code: IssueCodes.MacroAttributeTypeDoesNotMatch
                         });
                     }
-                } else if (attr.type.ptype == "bool" && !ModelModelingLanguageUtils.isBoolArithExpr(mas.value)) {
+                } else if (attr.type.ptype == "bool" && !ExprUtils.isBoolExpression(mas.value)) {
                     // attribute has bool type but value has not
                     accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                         node: mas,
                         property: "value",
                         code: IssueCodes.MacroAttributeTypeDoesNotMatch
                     });
-                } else if (attr.type.ptype == "string" && !ModelModelingLanguageUtils.isStringArithExpr(mas.value)) {
+                } else if (attr.type.ptype == "string" && !ExprUtils.isStringExpression(mas.value)) {
                     // attribute has string type but value has not
                     accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                         node: mas,
                         property: "value",
                         code: IssueCodes.MacroAttributeTypeDoesNotMatch
                     });
-                } else if (attr.type.ptype == "int" && !ModelModelingLanguageUtils.isIntArithExpr(mas.value)) {
+                } else if (attr.type.ptype == "int" && !ExprUtils.isIntExpression(mas.value)) {
                     // attribute has int type but value has not
                     accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                         node: mas,
                         property: "value",
                         code: IssueCodes.MacroAttributeTypeDoesNotMatch
                     });
-                } else if ((attr.type.ptype == "double" || attr.type.ptype == "float") && !ModelModelingLanguageUtils.isNumberArithExpr(mas.value)) {
+                } else if ((attr.type.ptype == "double" || attr.type.ptype == "float") && !ExprUtils.isNumberExpression(mas.value)) {
                     // attribute has number type but value has not
                     accept('error', `Default value does not match specified attribute type (${attr.type.ptype})`, {
                         node: mas,
@@ -726,7 +728,7 @@ export class ModelModelingLanguageValidator {
                 }
             } else if (attr.type.ptype == undefined && attr.type.etype != undefined && attr.type.etype.ref != undefined) {
                 // attribute has enum type, not primitive datatype
-                if (ModelModelingLanguageUtils.isEnumValueArithExpr(mas.value) && mas.value != undefined && (mas.value as EnumValueExpr).val.ref != undefined) {
+                if (ExprUtils.isEnumValueExpression(mas.value) && mas.value != undefined && (mas.value as EnumValueExpr).val.ref != undefined) {
                     // value is enum value
                     const attrType: Enum = attr.type.etype.ref;
                     // @ts-ignore
@@ -913,16 +915,16 @@ export class ModelModelingLanguageValidator {
                     if (macroParamVarInst == undefined) {
                         return;
                     }
-                    const macroParamVarTyping = ModelModelingLanguageUtils.getVariableTyping(macroParamVarInst);
-                    if ((arg.value != undefined && arg.ref == undefined) || (arg.ref != undefined && arg.ref.ref != undefined && ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref) != undefined && ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref).dtype != undefined && ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref).type == undefined)) {
+                    const macroParamVarTyping = ExprUtils.getVariableTyping(macroParamVarInst);
+                    if ((arg.value != undefined && arg.ref == undefined) || (arg.ref != undefined && arg.ref.ref != undefined && ExprUtils.getVariableTyping(arg.ref.ref) != undefined && ExprUtils.getVariableTyping(arg.ref.ref).isValidPrimitive && ExprUtils.getVariableTyping(arg.ref.ref).type == undefined)) {
                         // provided value is constant primitive value or variable of primitive type
-                        if (macroParamVarTyping.dtype != undefined && macroParamVarTyping.type == undefined) {
+                        if (macroParamVarTyping.isValidPrimitive) {
                             // requested parameter has primitive datatype
                             if (arg.value != undefined && arg.ref == undefined) {
                                 // provided value has constant primitive datatype
-                                if (!ModelModelingLanguageUtils.doesValueExpTypeMatch(macroParamVarTyping.dtype, arg.value)) {
+                                if (!ExprType.equals(ExprUtils.evaluateExpressionType(arg.value), macroParamVarTyping.typeAsPrimitive)) {
                                     // primitive datatypes do not match
-                                    accept('error', `Invalid argument type - Expected type "${macroParamVarTyping.dtype}"`, {
+                                    accept('error', `Invalid argument type - Expected type "${ExprType.toMMLType(macroParamVarTyping.typeAsPrimitive)}"`, {
                                         node: fmc,
                                         property: "args",
                                         index: idx,
@@ -931,9 +933,9 @@ export class ModelModelingLanguageValidator {
                                 }
                             } else if (arg.value == undefined && arg.ref != undefined && arg.ref.ref != undefined) {
                                 // provided value is variable with primitive value
-                                if (ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref).dtype != macroParamVarTyping.dtype) {
+                                if (!ExprUtils.getVariableTyping(arg.ref.ref).equals(macroParamVarTyping)) {
                                     // primitive datatypes do not match
-                                    accept('error', `Invalid argument type - Expected type "${macroParamVarTyping.dtype}"`, {
+                                    accept('error', `Invalid argument type - Expected type "${ExprType.toMMLType(macroParamVarTyping.typeAsPrimitive)}"`, {
                                         node: fmc,
                                         property: "args",
                                         index: idx,
@@ -941,7 +943,7 @@ export class ModelModelingLanguageValidator {
                                     })
                                 }
                             }
-                        } else if (macroParamVarTyping.dtype == undefined && macroParamVarTyping.type != undefined) {
+                        } else if (macroParamVarTyping.isValidReference) {
                             // requested datatype has class type
                             if (arg.ref == undefined && arg.value != undefined && isEnum(macroParamVarTyping.type) && isEnumValueExpr(arg.value) && arg.value.val.ref != undefined) {
                                 // requested and provided value has enum datatype
@@ -961,18 +963,18 @@ export class ModelModelingLanguageValidator {
                                 }
                             } else if (isFunctionVariableSelectorExpr(arg.value) && arg.value.val.ref != undefined) {
                                 // provided value is variable selector
-                                if (macroParamVarTyping.type != ModelModelingLanguageUtils.getVariableTyping(arg.value.val.ref).type) {
+                                if (macroParamVarTyping.type != ExprUtils.getVariableTyping(arg.value.val.ref).type) {
                                     // provided value does not match selector type
-                                    accept('error', `Macro expects reference to ${macroParamVarTyping.type.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(macroParamVarTyping.type, macroParamVarTyping.type.name)}"`, {
+                                    accept('error', `Macro expects reference to ${macroParamVarTyping.typeAsAbstractElement!.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(macroParamVarTyping.typeAsAbstractElement!, macroParamVarTyping.typeAsAbstractElement!.name)}"`, {
                                         node: fmc,
                                         property: "args",
                                         index: idx,
-                                        code: IssueCodes.FunctionCallArgumentTypeMismatch
+                                        code: IssueCodes.FunctionMacroCallArgumentTypeMismatch
                                     })
                                 }
                             } else {
                                 // constant value is requested but class type is provided
-                                accept('error', `Macro expects reference to ${macroParamVarTyping.type.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(macroParamVarTyping.type, macroParamVarTyping.type.name)}"`, {
+                                accept('error', `Macro expects reference to ${macroParamVarTyping.typeAsAbstractElement!.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(macroParamVarTyping.typeAsAbstractElement!, macroParamVarTyping.typeAsAbstractElement!.name)}"`, {
                                     node: fmc,
                                     property: "args",
                                     index: idx,
@@ -983,24 +985,24 @@ export class ModelModelingLanguageValidator {
 
                     } else if (arg.value == undefined && arg.ref != undefined && arg.ref.ref != undefined) {
                         // provided value has class type
-                        const argRefRefTyping = ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref);
-                        if (argRefRefTyping.dtype == undefined && argRefRefTyping.type != undefined) {
+                        const argRefRefTyping = ExprUtils.getVariableTyping(arg.ref.ref);
+                        if (argRefRefTyping.isValidReference) {
                             // referenced value is no primitive type
                             if (macroParamVarInst.typing.dtype != undefined && macroParamVarInst.typing.type == undefined) {
                                 // requested primitive datatype but got class type
-                                accept('error', `Incorrect type - macro expects parameters of type ${macroParamVarTyping.dtype}`, {
+                                accept('error', `Incorrect type - macro expects parameters of type ${ExprType.toMMLType(macroParamVarTyping.typeAsPrimitive)}`, {
                                     node: fmc,
                                     property: "args",
                                     index: idx,
                                     code: IssueCodes.FunctionMacroCallArgumentTypeMismatch
                                 })
-                            } else if (macroParamVarTyping.dtype == undefined && macroParamVarTyping.type != undefined) {
+                            } else if (macroParamVarTyping.isValidReference) {
                                 // requested class type and got class type
-                                const paramClass = macroParamVarTyping.type;
-                                const argClass = argRefRefTyping.type;
+                                const paramClass = macroParamVarTyping.typeAsAbstractElement;
+                                const argClass = argRefRefTyping.typeAsAbstractElement;
                                 if (paramClass != argClass) {
                                     // class types do not match
-                                    accept('error', `Incorrect type - macro expects reference to class of type "${ModelModelingLanguageUtils.getQualifiedClassName(paramClass, paramClass.name)}"`, {
+                                    accept('error', `Incorrect type - macro expects reference to class of type "${ModelModelingLanguageUtils.getQualifiedClassName(paramClass!, paramClass!.name)}"`, {
                                         node: fmc,
                                         property: "args",
                                         index: idx,
@@ -1041,16 +1043,16 @@ export class ModelModelingLanguageValidator {
                     if (funcParamVarInst == undefined) {
                         return;
                     }
-                    const funcParamVarTyping = ModelModelingLanguageUtils.getVariableTyping(funcParamVarInst);
-                    if ((arg.value != undefined && arg.ref == undefined) || (arg.ref != undefined && arg.ref.ref != undefined && ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref) != undefined && ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref).dtype != undefined && ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref).type == undefined)) {
+                    const funcParamVarTyping = ExprUtils.getVariableTyping(funcParamVarInst);
+                    if ((arg.value != undefined && arg.ref == undefined) || (arg.ref != undefined && arg.ref.ref != undefined && !ExprUtils.getVariableTyping(arg.ref.ref).isInvalid && ExprUtils.getVariableTyping(arg.ref.ref).isValidPrimitive)) {
                         // provided value is constant primitive value or variable of primitive type
-                        if (funcParamVarTyping.dtype != undefined && funcParamVarTyping.type == undefined) {
+                        if (funcParamVarTyping.isValidPrimitive) {
                             // requested parameter has primitive datatype
                             if (arg.value != undefined && arg.ref == undefined) {
                                 // provided value has constant primitive datatype
-                                if (!ModelModelingLanguageUtils.doesValueExpTypeMatch(funcParamVarTyping.dtype, arg.value)) {
+                                if (!ExprType.equals(ExprUtils.evaluateExpressionType(arg.value), funcParamVarTyping.typeAsPrimitive)) {
                                     // primitive datatypes do not match
-                                    accept('error', `Invalid argument type - Expected type "${funcParamVarTyping.dtype}"`, {
+                                    accept('error', `Invalid argument type - Expected type "${ExprType.toMMLType(funcParamVarTyping.typeAsPrimitive)}"`, {
                                         node: fmc,
                                         property: "args",
                                         index: idx,
@@ -1059,9 +1061,9 @@ export class ModelModelingLanguageValidator {
                                 }
                             } else if (arg.value == undefined && arg.ref != undefined && arg.ref.ref != undefined) {
                                 // provided value is variable with primitive value
-                                if (ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref).dtype != funcParamVarTyping.dtype) {
+                                if (!funcParamVarTyping.equals(ExprUtils.getVariableTyping(arg.ref.ref))) {
                                     // primitive datatypes do not match
-                                    accept('error', `Invalid argument type - Expected type "${funcParamVarTyping.dtype}"`, {
+                                    accept('error', `Invalid argument type - Expected type "${ExprType.toMMLType(funcParamVarTyping.typeAsPrimitive)}"`, {
                                         node: fmc,
                                         property: "args",
                                         index: idx,
@@ -1069,7 +1071,7 @@ export class ModelModelingLanguageValidator {
                                     })
                                 }
                             }
-                        } else if (funcParamVarTyping.dtype == undefined && funcParamVarTyping.type != undefined) {
+                        } else if (funcParamVarTyping.isValidReference) {
                             // requested datatype has class type
                             if (isEnum(funcParamVarTyping.type)) {
                                 // provided value has enum datatype
@@ -1098,7 +1100,7 @@ export class ModelModelingLanguageValidator {
                                     }
                                 } else if (arg.value == undefined && arg.ref != undefined && arg.ref.ref != undefined) {
                                     // provided value is variable
-                                    if (ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref).type != funcParamVarTyping.type) {
+                                    if (!funcParamVarTyping.equals(ExprUtils.getVariableTyping(arg.ref.ref))) {
                                         // ...but type does not match
                                         accept('error', `Invalid argument type - Expected type "${funcParamVarTyping.type.$type.toLowerCase()}"`, {
                                             node: fmc,
@@ -1110,9 +1112,9 @@ export class ModelModelingLanguageValidator {
                                 }
                             } else if (isFunctionVariableSelectorExpr(arg.value) && arg.value.val.ref != undefined) {
                                 // provided value is variable selector
-                                if (funcParamVarTyping.type != ModelModelingLanguageUtils.getVariableTyping(arg.value.val.ref).type) {
+                                if (!funcParamVarTyping.equals(ExprUtils.getVariableTyping(arg.value.val.ref))) {
                                     // provided value does not match selector type
-                                    accept('error', `Function expects reference to ${funcParamVarTyping.type.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(funcParamVarTyping.type, funcParamVarTyping.type.name)}"`, {
+                                    accept('error', `Function expects reference to ${funcParamVarTyping.typeAsAbstractElement!.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(funcParamVarTyping.typeAsAbstractElement!, funcParamVarTyping.typeAsAbstractElement!.name)}"`, {
                                         node: fmc,
                                         property: "args",
                                         index: idx,
@@ -1121,7 +1123,7 @@ export class ModelModelingLanguageValidator {
                                 }
                             } else {
                                 // constant value is requested but class type is provided
-                                accept('error', `Function expects reference to ${funcParamVarTyping.type.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(funcParamVarTyping.type, funcParamVarTyping.type.name)}"`, {
+                                accept('error', `Function expects reference to ${funcParamVarTyping.typeAsAbstractElement!.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(funcParamVarTyping.typeAsAbstractElement!, funcParamVarTyping.typeAsAbstractElement!.name)}"`, {
                                     node: fmc,
                                     property: "args",
                                     index: idx,
@@ -1131,24 +1133,24 @@ export class ModelModelingLanguageValidator {
                         }
                     } else if (arg.value == undefined && arg.ref != undefined && arg.ref.ref != undefined) {
                         // provided value has class type
-                        const argRefRefTyping = ModelModelingLanguageUtils.getVariableTyping(arg.ref.ref);
-                        if (argRefRefTyping.dtype == undefined && argRefRefTyping.type != undefined) {
+                        const argRefRefTyping = ExprUtils.getVariableTyping(arg.ref.ref);
+                        if (argRefRefTyping.isValidReference) {
                             // referenced value is no primitive type
                             if (funcParamVarInst.typing.dtype != undefined && funcParamVarInst.typing.type == undefined) {
                                 // requested primitive datatype but got class type
-                                accept('error', `Incorrect type - function expects parameters of type ${funcParamVarTyping.dtype}`, {
+                                accept('error', `Incorrect type - function expects parameters of type ${ExprType.toMMLType(funcParamVarTyping.typeAsPrimitive)}`, {
                                     node: fmc,
                                     property: "args",
                                     index: idx,
                                     code: IssueCodes.FunctionCallArgumentTypeMismatch
                                 })
-                            } else if (funcParamVarTyping.dtype == undefined && funcParamVarTyping.type != undefined) {
+                            } else if (funcParamVarTyping.isValidReference) {
                                 // requested class type and got class type
-                                const paramClass = funcParamVarTyping.type;
-                                const argClass = argRefRefTyping.type;
+                                const paramClass = funcParamVarTyping.typeAsAbstractElement;
+                                const argClass = argRefRefTyping.typeAsAbstractElement;
                                 if (paramClass != argClass) {
                                     // class types do not match
-                                    accept('error', `Incorrect type - function expects reference to ${paramClass.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(paramClass, paramClass.name)}"`, {
+                                    accept('error', `Incorrect type - function expects reference to ${paramClass!.$type.toLowerCase()} of type "${ModelModelingLanguageUtils.getQualifiedClassName(paramClass!, paramClass!.name)}"`, {
                                         node: fmc,
                                         property: "args",
                                         index: idx,
@@ -1306,27 +1308,57 @@ export class ModelModelingLanguageValidator {
         }
     }
 
-    checkArithExprOperations(expr: ArithExpr, accept: ValidationAcceptor) {
+    checkExpressionOperations(expr: Expression, accept: ValidationAcceptor) {
+        if (isNegatedExpression(expr)) {
+            accept('error', `Invalid operation | MML does not support negated expressions`, {
+                node: expr,
+                code: IssueCodes.ExpressionUnsupportedOperation
+            })
+            return;
+        }
         if (isBinaryExpression(expr)) {
-            if (!(ModelModelingLanguageUtils.isNumberArithExpr(expr.left) && ModelModelingLanguageUtils.isNumberArithExpr(expr.right))) {
-                if ((ModelModelingLanguageUtils.isNumberArithExpr(expr.left) && ModelModelingLanguageUtils.isStringArithExpr(expr.right)) || (ModelModelingLanguageUtils.isStringArithExpr(expr.left) && ModelModelingLanguageUtils.isNumberArithExpr(expr.right))) {
+            if (expr.operator == "&&" || expr.operator == "||") {
+                accept('error', `Invalid operation | MML does not support logical expressions`, {
+                    node: expr,
+                    code: IssueCodes.ExpressionUnsupportedOperation
+                })
+                return;
+            }
+            if (expr.operator == "==" || expr.operator == "!=") {
+                accept('error', `Invalid operation | MML does not support compare expressions`, {
+                    node: expr,
+                    code: IssueCodes.ExpressionUnsupportedOperation
+                })
+                return;
+            }
+
+            if (expr.operator == "<" || expr.operator == "<=" || expr.operator == ">" || expr.operator == ">=") {
+                accept('error', `Invalid operation | MML does not support compare expressions`, {
+                    node: expr,
+                    code: IssueCodes.ExpressionUnsupportedOperation
+                })
+                return;
+            }
+
+            if (!(ExprUtils.isNumberExpression(expr.left) && ExprUtils.isNumberExpression(expr.right))) {
+                if ((ExprUtils.isNumberExpression(expr.left) && ExprUtils.isStringExpression(expr.right)) || (ExprUtils.isStringExpression(expr.left) && ExprUtils.isNumberExpression(expr.right))) {
                     if (!(expr.operator == "*" || expr.operator == "+")) {
                         accept('error', `Invalid arithmetic operation | Allowed operations for strings and numbers are: ["*", "+"]`, {
                             node: expr,
-                            code: IssueCodes.ArithExpressionUnsupportedOperation
+                            code: IssueCodes.ExpressionUnsupportedOperation
                         })
                     }
-                } else if (ModelModelingLanguageUtils.isStringArithExpr(expr.left) && ModelModelingLanguageUtils.isStringArithExpr(expr.right)) {
+                } else if (ExprUtils.isStringExpression(expr.left) && ExprUtils.isStringExpression(expr.right)) {
                     if (expr.operator != "+") {
                         accept('error', `Invalid arithmetic operation | Only string concatenation with operator "+" allowed`, {
                             node: expr,
-                            code: IssueCodes.ArithExpressionUnsupportedOperation
+                            code: IssueCodes.ExpressionUnsupportedOperation
                         })
                     }
                 } else {
                     accept('error', `Invalid arithmetic operation`, {
                         node: expr,
-                        code: IssueCodes.ArithExpressionUnsupportedOperation
+                        code: IssueCodes.ExpressionUnsupportedOperation
                     })
                 }
             }

@@ -66,7 +66,7 @@ AttributeType:
     ptype=DataType | etype=[Enum:QNAME];
 
 Attribute:
-    'attribute' type=AttributeType name=ID ('=' defaultValue=ArithExpr)? ('{'modifiers=AttributeModifiers'}')?';';
+    'attribute' type=AttributeType name=ID ('=' defaultValue=Expression)? ('{'modifiers=AttributeModifiers'}')?';';
 
 ReferenceModifiers:
     readonly?='readonly' &
@@ -100,20 +100,38 @@ Enum:
 EnumEntry:
     name=ID ('=' value=ValueExpr)?;
 
-ArithExpr:
-    Addition;
+Expression:
+    LogicalOr;
 
-Addition infers ArithExpr:
+LogicalOr infers Expression:
+    LogicalAnd ({infer BinaryExpression.left=current} operator='||' right=LogicalAnd)*;
+
+LogicalAnd infers Expression:
+    CompareEq ({infer BinaryExpression.left=current} operator='&&' right=CompareEq)*;
+
+CompareEq infers Expression:
+    Compare ({infer BinaryExpression.left=current} operator=('==' | '!=') right=Compare)*;
+
+Compare infers Expression:
+    Addition ({infer BinaryExpression.left=current} operator=('<' | '<=' | '>' | '>=') right=Addition)*;
+
+Addition infers Expression:
     Multiplication ({infer BinaryExpression.left=current} operator=('+' | '-') right=Multiplication)*;
 
-Multiplication infers ArithExpr:
+Multiplication infers Expression:
     Exponentiation ({infer BinaryExpression.left=current} operator=('*' | '/') right=Exponentiation)*;
 
-Exponentiation infers ArithExpr:
+Exponentiation infers Expression:
     Modulo ({infer BinaryExpression.left=current} operator='^' right=Modulo)*;
 
-Modulo infers ArithExpr:
-    PrimaryArithExpr ({infer BinaryExpression.left=current} operator='%' right=PrimaryArithExpr)*;
+Modulo infers Expression:
+    LogicNegation ({infer BinaryExpression.left=current} operator='%' right=LogicNegation)*;
+
+LogicNegation infers Expression:
+    PrimaryExpression | ({infer NegatedExpression} operator='!' right=PrimaryExpression);
+
+PrimaryExpression infers Expression:
+    '(' Expression ')' | ValueExpr | EnumValueExpr | VariableValueExpr | FunctionVariableSelectorExpr;
 
 EnumValueExpr:
     val=[EnumEntry:FQNAME];
@@ -123,9 +141,6 @@ FunctionVariableSelectorExpr:
 
 VariableValueExpr:
     val=[Variable:ID];
-
-PrimaryArithExpr infers ArithExpr:
-    '(' ArithExpr ')' | ValueExpr | EnumValueExpr | VariableValueExpr | FunctionVariableSelectorExpr;
 
 Variable:
     UntypedVariable | TypedVariable | FunctionVariable;

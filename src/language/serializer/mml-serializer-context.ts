@@ -1,5 +1,5 @@
 import {
-    ArithExpr,
+    Expression,
     FunctionVariableSelectorExpr,
     isBinaryExpression,
     isBoolExpr,
@@ -63,7 +63,7 @@ export class MmlSerializerContext {
         });
     }
 
-    public evaluateArithExpr(expr: ArithExpr): boolean | number | string {
+    public evaluateArithExpr(expr: Expression): boolean | number | string {
         if (isBoolExpr(expr)) {
             return expr.value;
         } else if (isStringExpr(expr)) {

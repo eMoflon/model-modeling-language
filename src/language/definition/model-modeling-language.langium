@@ -26,7 +26,7 @@ MacroStatement:
     MacroAttributeStatement | MacroAssignStatement;
 
 MacroAttributeStatement:
-    attr=[Attribute:ID] '=' value=ArithExpr;
+    attr=[Attribute:ID] '=' value=Expression;
 
 MacroAssignStatement:
     cref=[CReference:ID] '->' instance=[TypedVariable:ID];
@@ -38,7 +38,7 @@ FunctionStatement:
     FunctionCall | FunctionMacroCall | FunctionAssignment | FunctionLoop;
 
 FunctionArgument:
-    ref=[Variable:ID] | value=ArithExpr;
+    ref=[Variable:ID] | value=Expression;
 
 FunctionCall:
     func=[IFunction:ID] '(' (args+=FunctionArgument (',' args+=FunctionArgument)*)? ')';
@@ -50,7 +50,7 @@ FunctionAssignment:
     var=(TypedVariable | FunctionVariable) '=' call=(FunctionCall | FunctionMacroCall) ('.' select=[TypedVariable:ID])?;
 
 ImplicitlyTypedValue:
-    val=ArithExpr;
+    val=Expression;
 
 FunctionReturn:
     'return' (var=[TypedVariable:ID]|val=ImplicitlyTypedValue);
