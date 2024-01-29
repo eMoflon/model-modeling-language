@@ -18,7 +18,7 @@
     "vscode:prepublish": "npm run build && npm run lint",
     "buf:generate": "cd src/extension/proto && buf generate",
     "package": "vsce package",
-    "fullbuild": "npm run langium:generate && vsce package"
+    "fullbuild": "npm run langium:generate && npm run buf:generate && vsce package"
   },
   "dependencies": {
     "@types/uuid": "^9.0.0",
