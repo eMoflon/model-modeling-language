@@ -1,8 +1,10 @@
 import {AbstractFormatter, AstNode, Formatting} from "langium";
 import {
+    isBinaryExpression,
     isConstraintDocument,
     isEnforceAnnotation,
     isForbidAnnotation,
+    isNegatedExpression,
     isPattern,
     isPatternAttributeConstraint,
     isPatternObject,
@@ -68,6 +70,12 @@ export class GraphConstraintLanguageFormatter extends AbstractFormatter {
         } else if (isPatternAttributeConstraint(node)) {
             const formatter = this.getNodeFormatter(node);
             formatter.keyword('#').append(Formatting.noSpace());
+        } else if (isBinaryExpression(node)) {
+            const formatter = this.getNodeFormatter(node);
+            formatter.property('operator').surround(Formatting.oneSpace());
+        } else if (isNegatedExpression(node)) {
+            const formatter = this.getNodeFormatter(node);
+            formatter.keyword('!').append(Formatting.noSpace());
         }
     }
 }
