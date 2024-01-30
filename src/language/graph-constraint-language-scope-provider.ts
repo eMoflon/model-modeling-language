@@ -16,6 +16,7 @@ import {
     isClass,
     isCompactBindingStatement,
     isConstraintDocument,
+    isEnumValueExpr,
     isInterface,
     isPattern,
     isPatternAttributeConstraint,
@@ -86,6 +87,8 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
                 }
             }
             return ScopingUtils.buildScopeFromAstNodeDesc(scopes, this.createScope);
+        } else if (isEnumValueExpr(context.container)) {
+            return this.getGlobalScope("EnumEntry", context);
         }
 
         return super.getScope(context);
