@@ -2,6 +2,7 @@ import {getDocument, LangiumDocument, URI, ValidationAcceptor, ValidationChecks}
 import {GraphConstraintLanguageServices} from "./graph-constraint-language-module.js";
 import {
     AbstractElement,
+    BinaryExpression,
     Class,
     CompactBindingStatement,
     ConstraintDocument,
@@ -53,6 +54,9 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
         PatternAttributeConstraint: [
             validator.checkPatternAttributeConstraintType,
             validator.checkPatternAttributeConstraintBinaryOperation
+        ],
+        BinaryExpression: [
+            validator.checkBinaryExpressionValidity
         ]
     };
     registry.register(checks, validator);
@@ -73,6 +77,7 @@ export namespace IssueCodes {
     export const BindedLocalPatternObject = "binded-local-pattern-object";
     export const AttributeConstraintYieldsNoBoolean = "attribute-constraint-yields-no-boolean";
     export const AttributeConstraintContainsUnsupportedOperation = "attribute-constraint-contains-unsupported-operation";
+    export const InvalidBinaryExpression = "invalid-binary-expression";
 }
 
 /**
@@ -234,6 +239,97 @@ export class GraphConstraintLanguageValidator {
                     property: 'expr',
                     code: IssueCodes.AttributeConstraintContainsUnsupportedOperation
                 })
+            }
+        }
+    }
+
+    checkBinaryExpressionValidity(bexpr: BinaryExpression, accept: ValidationAcceptor) {
+        if (bexpr.operator == '&&' || bexpr.operator == '||') {
+            const lType: ExprType = ExprUtils.evaluateExpressionType(bexpr.left);
+            const rType: ExprType = ExprUtils.evaluateExpressionType(bexpr.right);
+
+            if (lType != ExprType.BOOLEAN) {
+                accept('error', `Boolean operator "${bexpr.operator}" requires boolean expression (not: "${ExprType.toMMLType(lType)}")`, {
+                    node: bexpr,
+                    property: 'left',
+                    code: IssueCodes.InvalidBinaryExpression
+                })
+            }
+            if (rType != ExprType.BOOLEAN) {
+                accept('error', `Boolean operator "${bexpr.operator}" requires boolean expression (not: "${ExprType.toMMLType(rType)}")`, {
+                    node: bexpr,
+                    property: 'right',
+                    code: IssueCodes.InvalidBinaryExpression
+                })
+            }
+        } else if (bexpr.operator == '==' || bexpr.operator == '!=') {
+            const lType: ExprType = ExprUtils.evaluateExpressionType(bexpr.left);
+            const rType: ExprType = ExprUtils.evaluateExpressionType(bexpr.right);
+
+            if (lType != rType && !(ExprUtils.isNumberExpressionType(lType) && ExprUtils.isNumberExpressionType(rType))) {
+                accept('error', `Comparison requires expressions of equal type (not: "${ExprType.toMMLType(lType)}" and "${ExprType.toMMLType(rType)}")`, {
+                    node: bexpr,
+                    code: IssueCodes.InvalidBinaryExpression
+                })
+            }
+        } else if (bexpr.operator == '<' || bexpr.operator == '<=' || bexpr.operator == '>' || bexpr.operator == '>=') {
+            const lType: ExprType = ExprUtils.evaluateExpressionType(bexpr.left);
+            const rType: ExprType = ExprUtils.evaluateExpressionType(bexpr.right);
+
+            if (!ExprUtils.isNumberExpressionType(lType)) {
+                accept('error', `Comparison operator "${bexpr.operator}" requires numeric expressions (not: "${ExprType.toMMLType(lType)}")`, {
+                    node: bexpr,
+                    property: 'left',
+                    code: IssueCodes.InvalidBinaryExpression
+                })
+            }
+            if (!ExprUtils.isNumberExpressionType(rType)) {
+                accept('error', `Comparison operator "${bexpr.operator}" requires numeric expressions (not: "${ExprType.toMMLType(rType)}")`, {
+                    node: bexpr,
+                    property: 'right',
+                    code: IssueCodes.InvalidBinaryExpression
+                })
+            }
+        } else if (bexpr.operator == '-' || bexpr.operator == '/') {
+            const lType: ExprType = ExprUtils.evaluateExpressionType(bexpr.left);
+            const rType: ExprType = ExprUtils.evaluateExpressionType(bexpr.right);
+
+            if (!ExprUtils.isNumberExpressionType(lType)) {
+                accept('error', `Arithmetic operator "${bexpr.operator}" requires numeric expressions (not: "${ExprType.toMMLType(lType)}")`, {
+                    node: bexpr,
+                    property: 'left',
+                    code: IssueCodes.InvalidBinaryExpression
+                })
+            }
+            if (!ExprUtils.isNumberExpressionType(rType)) {
+                accept('error', `Arithmetic operator "${bexpr.operator}" requires numeric expressions (not: "${ExprType.toMMLType(rType)}")`, {
+                    node: bexpr,
+                    property: 'right',
+                    code: IssueCodes.InvalidBinaryExpression
+                })
+            }
+        } else if (bexpr.operator == '+' || bexpr.operator == '*') {
+            const lType: ExprType = ExprUtils.evaluateExpressionType(bexpr.left);
+            const rType: ExprType = ExprUtils.evaluateExpressionType(bexpr.right);
+
+            const lNumeric: boolean = ExprUtils.isNumberExpressionType(lType);
+            const rNumeric: boolean = ExprUtils.isNumberExpressionType(rType);
+
+            if (!lNumeric || !rNumeric) {
+                if (lNumeric && rType != ExprType.STRING) {
+                    accept('error', `Arithmetic operator "${bexpr.operator}" requires numeric or string expressions (not: "${ExprType.toMMLType(rType)}")`, {
+                        node: bexpr,
+                        property: 'right',
+                        code: IssueCodes.InvalidBinaryExpression
+                    })
+                }
+                if (rNumeric && lType != ExprType.STRING) {
+                    accept('error', `Arithmetic operator "${bexpr.operator}" requires numeric or string expressions (not: "${ExprType.toMMLType(lType)}")`, {
+                        node: bexpr,
+                        property: 'left',
+                        code: IssueCodes.InvalidBinaryExpression
+                    })
+                }
             }
         }
     }
