@@ -34,4 +34,4 @@ PatternObjectReference:
     ref=[CReference:ID] ('->' | '-' alias=ID '->') patternObj=[TypedVariable:ID];
 
 PatternAttributeConstraint:
-    '#' tmp?='true';
+    '#' expr=Expression;
