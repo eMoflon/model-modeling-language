@@ -17,13 +17,17 @@ import {
     isCompactBindingStatement,
     isConstraintDocument,
     isInterface,
+    isPattern,
+    isPatternAttributeConstraint,
     isPatternObjectReference,
+    isQualifiedValueExpr,
     Pattern,
     PatternObject
 } from "./generated/ast.js";
 import {GraphConstraintLanguageServices} from "./graph-constraint-language-module.js";
 import {ScopingUtils} from "./scoping-utils.js";
 import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
+import {ExprUtils} from "./expr-utils.js";
 
 /**
  * The ScopeProvider searches scopes and is used to calculate custom scopes for individual
@@ -65,6 +69,21 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
             } else if (context.property === "patternObj") {
                 const pattern: Pattern = patternObj.$container;
                 scopes.push(ScopingUtils.createScopeElementStream(pattern.objs, this.descriptions, x => x.var.name, x => x.var));
+            }
+            return ScopingUtils.buildScopeFromAstNodeDesc(scopes, this.createScope);
+        } else if (isQualifiedValueExpr(context.container)) {
+            const scopes: Array<Stream<AstNodeDescription>> = [];
+            const exprContainer = ExprUtils.getExprContainer(context.container);
+            if (isPatternAttributeConstraint(exprContainer) && isPattern(exprContainer.$container)) {
+                const pattern: Pattern = exprContainer.$container;
+                if (context.property === "val") {
+                    pattern.objs.forEach(patternObject => {
+                        const abstractEl: AbstractElement | undefined = patternObject.var.typing.type?.ref;
+                        if (abstractEl != undefined && (isClass(abstractEl) || isInterface(abstractEl))) {
+                            scopes.push(ScopingUtils.createScopeElementStream(ScopingUtils.getAllInheritedAttributes(abstractEl), this.descriptions, x => `${patternObject.var.name}.${x.name}`, x => x));
+                        }
+                    });
+                }
             }
             return ScopingUtils.buildScopeFromAstNodeDesc(scopes, this.createScope);
         }

@@ -1,16 +1,20 @@
 import {
     AbstractElement,
+    Attribute,
     BoolExpr,
     Class,
     Enum,
+    EnumEntry,
     EnumValueExpr,
     Expression,
+    FunctionArgument,
     ImplicitlyTypedValue,
     Interface,
     isAttribute,
     isBinaryExpression,
     isBoolExpr,
     isEnumValueExpr,
+    isExpression,
     isFunctionLoop,
     isFunctionVariable,
     isInstanceLoop,
@@ -21,7 +25,9 @@ import {
     isTypedVariable,
     isUntypedVariable,
     isVariableValueExpr,
+    MacroAttributeStatement,
     NumberExpr,
+    PatternAttributeConstraint,
     QualifiedValueExpr,
     StringExpr,
     TypedVariable,
@@ -256,6 +262,13 @@ export class ExprUtils {
      */
     public static isAttributeInvocationVariableExpr(expr: Expression): expr is QualifiedValueExpr {
         return isQualifiedValueExpr(expr) && isAttribute(expr.val.ref);
+    }
+
+    public static getExprContainer(expr: Expression): Attribute | FunctionArgument | ImplicitlyTypedValue | MacroAttributeStatement | PatternAttributeConstraint | EnumEntry {
+        if (isExpression(expr.$container)) {
+            return this.getExprContainer(expr.$container);
+        }
+        return expr.$container;
     }
 }
 
