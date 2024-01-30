@@ -6,12 +6,14 @@ import {
     CompactBindingStatement,
     ConstraintDocument,
     CReference,
+    isBinaryExpression,
     isClass,
     isIInstance,
     isPatternObject,
     Model,
     ModelModelingLanguageAstType,
     Pattern,
+    PatternAttributeConstraint,
     PatternObject,
     PatternObjectReference,
     ReferencedModelStatement,
@@ -19,6 +21,7 @@ import {
     VariableType
 } from "./generated/ast.js";
 import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
+import {ExprType, ExprUtils} from "./expr-utils.js";
 
 /**
  * Register custom validation checks.
@@ -46,6 +49,10 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
         ReferencedModelStatement: [
             validator.checkReferenceModelIsKnown,
             validator.checkReferenceModelIsSupported
+        ],
+        PatternAttributeConstraint: [
+            validator.checkPatternAttributeConstraintType,
+            validator.checkPatternAttributeConstraintBinaryOperation
         ]
     };
     registry.register(checks, validator);
@@ -64,6 +71,8 @@ export namespace IssueCodes {
     export const UnknownDocument = "unknown-document";
     export const UnsupportedDocument = "unsupported-document";
     export const BindedLocalPatternObject = "binded-local-pattern-object";
+    export const AttributeConstraintYieldsNoBoolean = "attribute-constraint-yields-no-boolean";
+    export const AttributeConstraintContainsUnsupportedOperation = "attribute-constraint-contains-unsupported-operation";
 }
 
 /**
@@ -203,6 +212,29 @@ export class GraphConstraintLanguageValidator {
                 property: 'otherVar',
                 code: IssueCodes.BindedLocalPatternObject
             })
+        }
+    }
+
+    checkPatternAttributeConstraintType(ac: PatternAttributeConstraint, accept: ValidationAcceptor) {
+        const constraintType: ExprType = ExprUtils.evaluateExpressionType(ac.expr);
+        if (constraintType != ExprType.BOOLEAN) {
+            accept('error', `Attribute constraints must yield boolean expressions (not: ${ExprType.toMMLType(constraintType) ?? "UNKNOWN"})!`, {
+                node: ac,
+                property: 'expr',
+                code: IssueCodes.AttributeConstraintYieldsNoBoolean
+            })
+        }
+    }
+
+    checkPatternAttributeConstraintBinaryOperation(ac: PatternAttributeConstraint, accept: ValidationAcceptor) {
+        if (isBinaryExpression(ac.expr)) {
+            if (ac.expr.operator != "==" && ac.expr.operator != "!=" && ac.expr.operator != "<" && ac.expr.operator != "<=" && ac.expr.operator != ">" && ac.expr.operator != ">=") {
+                accept('error', `Attribute constraints must use relational operator on top-level binary expressions (not: "${ac.expr.operator}")!`, {
+                    node: ac,
+                    property: 'expr',
+                    code: IssueCodes.AttributeConstraintContainsUnsupportedOperation
+                })
+            }
         }
     }
 }
