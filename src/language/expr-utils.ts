@@ -86,6 +86,11 @@ export class ExprUtils {
                 return ExprType.ERROR;
             }
         }
+        if (this.isAttributeInvocationVariableExpr(expr)) {
+            if (expr.val.ref != undefined) {
+                return this.getAttributeTyping(expr.val.ref as Attribute);
+            }
+        }
         if (isEnumValueExpr(expr)) {
             return this.getEnumValueExprType(expr);
         }
@@ -269,6 +274,19 @@ export class ExprUtils {
             return this.getExprContainer(expr.$container);
         }
         return expr.$container;
+    }
+
+    public static getAttributeTyping(attr: Attribute): ExprType {
+        const attrType = attr.type;
+        if (attrType.ptype != undefined && attrType.etype == undefined) {
+            return ExprType.fromMMLType(attrType.ptype);
+        } else if (attrType.ptype == undefined && attrType.etype != undefined) {
+            const refEnum: Enum | undefined = attrType.etype.ref;
+            if (refEnum != undefined) {
+                return this.getEnumType(refEnum);
+            }
+        }
+        return ExprType.ERROR;
     }
 }
 
