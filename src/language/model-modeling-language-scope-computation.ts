@@ -1,5 +1,5 @@
 import {AstNodeDescription, DefaultScopeComputation, LangiumDocument, streamAllContents} from "langium";
-import {isClass, isCReference, isEnum, isInterface, isPackage} from "./generated/ast.js";
+import {isClass, isCReference, isEnum, isEnumEntry, isInterface, isPackage} from "./generated/ast.js";
 import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
 
 /**
@@ -21,6 +21,9 @@ export class ModelModelingLanguageScopeComputation extends DefaultScopeComputati
                 const fullyQualifiedName = ModelModelingLanguageUtils.getQualifiedClassName(childNode, childNode.name);
                 // `descriptions` is our `AstNodeDescriptionProvider` defined in `DefaultScopeComputation`
                 // It allows us to easily create descriptions that point to elements using a name.
+                exportedDescriptions.push(this.descriptions.createDescription(childNode, fullyQualifiedName, document));
+            } else if (isEnumEntry(childNode)) {
+                const fullyQualifiedName = ModelModelingLanguageUtils.getFullyQualifiedEnumEntryName(childNode, childNode.name);
                 exportedDescriptions.push(this.descriptions.createDescription(childNode, fullyQualifiedName, document));
             }
         }
