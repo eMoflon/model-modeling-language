@@ -45,7 +45,7 @@ export class GraphConstraintLanguageFormatter extends AbstractFormatter {
             formatter.interior(bracesOpen, bracesClose).prepend(Formatting.indent());
             bracesOpen.prepend(Formatting.oneSpace());
             bracesClose.prepend(Formatting.newLine());
-            formatter.property('name').prepend(Formatting.oneSpace()).append(Formatting.noSpace());
+            formatter.property('name').prepend(Formatting.oneSpace());
             formatter.keywords(',').prepend(Formatting.noSpace()).append(Formatting.oneSpace());
         } else if (isPatternObject(node)) {
             const formatter = this.getNodeFormatter(node);
