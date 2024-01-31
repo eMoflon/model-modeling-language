@@ -7,7 +7,6 @@ import {
     CompactBindingStatement,
     ConstraintDocument,
     CReference,
-    isBinaryExpression,
     isClass,
     isIInstance,
     isPatternObject,
@@ -53,7 +52,7 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
         ],
         PatternAttributeConstraint: [
             validator.checkPatternAttributeConstraintType,
-            validator.checkPatternAttributeConstraintBinaryOperation
+            //validator.checkPatternAttributeConstraintBinaryOperation
         ],
         BinaryExpression: [
             validator.checkBinaryExpressionValidity
@@ -231,7 +230,7 @@ export class GraphConstraintLanguageValidator {
         }
     }
 
-    checkPatternAttributeConstraintBinaryOperation(ac: PatternAttributeConstraint, accept: ValidationAcceptor) {
+    /*checkPatternAttributeConstraintBinaryOperation(ac: PatternAttributeConstraint, accept: ValidationAcceptor) {
         if (isBinaryExpression(ac.expr)) {
             if (ac.expr.operator != "==" && ac.expr.operator != "!=" && ac.expr.operator != "<" && ac.expr.operator != "<=" && ac.expr.operator != ">" && ac.expr.operator != ">=") {
                 accept('error', `Attribute constraints must use relational operator on top-level binary expressions (not: "${ac.expr.operator}")!`, {
@@ -241,7 +240,7 @@ export class GraphConstraintLanguageValidator {
                 })
             }
         }
-    }
+    }*/
 
     checkBinaryExpressionValidity(bexpr: BinaryExpression, accept: ValidationAcceptor) {
         if (bexpr.operator == '&&' || bexpr.operator == '||') {
