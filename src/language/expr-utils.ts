@@ -18,11 +18,11 @@ import {
     isFunctionLoop,
     isFunctionVariable,
     isInstanceLoop,
-    isNegatedExpression,
     isNumberExpr,
     isQualifiedValueExpr,
     isStringExpr,
     isTypedVariable,
+    isUnaryExpression,
     isUntypedVariable,
     isVariableValueExpr,
     MacroAttributeStatement,
@@ -74,8 +74,8 @@ export class ExprUtils {
             }
             return ExprType.UNDEFINED;
         }
-        if (isNegatedExpression(expr)) {
-            return this.evaluateExpressionType(expr.right);
+        if (isUnaryExpression(expr)) {
+            return this.evaluateExpressionType(expr.expr);
         }
         if (isVariableValueExpr(expr) || this.isFunctionVariableInvocationExpr(expr)) {
             if (expr.val.ref != undefined) {

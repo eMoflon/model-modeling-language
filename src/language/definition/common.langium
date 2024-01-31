@@ -128,7 +128,7 @@ Modulo infers Expression:
     LogicNegation ({infer BinaryExpression.left=current} operator='%' right=LogicNegation)*;
 
 LogicNegation infers Expression:
-    PrimaryExpression | ({infer NegatedExpression} operator='!' right=PrimaryExpression);
+    PrimaryExpression | ({infer UnaryExpression} operator='!' expr=PrimaryExpression);
 
 PrimaryExpression infers Expression:
     '(' Expression ')' | ValueExpr | EnumValueExpr | VariableValueExpr | QualifiedValueExpr;

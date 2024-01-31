@@ -13,11 +13,13 @@ import {
     isForbidAnnotation,
     isPattern,
     isPatternObject,
+    isUnaryExpression,
     isValueExpr,
     Pattern,
     PatternAttributeConstraint,
     PatternObject,
-    PatternObjectReference
+    PatternObjectReference,
+    UnaryExpression
 } from "../generated/ast.js";
 import {GclReferenceStorage} from "./gcl-reference-storage.js";
 import {ModelModelingLanguageUtils} from "../model-modeling-language-utils.js";
@@ -121,20 +123,24 @@ export class EdgeEntity {
 
 export class AttributeConstraintEntity {
     readonly isBinary: boolean;
-    readonly expr: PrimaryExpressionEntity | BinaryExpressionEntity;
+    readonly isUnary: boolean;
+    readonly expr: PrimaryExpressionEntity | BinaryExpressionEntity | UnaryExpressionEntity;
 
 
     constructor(ac: PatternAttributeConstraint, resolver: GclReferenceStorage) {
         this.expr = BinaryExpressionEntity.generateChild(ac.expr, resolver);
         this.isBinary = isBinaryExpression(ac.expr);
+        this.isUnary = isUnaryExpression(ac.expr);
     }
 }
 
 export class BinaryExpressionEntity {
-    readonly left: PrimaryExpressionEntity | BinaryExpressionEntity;
+    readonly left: PrimaryExpressionEntity | BinaryExpressionEntity | UnaryExpressionEntity;
     readonly leftIsBinary: boolean;
-    readonly right: PrimaryExpressionEntity | BinaryExpressionEntity;
+    readonly leftIsUnary: boolean;
+    readonly right: PrimaryExpressionEntity | BinaryExpressionEntity | UnaryExpressionEntity;
     readonly rightIsBinary: boolean;
+    readonly rightIsUnary: boolean;
     readonly operator: string;
 
 
@@ -142,13 +148,18 @@ export class BinaryExpressionEntity {
         this.operator = bexpr.operator;
         this.left = BinaryExpressionEntity.generateChild(bexpr.left, resolver);
         this.leftIsBinary = isBinaryExpression(bexpr.left);
+        this.leftIsUnary = isUnaryExpression(bexpr.left);
         this.right = BinaryExpressionEntity.generateChild(bexpr.right, resolver);
         this.rightIsBinary = isBinaryExpression(bexpr.right);
+        this.rightIsUnary = isUnaryExpression(bexpr.right);
     }
 
-    public static generateChild(expr: Expression, resolver: GclReferenceStorage): PrimaryExpressionEntity | BinaryExpressionEntity {
+    public static generateChild(expr: Expression, resolver: GclReferenceStorage): PrimaryExpressionEntity | BinaryExpressionEntity | UnaryExpressionEntity {
         if (isBinaryExpression(expr)) {
             return new BinaryExpressionEntity(expr, resolver);
+        }
+        if (isUnaryExpression(expr)) {
+            return new UnaryExpressionEntity(expr, resolver);
         }
         if (isValueExpr(expr)) {
             return new PrimaryExpressionEntity(expr.value, resolver);
@@ -172,6 +183,20 @@ export class BinaryExpressionEntity {
             return new PrimaryExpressionEntity("", resolver, ModelModelingLanguageUtils.getQualifiedClassName(attr.$container, attr.$container.name), attr.name, resolver.getNodeReferenceId(node), true, false);
         }
         throw new Error(`Missing serializer in BinaryExpressionEntity.generateChild() -> ${expr.$type}`);
+    }
+}
+
+export class UnaryExpressionEntity {
+    readonly expr: PrimaryExpressionEntity | BinaryExpressionEntity | UnaryExpressionEntity;
+    readonly exprIsBinary: boolean;
+    readonly exprIsUnary: boolean;
+    readonly operator: string;
+
+    constructor(uexpr: UnaryExpression, resolver: GclReferenceStorage) {
+        this.operator = uexpr.operator;
+        this.expr = BinaryExpressionEntity.generateChild(uexpr.expr, resolver);
+        this.exprIsBinary = isBinaryExpression(uexpr.expr);
+        this.exprIsUnary = isUnaryExpression(uexpr.expr);
     }
 }
 

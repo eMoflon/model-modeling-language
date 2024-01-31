@@ -4,11 +4,11 @@ import {
     isConstraintDocument,
     isEnforceAnnotation,
     isForbidAnnotation,
-    isNegatedExpression,
     isPattern,
     isPatternAttributeConstraint,
     isPatternObject,
-    isPatternObjectReference
+    isPatternObjectReference,
+    isUnaryExpression
 } from "./generated/ast.js";
 
 /**
@@ -73,7 +73,7 @@ export class GraphConstraintLanguageFormatter extends AbstractFormatter {
         } else if (isBinaryExpression(node)) {
             const formatter = this.getNodeFormatter(node);
             formatter.property('operator').surround(Formatting.oneSpace());
-        } else if (isNegatedExpression(node)) {
+        } else if (isUnaryExpression(node)) {
             const formatter = this.getNodeFormatter(node);
             formatter.keyword('!').append(Formatting.noSpace());
         }

@@ -29,7 +29,7 @@ import {
     isFunctionVariable,
     isInterface,
     isModel,
-    isNegatedExpression,
+    isUnaryExpression,
     isVariableValueExpr,
     MacroAssignStatement,
     MacroAttributeStatement,
@@ -1309,8 +1309,8 @@ export class ModelModelingLanguageValidator {
     }
 
     checkExpressionOperations(expr: Expression, accept: ValidationAcceptor) {
-        if (isNegatedExpression(expr)) {
-            accept('error', `Invalid operation | MML does not support negated expressions`, {
+        if (isUnaryExpression(expr)) {
+            accept('error', `Invalid operation | MML does not support unary expressions`, {
                 node: expr,
                 code: IssueCodes.ExpressionUnsupportedOperation
             })
