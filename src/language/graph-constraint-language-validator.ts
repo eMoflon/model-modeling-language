@@ -2,16 +2,20 @@ import {getDocument, LangiumDocument, URI, ValidationAcceptor, ValidationChecks}
 import {GraphConstraintLanguageServices} from "./graph-constraint-language-module.js";
 import {
     AbstractElement,
+    AllowDuplicatesAnnotation,
     BinaryExpression,
     Class,
     CompactBindingStatement,
     ConstraintDocument,
     CReference,
+    isAllowDuplicatesAnnotation,
     isClass,
     isIInstance,
+    isNodeConstraintAnnotation,
     isPatternObject,
     Model,
     ModelModelingLanguageAstType,
+    NodeConstraintAnnotation,
     Pattern,
     PatternAttributeConstraint,
     PatternObject,
@@ -34,7 +38,9 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
             validator.checkUniquePatternNames
         ],
         Pattern: [
-            validator.checkUniquePatternObjectNames
+            validator.checkUniquePatternObjectNames,
+            validator.checkUniqueAllowDuplicatesAnnotation,
+            validator.checkNodeConstraintAnnotationValidity
         ],
         CompactBindingStatement: [
             validator.checkCompactBindingTypeValidity,
@@ -77,6 +83,10 @@ export namespace IssueCodes {
     export const AttributeConstraintYieldsNoBoolean = "attribute-constraint-yields-no-boolean";
     export const AttributeConstraintContainsUnsupportedOperation = "attribute-constraint-contains-unsupported-operation";
     export const InvalidBinaryExpression = "invalid-binary-expression";
+    export const AllowDuplicatesAnnotationNotUnique = "allow-duplicates-annotation-not-unique";
+    export const SelfAppliedNodeConstraint = "self-applied-node-constraint";
+    export const DuplicateNodeConstraint = "duplicate-node-constraint";
+    export const NodeConstraintWithoutAllowDuplicateAnnotation = "node-constraint-without-allow-duplicate-annotation";
 }
 
 /**
@@ -330,6 +340,73 @@ export class GraphConstraintLanguageValidator {
                     })
                 }
             }
+        }
+    }
+
+    checkUniqueAllowDuplicatesAnnotation(pattern: Pattern, accept: ValidationAcceptor) {
+        const allowDuplicateAnnotations: AllowDuplicatesAnnotation[] = pattern.annotations.filter(x => isAllowDuplicatesAnnotation(x)).map(x => x as AllowDuplicatesAnnotation);
+        if (allowDuplicateAnnotations.length > 1) {
+            allowDuplicateAnnotations.forEach(x => {
+                accept('error', `This annotation can only be present once per pattern!`, {
+                    node: x,
+                    code: IssueCodes.AllowDuplicatesAnnotationNotUnique
+                })
+            })
+        }
+    }
+
+    checkNodeConstraintAnnotationValidity(pattern: Pattern, accept: ValidationAcceptor) {
+        const lookupTable: Map<string, Set<string>> = new Map<string, Set<string>>();
+        const allowDuplicateAnnotations: AllowDuplicatesAnnotation[] = pattern.annotations.filter(x => isAllowDuplicatesAnnotation(x)).map(x => x as AllowDuplicatesAnnotation);
+        const nodeConstraintAnnotations: NodeConstraintAnnotation[] = pattern.annotations.filter(x => isNodeConstraintAnnotation(x)).map(x => x as NodeConstraintAnnotation);
+
+        if (allowDuplicateAnnotations.length == 0 && nodeConstraintAnnotations.length > 0) {
+            nodeConstraintAnnotations.forEach(annotation => {
+                accept('error', `Node constraints require the @AllowDuplicates annotation!`, {
+                    node: annotation,
+                    code: IssueCodes.NodeConstraintWithoutAllowDuplicateAnnotation
+                })
+            })
+        } else {
+
+
+            nodeConstraintAnnotations.forEach(annotation => {
+                if (annotation.node1 == undefined || annotation.node2 == undefined) {
+                    return;
+                }
+
+                const node1: TypedVariable | undefined = annotation.node1.ref;
+                const node2: TypedVariable | undefined = annotation.node2.ref;
+
+                if (node1 == undefined || node2 == undefined) {
+                    return;
+                }
+
+                if (node1 == node2) {
+                    accept('error', `You cannot create NodeConstraints between a single node!`, {
+                        node: annotation,
+                        code: IssueCodes.SelfAppliedNodeConstraint
+                    })
+                } else {
+                    const ordered1 = node1.name > node2.name ? node1.name : node2.name;
+                    const ordered2 = node1.name > node2.name ? node2.name : node1.name;
+
+                    const subSet = lookupTable.get(ordered1);
+
+                    if (subSet != undefined) {
+                        if (subSet.has(ordered2)) {
+                            accept('error', `This node constraint already exists`, {
+                                node: annotation,
+                                code: IssueCodes.DuplicateNodeConstraint
+                            })
+                        } else {
+                            subSet.add(ordered2);
+                        }
+                    } else {
+                        lookupTable.set(ordered1, new Set<string>(ordered2));
+                    }
+                }
+            });
         }
     }
 }
