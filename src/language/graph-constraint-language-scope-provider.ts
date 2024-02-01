@@ -18,6 +18,7 @@ import {
     isConstraintDocument,
     isEnumValueExpr,
     isInterface,
+    isNodeConstraintAnnotation,
     isPattern,
     isPatternAttributeConstraint,
     isPatternObjectReference,
@@ -89,6 +90,9 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
             return ScopingUtils.buildScopeFromAstNodeDesc(scopes, this.createScope);
         } else if (isEnumValueExpr(context.container)) {
             return this.getGlobalScope("EnumEntry", context);
+        } else if (isNodeConstraintAnnotation(context.container)) {
+            const patternObjs: PatternObject[] = context.container.$container.objs;
+            return ScopingUtils.computeCustomScope(patternObjs, this.descriptions, x => x.var.name, x => x.var, this.createScope);
         }
 
         return super.getScope(context);

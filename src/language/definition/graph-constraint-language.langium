@@ -9,7 +9,7 @@ ReferencedModelStatement:
     'model' path=STRING ';';
 
 Annotation:
-    EnforceAnnotation | ForbidAnnotation;
+    EnforceAnnotation | ForbidAnnotation | AllowDuplicatesAnnotation | NodeConstraintAnnotation;
 
 CompactBindingStatement:
     otherVar=[TypedVariable:ID] '=' selfVar=[TypedVariable:ID];
@@ -22,6 +22,12 @@ EnforceAnnotation:
 
 ForbidAnnotation:
     '@Forbid' '(' SupportPatternAnnotationBody ')';
+
+AllowDuplicatesAnnotation:
+    allowDuplicates?='@AllowDuplicates';
+
+NodeConstraintAnnotation:
+    '@NodeConstraint' '(' node1=[TypedVariable:ID] operator=('==' | '!=') node2=[TypedVariable:ID] ')';
 
 Pattern:
     (annotations+=Annotation)*
