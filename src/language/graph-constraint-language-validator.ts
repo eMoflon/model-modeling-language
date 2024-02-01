@@ -370,8 +370,6 @@ export class GraphConstraintLanguageValidator {
                 })
             })
         } else {
-
-
             nodeConstraintAnnotations.forEach(annotation => {
                 if (annotation.node1 == undefined || annotation.node2 == undefined) {
                     return;
@@ -409,7 +407,7 @@ export class GraphConstraintLanguageValidator {
 
                     if (subSet != undefined) {
                         if (subSet.has(ordered2)) {
-                            accept('error', `This node constraint already exists`, {
+                            accept('error', `This node constraint already exists (with the same or opposite operator)!`, {
                                 node: annotation,
                                 code: IssueCodes.DuplicateNodeConstraint
                             })
@@ -417,7 +415,7 @@ export class GraphConstraintLanguageValidator {
                             subSet.add(ordered2);
                         }
                     } else {
-                        lookupTable.set(ordered1, new Set<string>(ordered2));
+                        lookupTable.set(ordered1, new Set<string>([ordered2]));
                     }
                 }
             });
