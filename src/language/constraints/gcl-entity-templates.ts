@@ -8,13 +8,16 @@ import {
     EnumEntry,
     Expression,
     ForbidAnnotation,
+    isAllowDuplicatesAnnotation,
     isBinaryExpression,
     isEnforceAnnotation,
     isForbidAnnotation,
+    isNodeConstraintAnnotation,
     isPattern,
     isPatternObject,
     isUnaryExpression,
     isValueExpr,
+    NodeConstraintAnnotation,
     Pattern,
     PatternAttributeConstraint,
     PatternObject,
@@ -33,6 +36,8 @@ export class PatternEntity {
     readonly nodes: PatternNodeEntity[] = [];
     readonly constraints: AttributeConstraintEntity[] = [];
     readonly edges: EdgeEntity[] = [];
+    readonly allowDuplicates: boolean;
+    readonly nodeConstraints: NodeConstraintEntity[] = [];
 
     constructor(pattern: Pattern, resolver: GclReferenceStorage) {
         this.name = pattern.name;
@@ -46,6 +51,8 @@ export class PatternEntity {
         })
         this.nodes = pattern.objs.map(x => new PatternNodeEntity(x, (x) => this.registerEdge(x), resolver));
         this.constraints = pattern.constraints.map(x => new AttributeConstraintEntity(x, resolver));
+        this.allowDuplicates = pattern.annotations.filter(x => isAllowDuplicatesAnnotation(x)).length > 0;
+        this.nodeConstraints = pattern.annotations.filter(x => isNodeConstraintAnnotation(x)).map(x => new NodeConstraintEntity(x as NodeConstraintAnnotation, resolver))
     }
 
     public registerEdge(edge: EdgeEntity) {
@@ -80,6 +87,26 @@ export class NodeBindingEntity {
         } else {
             this.node2 = "UNKNOWN"
         }
+    }
+}
+
+export class NodeConstraintEntity {
+    readonly node1Id: string;
+    readonly node2Id: string;
+    readonly operator: string;
+
+
+    constructor(annotation: NodeConstraintAnnotation, resolver: GclReferenceStorage) {
+        const node1 = annotation.node1.ref;
+        const node2 = annotation.node2.ref;
+
+        if (node1 == undefined || node2 == undefined || !isPatternObject(node1.$container) || !isPatternObject(node2.$container)) {
+            throw new Error("Could not access NodeConstrain pattern object reference!");
+        }
+
+        this.operator = annotation.operator;
+        this.node1Id = resolver.getNodeReferenceId(node1.$container);
+        this.node2Id = resolver.getNodeReferenceId(node2.$container);
     }
 }
 
