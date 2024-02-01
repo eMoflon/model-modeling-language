@@ -87,6 +87,8 @@ export namespace IssueCodes {
     export const SelfAppliedNodeConstraint = "self-applied-node-constraint";
     export const DuplicateNodeConstraint = "duplicate-node-constraint";
     export const NodeConstraintWithoutAllowDuplicateAnnotation = "node-constraint-without-allow-duplicate-annotation";
+    export const ImpossibleNodeConstraint = "impossible-node-constraint";
+    export const UnnecessaryNodeConstraint = "unnecessary-node-constraint";
 }
 
 /**
@@ -387,6 +389,18 @@ export class GraphConstraintLanguageValidator {
                         node: annotation,
                         code: IssueCodes.SelfAppliedNodeConstraint
                     })
+                } else if (!ExprUtils.getVariableTyping(node1).equals(ExprUtils.getVariableTyping(node2))) {
+                    if (annotation.operator == "!=") {
+                        accept('info', `This constraint is unnecessary because the nodes have different types!`, {
+                            node: annotation,
+                            code: IssueCodes.UnnecessaryNodeConstraint
+                        })
+                    } else if (annotation.operator == "==") {
+                        accept('error', `This constraint cannot be fulfilled because the nodes have different types!`, {
+                            node: annotation,
+                            code: IssueCodes.ImpossibleNodeConstraint
+                        })
+                    }
                 } else {
                     const ordered1 = node1.name > node2.name ? node1.name : node2.name;
                     const ordered2 = node1.name > node2.name ? node2.name : node1.name;
