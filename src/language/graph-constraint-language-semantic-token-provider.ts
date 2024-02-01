@@ -1,6 +1,7 @@
 import {AbstractSemanticTokenProvider, AstNode, SemanticTokenAcceptor} from "langium";
 import {
     isAllowDuplicatesAnnotation,
+    isBinaryExpression,
     isCompactBindingStatement,
     isEnforceAnnotation,
     isForbidAnnotation,
@@ -9,7 +10,9 @@ import {
     isPatternAttributeConstraint,
     isPatternObject,
     isPatternObjectReference,
-    isTypedVariable
+    isQualifiedValueExpr,
+    isTypedVariable,
+    isUnaryExpression
 } from "./generated/ast.js";
 import {SemanticTokenTypes} from "vscode-languageserver";
 
@@ -62,6 +65,12 @@ export class GraphConstraintLanguageSemanticTokenProvider extends AbstractSemant
             if (node.local) {
                 acceptor({node, keyword: "local", type: SemanticTokenTypes.modifier});
             }
+        } else if (isBinaryExpression(node)) {
+            acceptor({node, property: "operator", type: SemanticTokenTypes.operator});
+        } else if (isUnaryExpression(node)) {
+            acceptor({node, property: "operator", type: SemanticTokenTypes.operator});
+        } else if (isQualifiedValueExpr(node)) {
+            acceptor({node, property: "val", type: SemanticTokenTypes.property});
         }
     }
 
