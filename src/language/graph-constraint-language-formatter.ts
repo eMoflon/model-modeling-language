@@ -4,6 +4,7 @@ import {
     isConstraintDocument,
     isEnforceAnnotation,
     isForbidAnnotation,
+    isNodeConstraintAnnotation,
     isPattern,
     isPatternAttributeConstraint,
     isPatternObject,
@@ -37,6 +38,13 @@ export class GraphConstraintLanguageFormatter extends AbstractFormatter {
                 formatter.keywords(',').prepend(Formatting.noSpace()).append(Formatting.oneSpace());
                 formatter.keywords('=').surround(Formatting.noSpace());
             }
+            formatter.keyword(')').append(Formatting.newLine());
+        } else if (isNodeConstraintAnnotation(node)) {
+            const formatter = this.getNodeFormatter(node);
+            formatter.keyword('(').prepend(Formatting.noSpace());
+            formatter.property('node1').prepend(Formatting.noSpace());
+            formatter.property('operator').surround(Formatting.oneSpace());
+            formatter.property('node2').append(Formatting.noSpace());
             formatter.keyword(')').append(Formatting.newLine());
         } else if (isPattern(node)) {
             const formatter = this.getNodeFormatter(node);
