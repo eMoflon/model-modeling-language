@@ -9,7 +9,7 @@ ReferencedModelStatement:
     'model' path=STRING ';';
 
 Annotation:
-    EnforceAnnotation | ForbidAnnotation | AllowDuplicatesAnnotation | NodeConstraintAnnotation;
+    EnforceAnnotation | ForbidAnnotation | DisableDefaultNodeConstraintsAnnotation | NodeConstraintAnnotation;
 
 CompactBindingStatement:
     otherVar=[TypedVariable:ID] '=' selfVar=[TypedVariable:ID];
@@ -23,8 +23,8 @@ EnforceAnnotation:
 ForbidAnnotation:
     '@Forbid' '(' SupportPatternAnnotationBody ')';
 
-AllowDuplicatesAnnotation:
-    allowDuplicates?='@AllowDuplicates';
+DisableDefaultNodeConstraintsAnnotation:
+    disableConstraints?='@DisableDefaultNodeConstraints';
 
 NodeConstraintAnnotation:
     '@NodeConstraint' '(' node1=[TypedVariable:ID] operator=('==' | '!=') node2=[TypedVariable:ID] ')';

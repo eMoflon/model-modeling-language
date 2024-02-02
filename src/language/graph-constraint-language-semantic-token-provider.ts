@@ -1,8 +1,8 @@
 import {AbstractSemanticTokenProvider, AstNode, SemanticTokenAcceptor} from "langium";
 import {
-    isAllowDuplicatesAnnotation,
     isBinaryExpression,
     isCompactBindingStatement,
+    isDisableDefaultNodeConstraintsAnnotation,
     isEnforceAnnotation,
     isForbidAnnotation,
     isNodeConstraintAnnotation,
@@ -52,7 +52,7 @@ export class GraphConstraintLanguageSemanticTokenProvider extends AbstractSemant
         } else if (isForbidAnnotation(node)) {
             acceptor({node, keyword: "@Forbid", type: SemanticTokenTypes.decorator});
             acceptor({node, property: "pattern", type: SemanticTokenTypes.class});
-        } else if (isAllowDuplicatesAnnotation(node)) {
+        } else if (isDisableDefaultNodeConstraintsAnnotation(node)) {
             acceptor({node, keyword: "@AllowDuplicates", type: SemanticTokenTypes.decorator});
         } else if (isNodeConstraintAnnotation(node)) {
             acceptor({node, keyword: "@NodeConstraint", type: SemanticTokenTypes.decorator});

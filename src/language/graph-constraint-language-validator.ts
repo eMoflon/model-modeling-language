@@ -2,14 +2,14 @@ import {getDocument, LangiumDocument, URI, ValidationAcceptor, ValidationChecks}
 import {GraphConstraintLanguageServices} from "./graph-constraint-language-module.js";
 import {
     AbstractElement,
-    AllowDuplicatesAnnotation,
     BinaryExpression,
     Class,
     CompactBindingStatement,
     ConstraintDocument,
     CReference,
-    isAllowDuplicatesAnnotation,
+    DisableDefaultNodeConstraintsAnnotation,
     isClass,
+    isDisableDefaultNodeConstraintsAnnotation,
     isIInstance,
     isNodeConstraintAnnotation,
     isPatternObject,
@@ -346,7 +346,7 @@ export class GraphConstraintLanguageValidator {
     }
 
     checkUniqueAllowDuplicatesAnnotation(pattern: Pattern, accept: ValidationAcceptor) {
-        const allowDuplicateAnnotations: AllowDuplicatesAnnotation[] = pattern.annotations.filter(x => isAllowDuplicatesAnnotation(x)).map(x => x as AllowDuplicatesAnnotation);
+        const allowDuplicateAnnotations: DisableDefaultNodeConstraintsAnnotation[] = pattern.annotations.filter(x => isDisableDefaultNodeConstraintsAnnotation(x)).map(x => x as DisableDefaultNodeConstraintsAnnotation);
         if (allowDuplicateAnnotations.length > 1) {
             allowDuplicateAnnotations.forEach(x => {
                 accept('error', `This annotation can only be present once per pattern!`, {
@@ -359,7 +359,7 @@ export class GraphConstraintLanguageValidator {
 
     checkNodeConstraintAnnotationValidity(pattern: Pattern, accept: ValidationAcceptor) {
         const lookupTable: Map<string, Set<string>> = new Map<string, Set<string>>();
-        const allowDuplicateAnnotations: AllowDuplicatesAnnotation[] = pattern.annotations.filter(x => isAllowDuplicatesAnnotation(x)).map(x => x as AllowDuplicatesAnnotation);
+        const allowDuplicateAnnotations: DisableDefaultNodeConstraintsAnnotation[] = pattern.annotations.filter(x => isDisableDefaultNodeConstraintsAnnotation(x)).map(x => x as DisableDefaultNodeConstraintsAnnotation);
         const nodeConstraintAnnotations: NodeConstraintAnnotation[] = pattern.annotations.filter(x => isNodeConstraintAnnotation(x)).map(x => x as NodeConstraintAnnotation);
 
         if (allowDuplicateAnnotations.length == 0 && nodeConstraintAnnotations.length > 0) {

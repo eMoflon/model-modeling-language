@@ -8,8 +8,8 @@ import {
     EnumEntry,
     Expression,
     ForbidAnnotation,
-    isAllowDuplicatesAnnotation,
     isBinaryExpression,
+    isDisableDefaultNodeConstraintsAnnotation,
     isEnforceAnnotation,
     isForbidAnnotation,
     isNodeConstraintAnnotation,
@@ -36,7 +36,7 @@ export class PatternEntity {
     readonly nodes: PatternNodeEntity[] = [];
     readonly constraints: AttributeConstraintEntity[] = [];
     readonly edges: EdgeEntity[] = [];
-    readonly allowDuplicates: boolean;
+    readonly disableDefaultNodeConstraints: boolean;
     readonly nodeConstraints: NodeConstraintEntity[] = [];
 
     constructor(pattern: Pattern, resolver: GclReferenceStorage) {
@@ -51,7 +51,7 @@ export class PatternEntity {
         })
         this.nodes = pattern.objs.map(x => new PatternNodeEntity(x, (x) => this.registerEdge(x), resolver));
         this.constraints = pattern.constraints.map(x => new AttributeConstraintEntity(x, resolver));
-        this.allowDuplicates = pattern.annotations.filter(x => isAllowDuplicatesAnnotation(x)).length > 0;
+        this.disableDefaultNodeConstraints = pattern.annotations.filter(x => isDisableDefaultNodeConstraintsAnnotation(x)).length > 0;
         this.nodeConstraints = pattern.annotations.filter(x => isNodeConstraintAnnotation(x)).map(x => new NodeConstraintEntity(x as NodeConstraintAnnotation, resolver))
     }
 
