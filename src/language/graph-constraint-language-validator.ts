@@ -364,7 +364,7 @@ export class GraphConstraintLanguageValidator {
 
         if (allowDuplicateAnnotations.length == 0 && nodeConstraintAnnotations.length > 0) {
             nodeConstraintAnnotations.forEach(annotation => {
-                accept('error', `Node constraints require the @AllowDuplicates annotation!`, {
+                accept('error', `Node constraints require the @DisableDefaultNodeConstraints annotation!`, {
                     node: annotation,
                     code: IssueCodes.NodeConstraintWithoutAllowDuplicateAnnotation
                 })
