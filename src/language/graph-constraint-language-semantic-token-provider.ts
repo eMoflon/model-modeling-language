@@ -2,10 +2,17 @@ import {AbstractSemanticTokenProvider, AstNode, SemanticTokenAcceptor} from "lan
 import {
     isBinaryExpression,
     isCompactBindingStatement,
+    isConstraint,
+    isConstraintAssertion,
+    isConstraintJustification,
+    isConstraintPatternDeclaration,
     isDescriptionAnnotation,
     isDisableDefaultNodeConstraintsAnnotation,
     isEnforceAnnotation,
     isForbidAnnotation,
+    isJustificationCase,
+    isJustificationInfoStatement,
+    isJustificationRequirement,
     isNodeConstraintAnnotation,
     isPattern,
     isPatternAttributeConstraint,
@@ -14,7 +21,9 @@ import {
     isQualifiedValueExpr,
     isTitleAnnotation,
     isTypedVariable,
-    isUnaryExpression
+    isUnaryExpression,
+    isUntypedVariable,
+    isVariableValueExpr
 } from "./generated/ast.js";
 import {SemanticTokenTypes} from "vscode-languageserver";
 
@@ -67,6 +76,10 @@ export class GraphConstraintLanguageSemanticTokenProvider extends AbstractSemant
         } else if (isTypedVariable(node)) {
             acceptor({node, property: "typing", type: SemanticTokenTypes.type});
             acceptor({node, property: "name", type: SemanticTokenTypes.property});
+        } else if (isUntypedVariable(node)) {
+            acceptor({node, property: "name", type: SemanticTokenTypes.property});
+        } else if (isVariableValueExpr(node)) {
+            acceptor({node, property: "val", type: SemanticTokenTypes.property});
         } else if (isPatternObject(node)) {
             if (node.local) {
                 acceptor({node, keyword: "local", type: SemanticTokenTypes.modifier});
@@ -77,6 +90,23 @@ export class GraphConstraintLanguageSemanticTokenProvider extends AbstractSemant
             acceptor({node, property: "operator", type: SemanticTokenTypes.operator});
         } else if (isQualifiedValueExpr(node)) {
             acceptor({node, property: "val", type: SemanticTokenTypes.property});
+        } else if (isConstraint(node)) {
+            acceptor({node, keyword: "constraint", type: SemanticTokenTypes.keyword});
+            acceptor({node, property: "name", type: SemanticTokenTypes.class});
+        } else if (isConstraintPatternDeclaration(node)) {
+            acceptor({node, keyword: "specification", type: SemanticTokenTypes.keyword});
+            acceptor({node, property: "pattern", type: SemanticTokenTypes.class});
+        } else if (isConstraintAssertion(node)) {
+            acceptor({node, keyword: "assert", type: SemanticTokenTypes.keyword});
+        } else if (isConstraintJustification(node)) {
+            acceptor({node, keyword: "justify", type: SemanticTokenTypes.keyword});
+        } else if (isJustificationRequirement(node)) {
+            acceptor({node, keyword: "require", type: SemanticTokenTypes.keyword});
+        } else if (isJustificationCase(node)) {
+            acceptor({node, keyword: "case", type: SemanticTokenTypes.keyword});
+            acceptor({node, property: "name", type: SemanticTokenTypes.property});
+        } else if (isJustificationInfoStatement(node)) {
+            acceptor({node, keyword: "info", type: SemanticTokenTypes.keyword});
         }
     }
 
