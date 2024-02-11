@@ -49,6 +49,16 @@ export class GraphConstraintLanguageCompletionProvider extends DefaultCompletion
                     insertText: 'local ${1:type} ${2:name} {\n}',
                     documentation: 'Define a new local node',
                     insertTextFormat: InsertTextFormat.Snippet
+                },
+                {
+                    label: 'constraint',
+                    labelDetails: {
+                        detail: ' Define a new constraint'
+                    },
+                    kind: CompletionItemKind.Snippet,
+                    insertText: 'constraint ${1:name} {\n    specification ${2:pattern} ${3:name};\n    justify ${3:name} {\n    }\n    assert ${3:name};\n}',
+                    documentation: 'Define a new constraint',
+                    insertTextFormat: InsertTextFormat.Snippet
                 }
             ];
             list.items.push(...snippets);
