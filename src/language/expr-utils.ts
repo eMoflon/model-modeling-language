@@ -15,6 +15,9 @@ import {
     isAttribute,
     isBinaryExpression,
     isBoolExpr,
+    isConstraintAssertion,
+    isConstraintJustification,
+    isConstraintPatternDeclaration,
     isEnumValueExpr,
     isExpression,
     isFunctionLoop,
@@ -34,6 +37,7 @@ import {
     QualifiedValueExpr,
     StringExpr,
     TypedVariable,
+    UntypedVariable,
     Variable
 } from "./generated/ast.js";
 
@@ -82,9 +86,19 @@ export class ExprUtils {
         }
         if (isVariableValueExpr(expr) || this.isFunctionVariableInvocationExpr(expr)) {
             if (expr.val.ref != undefined) {
-                const varTyping = this.getVariableTyping(expr.val.ref as TypedVariable);
-                if (varTyping.isValidPrimitive) {
-                    return varTyping.typeAsPrimitive;
+                if (isTypedVariable(expr.val.ref)) {
+                    const varTyping = this.getVariableTyping(expr.val.ref as TypedVariable);
+                    if (varTyping.isValidPrimitive) {
+                        return varTyping.typeAsPrimitive;
+                    }
+                } else if (isUntypedVariable(expr.val.ref)) {
+                    const untypedVar: UntypedVariable = expr.val.ref;
+                    const exprContainer = this.getExprContainer(expr);
+                    if (isConstraintAssertion(exprContainer) || isConstraintJustification(exprContainer)) {
+                        if (isConstraintPatternDeclaration(untypedVar.$container)) {
+                            return ExprType.BOOLEAN;
+                        }
+                    }
                 }
                 return ExprType.ERROR;
             }
