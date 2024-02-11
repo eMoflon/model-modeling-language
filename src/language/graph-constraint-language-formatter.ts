@@ -2,6 +2,8 @@ import {AbstractFormatter, AstNode, Formatting} from "langium";
 import {
     isBinaryExpression,
     isConstraintDocument,
+    isDescriptionAnnotation,
+    isDisableDefaultNodeConstraintsAnnotation,
     isEnforceAnnotation,
     isForbidAnnotation,
     isNodeConstraintAnnotation,
@@ -9,6 +11,7 @@ import {
     isPatternAttributeConstraint,
     isPatternObject,
     isPatternObjectReference,
+    isTitleAnnotation,
     isUnaryExpression
 } from "./generated/ast.js";
 
@@ -45,6 +48,18 @@ export class GraphConstraintLanguageFormatter extends AbstractFormatter {
             formatter.property('node1').prepend(Formatting.noSpace());
             formatter.property('operator').surround(Formatting.oneSpace());
             formatter.property('node2').append(Formatting.noSpace());
+            formatter.keyword(')').append(Formatting.newLine());
+        } else if (isDisableDefaultNodeConstraintsAnnotation(node)) {
+            const formatter = this.getNodeFormatter(node);
+            formatter.keyword('(').prepend(Formatting.noSpace()).append(Formatting.noSpace());
+            formatter.keyword(')').append(Formatting.newLine());
+        } else if (isTitleAnnotation(node)) {
+            const formatter = this.getNodeFormatter(node);
+            formatter.keyword('(').prepend(Formatting.noSpace()).append(Formatting.noSpace());
+            formatter.keyword(')').append(Formatting.newLine());
+        } else if (isDescriptionAnnotation(node)) {
+            const formatter = this.getNodeFormatter(node);
+            formatter.keyword('(').prepend(Formatting.noSpace()).append(Formatting.noSpace());
             formatter.keyword(')').append(Formatting.newLine());
         } else if (isPattern(node)) {
             const formatter = this.getNodeFormatter(node);

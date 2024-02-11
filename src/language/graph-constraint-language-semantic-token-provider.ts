@@ -2,6 +2,7 @@ import {AbstractSemanticTokenProvider, AstNode, SemanticTokenAcceptor} from "lan
 import {
     isBinaryExpression,
     isCompactBindingStatement,
+    isDescriptionAnnotation,
     isDisableDefaultNodeConstraintsAnnotation,
     isEnforceAnnotation,
     isForbidAnnotation,
@@ -11,6 +12,7 @@ import {
     isPatternObject,
     isPatternObjectReference,
     isQualifiedValueExpr,
+    isTitleAnnotation,
     isTypedVariable,
     isUnaryExpression
 } from "./generated/ast.js";
@@ -58,6 +60,10 @@ export class GraphConstraintLanguageSemanticTokenProvider extends AbstractSemant
             acceptor({node, keyword: "@NodeConstraint", type: SemanticTokenTypes.decorator});
             acceptor({node, property: "node1", type: SemanticTokenTypes.class});
             acceptor({node, property: "node2", type: SemanticTokenTypes.class});
+        } else if (isTitleAnnotation(node)) {
+            acceptor({node, keyword: "@title", type: SemanticTokenTypes.decorator});
+        } else if (isDescriptionAnnotation(node)) {
+            acceptor({node, keyword: "@description", type: SemanticTokenTypes.decorator});
         } else if (isTypedVariable(node)) {
             acceptor({node, property: "typing", type: SemanticTokenTypes.type});
             acceptor({node, property: "name", type: SemanticTokenTypes.property});

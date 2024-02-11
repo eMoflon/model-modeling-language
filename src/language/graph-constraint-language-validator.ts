@@ -2,6 +2,7 @@ import {getDocument, LangiumDocument, URI, ValidationAcceptor, ValidationChecks}
 import {GraphConstraintLanguageServices} from "./graph-constraint-language-module.js";
 import {
     AbstractElement,
+    Annotation,
     BinaryExpression,
     Class,
     CompactBindingStatement,
@@ -9,10 +10,15 @@ import {
     CReference,
     DisableDefaultNodeConstraintsAnnotation,
     isClass,
+    isDescriptionAnnotation,
     isDisableDefaultNodeConstraintsAnnotation,
+    isEnforceAnnotation,
+    isForbidAnnotation,
     isIInstance,
     isNodeConstraintAnnotation,
+    isPattern,
     isPatternObject,
+    isTitleAnnotation,
     Model,
     ModelModelingLanguageAstType,
     NodeConstraintAnnotation,
@@ -62,6 +68,9 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
         ],
         BinaryExpression: [
             validator.checkBinaryExpressionValidity
+        ],
+        Annotation: [
+            validator.checkAnnotationContextValidity
         ]
     };
     registry.register(checks, validator);
@@ -89,6 +98,7 @@ export namespace IssueCodes {
     export const NodeConstraintWithoutAllowDuplicateAnnotation = "node-constraint-without-allow-duplicate-annotation";
     export const ImpossibleNodeConstraint = "impossible-node-constraint";
     export const UnnecessaryNodeConstraint = "unnecessary-node-constraint";
+    export const InvalidAnnotationContext = "invalid-annotation-context";
 }
 
 /**
@@ -419,6 +429,42 @@ export class GraphConstraintLanguageValidator {
                     }
                 }
             });
+        }
+    }
+
+    checkAnnotationContextValidity(annotation: Annotation, accept: ValidationAcceptor) {
+        if (isEnforceAnnotation(annotation)) {
+            if (!isPattern(annotation.$container)) {
+                accept('error', `This annotation can only be used for structures of type pattern.`, {
+                    node: annotation,
+                    code: IssueCodes.InvalidAnnotationContext
+                })
+            }
+        } else if (isForbidAnnotation(annotation)) {
+            if (!isPattern(annotation.$container)) {
+                accept('error', `This annotation can only be used for structures of type pattern.`, {
+                    node: annotation,
+                    code: IssueCodes.InvalidAnnotationContext
+                })
+            }
+        } else if (isDisableDefaultNodeConstraintsAnnotation(annotation)) {
+            if (!isPattern(annotation.$container)) {
+                accept('error', `This annotation can only be used for structures of type pattern.`, {
+                    node: annotation,
+                    code: IssueCodes.InvalidAnnotationContext
+                })
+            }
+        } else if (isNodeConstraintAnnotation(annotation)) {
+            if (!isPattern(annotation.$container)) {
+                accept('error', `This annotation can only be used for structures of type pattern.`, {
+                    node: annotation,
+                    code: IssueCodes.InvalidAnnotationContext
+                })
+            }
+        } else if (isTitleAnnotation(annotation)) {
+
+        } else if (isDescriptionAnnotation(annotation)) {
+
         }
     }
 }

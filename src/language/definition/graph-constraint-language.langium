@@ -9,7 +9,12 @@ ReferencedModelStatement:
     'model' path=STRING ';';
 
 Annotation:
-    EnforceAnnotation | ForbidAnnotation | DisableDefaultNodeConstraintsAnnotation | NodeConstraintAnnotation;
+    EnforceAnnotation |
+    ForbidAnnotation |
+    DisableDefaultNodeConstraintsAnnotation |
+    NodeConstraintAnnotation |
+    TitleAnnotation |
+    DescriptionAnnotation;
 
 CompactBindingStatement:
     otherVar=[TypedVariable:ID] '=' selfVar=[TypedVariable:ID];
@@ -28,6 +33,12 @@ DisableDefaultNodeConstraintsAnnotation:
 
 NodeConstraintAnnotation:
     '@NodeConstraint' '(' node1=[TypedVariable:ID] operator=('==' | '!=') node2=[TypedVariable:ID] ')';
+
+TitleAnnotation:
+    '@title' '(' value=STRING ')';
+
+DescriptionAnnotation:
+    '@description' '(' value=STRING ')';
 
 Pattern:
     (annotations+=Annotation)*
