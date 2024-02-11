@@ -45,7 +45,8 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
     const validator = services.validation.GraphConstraintLanguageValidator;
     const checks: ValidationChecks<ModelModelingLanguageAstType> = {
         ConstraintDocument: [
-            validator.checkUniquePatternNames
+            validator.checkUniquePatternNames,
+            validator.checkUniqueConstraintNames
         ],
         Pattern: [
             validator.checkUniquePatternObjectNames,
@@ -80,7 +81,8 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
             validator.checkConstraintAssertionType
         ],
         ConstraintJustification: [
-            validator.checkJustificationConditionType
+            validator.checkJustificationConditionType,
+            validator.checkUniqueJustificationCaseNames
         ],
         JustificationRequirement: [
             validator.checkJustificationRequirementType
@@ -115,6 +117,8 @@ export namespace IssueCodes {
     export const ConstraintAssertionYieldsNoBoolean = "constraint-assertion-yields-no-boolean";
     export const JustificationConditionYieldsNoBoolean = "justification-condition-yields-no-boolean";
     export const JustificationRequirementYieldsNoBoolean = "justification-requirement-yields-no-boolean";
+    export const ConstraintNameNotUnique = "constraint-name-not-unique";
+    export const JustificationCaseNameNotUnique = "justification-case-name-not-unique";
 }
 
 /**
@@ -525,5 +529,33 @@ export class GraphConstraintLanguageValidator {
                 code: IssueCodes.JustificationRequirementYieldsNoBoolean
             })
         }
+    }
+
+    checkUniqueConstraintNames(cDoc: ConstraintDocument, accept: ValidationAcceptor) {
+        const reportedElements = new Set();
+        cDoc.constraints.forEach(constraint => {
+            if (reportedElements.has(constraint.name)) {
+                accept('error', `${constraint.$type} has non-unique name '${constraint.name}'.`, {
+                    node: constraint,
+                    property: 'name',
+                    code: IssueCodes.ConstraintNameNotUnique
+                })
+            }
+            reportedElements.add(constraint.name);
+        });
+    }
+
+    checkUniqueJustificationCaseNames(jtfc: ConstraintJustification, accept: ValidationAcceptor) {
+        const reportedElements = new Set();
+        jtfc.cases.forEach(jCase => {
+            if (reportedElements.has(jCase.var.name)) {
+                accept('error', `${jCase.$type} has non-unique name '${jCase.var.name}'.`, {
+                    node: jCase,
+                    property: 'var',
+                    code: IssueCodes.JustificationCaseNameNotUnique
+                })
+            }
+            reportedElements.add(jCase.var.name);
+        });
     }
 }
