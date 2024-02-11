@@ -53,7 +53,7 @@ export class GraphConstraintLanguageSemanticTokenProvider extends AbstractSemant
             acceptor({node, keyword: "@Forbid", type: SemanticTokenTypes.decorator});
             acceptor({node, property: "pattern", type: SemanticTokenTypes.class});
         } else if (isDisableDefaultNodeConstraintsAnnotation(node)) {
-            acceptor({node, keyword: "@AllowDuplicates", type: SemanticTokenTypes.decorator});
+            acceptor({node, keyword: "@DisableDefaultNodeConstraints", type: SemanticTokenTypes.decorator});
         } else if (isNodeConstraintAnnotation(node)) {
             acceptor({node, keyword: "@NodeConstraint", type: SemanticTokenTypes.decorator});
             acceptor({node, property: "node1", type: SemanticTokenTypes.class});
