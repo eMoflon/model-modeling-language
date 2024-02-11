@@ -1,11 +1,18 @@
 import {AbstractFormatter, AstNode, Formatting} from "langium";
 import {
     isBinaryExpression,
+    isConstraint,
+    isConstraintAssertion,
     isConstraintDocument,
+    isConstraintJustification,
+    isConstraintPatternDeclaration,
     isDescriptionAnnotation,
     isDisableDefaultNodeConstraintsAnnotation,
     isEnforceAnnotation,
     isForbidAnnotation,
+    isJustificationCase,
+    isJustificationInfoStatement,
+    isJustificationRequirement,
     isNodeConstraintAnnotation,
     isPattern,
     isPatternAttributeConstraint,
@@ -99,6 +106,43 @@ export class GraphConstraintLanguageFormatter extends AbstractFormatter {
         } else if (isUnaryExpression(node)) {
             const formatter = this.getNodeFormatter(node);
             formatter.keyword('!').append(Formatting.noSpace());
+        } else if (isConstraint(node)) {
+            const formatter = this.getNodeFormatter(node);
+            const bracesOpen = formatter.keyword('{');
+            const bracesClose = formatter.keyword('}');
+            formatter.interior(bracesOpen, bracesClose).prepend(Formatting.indent());
+            bracesOpen.prepend(Formatting.oneSpace());
+            bracesClose.prepend(Formatting.newLine());
+            formatter.property('name').prepend(Formatting.oneSpace());
+        } else if (isConstraintPatternDeclaration(node)) {
+            const formatter = this.getNodeFormatter(node);
+            formatter.property('pattern').surround(Formatting.oneSpace());
+            formatter.property('var').append(Formatting.noSpace());
+        } else if (isConstraintAssertion(node)) {
+            const formatter = this.getNodeFormatter(node);
+            formatter.property('expr').prepend(Formatting.oneSpace()).append(Formatting.noSpace());
+        } else if (isConstraintJustification(node)) {
+            const formatter = this.getNodeFormatter(node);
+            const bracesOpen = formatter.keyword('{');
+            const bracesClose = formatter.keyword('}');
+            formatter.interior(bracesOpen, bracesClose).prepend(Formatting.indent());
+            bracesOpen.prepend(Formatting.oneSpace());
+            bracesClose.prepend(Formatting.newLine());
+            formatter.property('condition').prepend(Formatting.oneSpace());
+        } else if (isJustificationRequirement(node)) {
+            const formatter = this.getNodeFormatter(node);
+            formatter.property('condition').prepend(Formatting.oneSpace()).append(Formatting.noSpace());
+        } else if (isJustificationCase(node)) {
+            const formatter = this.getNodeFormatter(node);
+            const bracesOpen = formatter.keyword('{');
+            const bracesClose = formatter.keyword('}');
+            formatter.interior(bracesOpen, bracesClose).prepend(Formatting.indent());
+            bracesOpen.prepend(Formatting.oneSpace());
+            bracesClose.prepend(Formatting.newLine());
+            formatter.property('name').surround(Formatting.oneSpace());
+        } else if (isJustificationInfoStatement(node)) {
+            const formatter = this.getNodeFormatter(node);
+            formatter.property('msg').prepend(Formatting.oneSpace()).append(Formatting.noSpace());
         }
     }
 }
