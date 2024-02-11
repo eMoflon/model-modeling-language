@@ -3,6 +3,8 @@ import {
     Attribute,
     BoolExpr,
     Class,
+    ConstraintAssertion,
+    ConstraintJustification,
     Enum,
     EnumEntry,
     EnumValueExpr,
@@ -25,6 +27,7 @@ import {
     isUnaryExpression,
     isUntypedVariable,
     isVariableValueExpr,
+    JustificationRequirement,
     MacroAttributeStatement,
     NumberExpr,
     PatternAttributeConstraint,
@@ -269,7 +272,7 @@ export class ExprUtils {
         return isQualifiedValueExpr(expr) && isAttribute(expr.val.ref);
     }
 
-    public static getExprContainer(expr: Expression): Attribute | FunctionArgument | ImplicitlyTypedValue | MacroAttributeStatement | PatternAttributeConstraint | EnumEntry {
+    public static getExprContainer(expr: Expression): Attribute | ConstraintAssertion | ConstraintJustification | FunctionArgument | ImplicitlyTypedValue | JustificationRequirement | MacroAttributeStatement | PatternAttributeConstraint | EnumEntry {
         if (isExpression(expr.$container)) {
             return this.getExprContainer(expr.$container);
         }

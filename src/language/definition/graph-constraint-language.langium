@@ -3,7 +3,8 @@ import "./common"
 
 entry ConstraintDocument:
     (model=ReferencedModelStatement)?
-    (patterns+=Pattern)*;
+    (patterns+=Pattern)*
+    (constraints+=Constraint)*;
 
 ReferencedModelStatement:
     'model' path=STRING ';';
@@ -52,3 +53,28 @@ PatternObjectReference:
 
 PatternAttributeConstraint:
     '#' expr=Expression;
+
+Constraint:
+    (annotations+=Annotation)*
+    'constraint' name=ID '{' (patternDeclarations+=ConstraintPatternDeclaration | justifications += ConstraintJustification | assertions+=ConstraintAssertion | statements+=JustificationStatement)* '}';
+
+ConstraintPatternDeclaration:
+    'specification' pattern=[Pattern:ID] var=UntypedVariable ';';
+
+ConstraintAssertion:
+    'assert' expr=Expression ';';
+
+ConstraintJustification:
+    'justify' condition=Expression '{' (cases+=JustificationCase | caseRequirements+=JustificationRequirement | statements+=JustificationStatement)*  '}';
+
+JustificationRequirement:
+    'require' condition=Expression ';';
+
+JustificationCase:
+    'case' name=ID '{' (statements+=JustificationStatement)* '}';
+
+JustificationStatement:
+    JustificationInfoStatement;
+
+JustificationInfoStatement:
+    'info' msg=STRING ';';
