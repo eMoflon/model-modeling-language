@@ -104,7 +104,6 @@ export class GraphConstraintLanguageSemanticTokenProvider extends AbstractSemant
             acceptor({node, keyword: "require", type: SemanticTokenTypes.keyword});
         } else if (isJustificationCase(node)) {
             acceptor({node, keyword: "case", type: SemanticTokenTypes.keyword});
-            acceptor({node, property: "name", type: SemanticTokenTypes.property});
         } else if (isJustificationInfoStatement(node)) {
             acceptor({node, keyword: "info", type: SemanticTokenTypes.keyword});
         }

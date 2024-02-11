@@ -139,7 +139,7 @@ export class GraphConstraintLanguageFormatter extends AbstractFormatter {
             formatter.interior(bracesOpen, bracesClose).prepend(Formatting.indent());
             bracesOpen.prepend(Formatting.oneSpace());
             bracesClose.prepend(Formatting.newLine());
-            formatter.property('name').surround(Formatting.oneSpace());
+            formatter.property('var').surround(Formatting.oneSpace());
         } else if (isJustificationInfoStatement(node)) {
             const formatter = this.getNodeFormatter(node);
             formatter.property('msg').prepend(Formatting.oneSpace()).append(Formatting.noSpace());

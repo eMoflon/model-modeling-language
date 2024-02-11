@@ -23,6 +23,8 @@ import {
     isFunctionLoop,
     isFunctionVariable,
     isInstanceLoop,
+    isJustificationCase,
+    isJustificationRequirement,
     isNumberExpr,
     isQualifiedValueExpr,
     isStringExpr,
@@ -96,6 +98,10 @@ export class ExprUtils {
                     const exprContainer = this.getExprContainer(expr);
                     if (isConstraintAssertion(exprContainer) || isConstraintJustification(exprContainer)) {
                         if (isConstraintPatternDeclaration(untypedVar.$container)) {
+                            return ExprType.BOOLEAN;
+                        }
+                    } else if (isJustificationRequirement(exprContainer)) {
+                        if (isJustificationCase(untypedVar.$container)) {
                             return ExprType.BOOLEAN;
                         }
                     }

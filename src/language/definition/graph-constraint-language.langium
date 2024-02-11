@@ -71,7 +71,7 @@ JustificationRequirement:
     'require' condition=Expression ';';
 
 JustificationCase:
-    'case' name=ID '{' (statements+=JustificationStatement)* '}';
+    'case' var=UntypedVariable '{' (statements+=JustificationStatement)* '}';
 
 JustificationStatement:
     JustificationInfoStatement;

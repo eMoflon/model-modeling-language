@@ -21,6 +21,7 @@ import {
     isConstraintPatternDeclaration,
     isEnumValueExpr,
     isInterface,
+    isJustificationRequirement,
     isNodeConstraintAnnotation,
     isPattern,
     isPatternAttributeConstraint,
@@ -28,7 +29,8 @@ import {
     isQualifiedValueExpr,
     isVariableValueExpr,
     Pattern,
-    PatternObject, UntypedVariable
+    PatternObject,
+    UntypedVariable
 } from "./generated/ast.js";
 import {GraphConstraintLanguageServices} from "./graph-constraint-language-module.js";
 import {ScopingUtils} from "./scoping-utils.js";
@@ -106,6 +108,9 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
             if (isConstraintAssertion(exprContainer) || isConstraintJustification(exprContainer)) {
                 const patternDeclarations: UntypedVariable[] = exprContainer.$container.patternDeclarations.flatMap(x => x.var);
                 scopes.push(ScopingUtils.createScopeElementStream(patternDeclarations, this.descriptions, x => x.name, x => x));
+            } else if (isJustificationRequirement(exprContainer)) {
+                const justificationCases: UntypedVariable[] = exprContainer.$container.cases.map(x => x.var);
+                scopes.push(ScopingUtils.createScopeElementStream(justificationCases, this.descriptions, x => x.name, x => x));
             }
             return ScopingUtils.buildScopeFromAstNodeDesc(scopes, this.createScope);
         }
