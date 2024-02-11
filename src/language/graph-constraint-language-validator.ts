@@ -6,10 +6,13 @@ import {
     BinaryExpression,
     Class,
     CompactBindingStatement,
+    ConstraintAssertion,
     ConstraintDocument,
+    ConstraintJustification,
     CReference,
     DisableDefaultNodeConstraintsAnnotation,
     isClass,
+    isConstraint,
     isDescriptionAnnotation,
     isDisableDefaultNodeConstraintsAnnotation,
     isEnforceAnnotation,
@@ -19,6 +22,7 @@ import {
     isPattern,
     isPatternObject,
     isTitleAnnotation,
+    JustificationRequirement,
     Model,
     ModelModelingLanguageAstType,
     NodeConstraintAnnotation,
@@ -71,6 +75,15 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
         ],
         Annotation: [
             validator.checkAnnotationContextValidity
+        ],
+        ConstraintAssertion: [
+            validator.checkConstraintAssertionType
+        ],
+        ConstraintJustification: [
+            validator.checkJustificationConditionType
+        ],
+        JustificationRequirement: [
+            validator.checkJustificationRequirementType
         ]
     };
     registry.register(checks, validator);
@@ -99,6 +112,9 @@ export namespace IssueCodes {
     export const ImpossibleNodeConstraint = "impossible-node-constraint";
     export const UnnecessaryNodeConstraint = "unnecessary-node-constraint";
     export const InvalidAnnotationContext = "invalid-annotation-context";
+    export const ConstraintAssertionYieldsNoBoolean = "constraint-assertion-yields-no-boolean";
+    export const JustificationConditionYieldsNoBoolean = "justification-condition-yields-no-boolean";
+    export const JustificationRequirementYieldsNoBoolean = "justification-requirement-yields-no-boolean";
 }
 
 /**
@@ -462,9 +478,52 @@ export class GraphConstraintLanguageValidator {
                 })
             }
         } else if (isTitleAnnotation(annotation)) {
-
+            if (!isConstraint(annotation.$container)) {
+                accept('error', `This annotation can only be used for structures of type constraint.`, {
+                    node: annotation,
+                    code: IssueCodes.InvalidAnnotationContext
+                })
+            }
         } else if (isDescriptionAnnotation(annotation)) {
+            if (!isConstraint(annotation.$container)) {
+                accept('error', `This annotation can only be used for structures of type constraint.`, {
+                    node: annotation,
+                    code: IssueCodes.InvalidAnnotationContext
+                })
+            }
+        }
+    }
 
+    checkConstraintAssertionType(ca: ConstraintAssertion, accept: ValidationAcceptor) {
+        const assertionType: ExprType = ExprUtils.evaluateExpressionType(ca.expr);
+        if (assertionType != ExprType.BOOLEAN) {
+            accept('error', `Assertions constraints must yield boolean expressions (not: ${ExprType.toMMLType(assertionType) ?? "UNKNOWN"})!`, {
+                node: ca,
+                property: 'expr',
+                code: IssueCodes.ConstraintAssertionYieldsNoBoolean
+            })
+        }
+    }
+
+    checkJustificationConditionType(cj: ConstraintJustification, accept: ValidationAcceptor) {
+        const conditionType: ExprType = ExprUtils.evaluateExpressionType(cj.condition);
+        if (conditionType != ExprType.BOOLEAN) {
+            accept('error', `Justification conditions must yield boolean expressions (not: ${ExprType.toMMLType(conditionType) ?? "UNKNOWN"})!`, {
+                node: cj,
+                property: 'condition',
+                code: IssueCodes.JustificationConditionYieldsNoBoolean
+            })
+        }
+    }
+
+    checkJustificationRequirementType(jr: JustificationRequirement, accept: ValidationAcceptor) {
+        const conditionType: ExprType = ExprUtils.evaluateExpressionType(jr.condition);
+        if (conditionType != ExprType.BOOLEAN) {
+            accept('error', `Requirements must yield boolean expressions (not: ${ExprType.toMMLType(conditionType) ?? "UNKNOWN"})!`, {
+                node: jr,
+                property: 'condition',
+                code: IssueCodes.JustificationRequirementYieldsNoBoolean
+            })
         }
     }
 }
