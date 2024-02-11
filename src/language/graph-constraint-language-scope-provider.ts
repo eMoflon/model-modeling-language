@@ -15,7 +15,10 @@ import {
     ForbidAnnotation,
     isClass,
     isCompactBindingStatement,
+    isConstraintAssertion,
     isConstraintDocument,
+    isConstraintJustification,
+    isConstraintPatternDeclaration,
     isEnumValueExpr,
     isInterface,
     isNodeConstraintAnnotation,
@@ -23,8 +26,9 @@ import {
     isPatternAttributeConstraint,
     isPatternObjectReference,
     isQualifiedValueExpr,
+    isVariableValueExpr,
     Pattern,
-    PatternObject
+    PatternObject, UntypedVariable
 } from "./generated/ast.js";
 import {GraphConstraintLanguageServices} from "./graph-constraint-language-module.js";
 import {ScopingUtils} from "./scoping-utils.js";
@@ -48,7 +52,7 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
         if (isCompactBindingStatement(context.container)) {
             let validPatternObjects: Array<PatternObject> = [];
             const annotation: EnforceAnnotation | ForbidAnnotation = context.container.$container;
-            if (context.property === "selfVar") {
+            if (context.property === "selfVar" && isPattern(annotation.$container)) {
                 const annotatedPattern: Pattern = annotation.$container;
                 validPatternObjects = annotatedPattern.objs;
             } else if (context.property === "otherVar") {
@@ -90,9 +94,20 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
             return ScopingUtils.buildScopeFromAstNodeDesc(scopes, this.createScope);
         } else if (isEnumValueExpr(context.container)) {
             return this.getGlobalScope("EnumEntry", context);
-        } else if (isNodeConstraintAnnotation(context.container)) {
+        } else if (isNodeConstraintAnnotation(context.container) && isPattern(context.container.$container)) {
             const patternObjs: PatternObject[] = context.container.$container.objs;
             return ScopingUtils.computeCustomScope(patternObjs, this.descriptions, x => x.var.name, x => x.var, this.createScope);
+        } else if (isConstraintPatternDeclaration(context.container)) {
+            const pattern: Pattern[] = context.container.$container.$container.patterns;
+            return ScopingUtils.computeCustomScope(pattern, this.descriptions, x => x.name, x => x, this.createScope);
+        } else if (isVariableValueExpr(context.container)) {
+            const scopes: Array<Stream<AstNodeDescription>> = [];
+            const exprContainer = ExprUtils.getExprContainer(context.container);
+            if (isConstraintAssertion(exprContainer) || isConstraintJustification(exprContainer)) {
+                const patternDeclarations: UntypedVariable[] = exprContainer.$container.patternDeclarations.flatMap(x => x.var);
+                scopes.push(ScopingUtils.createScopeElementStream(patternDeclarations, this.descriptions, x => x.name, x => x));
+            }
+            return ScopingUtils.buildScopeFromAstNodeDesc(scopes, this.createScope);
         }
 
         return super.getScope(context);
