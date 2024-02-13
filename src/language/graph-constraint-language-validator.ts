@@ -51,7 +51,8 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
         Pattern: [
             validator.checkUniquePatternObjectNames,
             validator.checkUniqueAllowDuplicatesAnnotation,
-            validator.checkNodeConstraintAnnotationValidity
+            validator.checkNodeConstraintAnnotationValidity,
+            validator.checkUniquePatternAlias
         ],
         CompactBindingStatement: [
             validator.checkCompactBindingTypeValidity,
@@ -119,6 +120,7 @@ export namespace IssueCodes {
     export const JustificationRequirementYieldsNoBoolean = "justification-requirement-yields-no-boolean";
     export const ConstraintNameNotUnique = "constraint-name-not-unique";
     export const JustificationCaseNameNotUnique = "justification-case-name-not-unique";
+    export const PatternElementAliasNotUnique = "pattern-element-alias-name-not-unique";
 }
 
 /**
@@ -556,6 +558,34 @@ export class GraphConstraintLanguageValidator {
                 })
             }
             reportedElements.add(jCase.var.name);
+        });
+    }
+
+    checkUniquePatternAlias(pattern: Pattern, accept: ValidationAcceptor) {
+        const knownAlias: Set<string> = new Set();
+        pattern.objs.forEach(node => node.connections.forEach(edge => {
+            if (edge.alias != undefined) {
+                if (knownAlias.has(edge.alias)) {
+                    accept('error', `The pattern already contains an edge or an attribute condition with the alias: "${edge.alias}"`, {
+                        node: edge,
+                        property: 'alias',
+                        code: IssueCodes.PatternElementAliasNotUnique
+                    })
+                }
+                knownAlias.add(edge.alias);
+            }
+        }));
+        pattern.constraints.forEach(constraint => {
+            if (constraint.alias != undefined) {
+                if (knownAlias.has(constraint.alias)) {
+                    accept('error', `The pattern already contains an edge or an attribute condition with the alias: "${constraint.alias}"`, {
+                        node: constraint,
+                        property: 'alias',
+                        code: IssueCodes.PatternElementAliasNotUnique
+                    })
+                }
+                knownAlias.add(constraint.alias);
+            }
         });
     }
 }

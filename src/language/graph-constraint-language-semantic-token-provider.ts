@@ -53,6 +53,9 @@ export class GraphConstraintLanguageSemanticTokenProvider extends AbstractSemant
             acceptor({node, property: "patternObj", type: SemanticTokenTypes.property});
         } else if (isPatternAttributeConstraint(node)) {
             acceptor({node, keyword: "#", type: SemanticTokenTypes.keyword});
+            if (node.alias != undefined){
+                acceptor({node, keyword: ":", type: SemanticTokenTypes.operator});
+            }
         } else if (isCompactBindingStatement(node)) {
             acceptor({node, property: "selfVar", type: SemanticTokenTypes.property});
             acceptor({node, keyword: "=", type: SemanticTokenTypes.operator});

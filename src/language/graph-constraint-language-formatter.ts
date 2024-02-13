@@ -100,6 +100,9 @@ export class GraphConstraintLanguageFormatter extends AbstractFormatter {
         } else if (isPatternAttributeConstraint(node)) {
             const formatter = this.getNodeFormatter(node);
             formatter.keyword('#').append(Formatting.noSpace());
+            if (node.alias != undefined) {
+                formatter.keyword(':').prepend(Formatting.noSpace()).append(Formatting.oneSpace());
+            }
         } else if (isBinaryExpression(node)) {
             const formatter = this.getNodeFormatter(node);
             formatter.property('operator').surround(Formatting.oneSpace());

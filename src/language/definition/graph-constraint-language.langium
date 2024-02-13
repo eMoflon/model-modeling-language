@@ -52,7 +52,7 @@ PatternObjectReference:
     ref=[CReference:ID] ('->' | '-' alias=ID '->') patternObj=[TypedVariable:ID];
 
 PatternAttributeConstraint:
-    '#' expr=Expression;
+    '#' (alias=ID ':')? expr=Expression;
 
 Constraint:
     (annotations+=Annotation)*
