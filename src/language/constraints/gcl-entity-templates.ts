@@ -152,12 +152,14 @@ export class AttributeConstraintEntity {
     readonly isBinary: boolean;
     readonly isUnary: boolean;
     readonly expr: PrimaryExpressionEntity | BinaryExpressionEntity | UnaryExpressionEntity;
+    readonly alias: string | undefined;
 
 
     constructor(ac: PatternAttributeConstraint, resolver: GclReferenceStorage) {
         this.expr = BinaryExpressionEntity.generateChild(ac.expr, resolver);
         this.isBinary = isBinaryExpression(ac.expr);
         this.isUnary = isUnaryExpression(ac.expr);
+        this.alias = ac.alias;
     }
 }
 
