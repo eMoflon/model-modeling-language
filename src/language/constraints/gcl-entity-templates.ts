@@ -149,38 +149,26 @@ export class EdgeEntity {
 }
 
 export class AttributeConstraintEntity {
-    readonly isBinary: boolean;
-    readonly isUnary: boolean;
-    readonly expr: PrimaryExpressionEntity | BinaryExpressionEntity | UnaryExpressionEntity;
+    readonly expr: ExpressionEntity;
     readonly alias: string | undefined;
 
 
     constructor(ac: PatternAttributeConstraint, resolver: GclReferenceStorage) {
-        this.expr = BinaryExpressionEntity.generateChild(ac.expr, resolver);
-        this.isBinary = isBinaryExpression(ac.expr);
-        this.isUnary = isUnaryExpression(ac.expr);
+        this.expr = new ExpressionEntity(BinaryExpressionEntity.generateChild(ac.expr, resolver));
         this.alias = ac.alias;
     }
 }
 
 export class BinaryExpressionEntity {
-    readonly left: PrimaryExpressionEntity | BinaryExpressionEntity | UnaryExpressionEntity;
-    readonly leftIsBinary: boolean;
-    readonly leftIsUnary: boolean;
-    readonly right: PrimaryExpressionEntity | BinaryExpressionEntity | UnaryExpressionEntity;
-    readonly rightIsBinary: boolean;
-    readonly rightIsUnary: boolean;
+    readonly left: ExpressionEntity;
+    readonly right: ExpressionEntity;
     readonly operator: string;
 
 
     constructor(bexpr: BinaryExpression, resolver: GclReferenceStorage) {
         this.operator = bexpr.operator;
-        this.left = BinaryExpressionEntity.generateChild(bexpr.left, resolver);
-        this.leftIsBinary = isBinaryExpression(bexpr.left);
-        this.leftIsUnary = isUnaryExpression(bexpr.left);
-        this.right = BinaryExpressionEntity.generateChild(bexpr.right, resolver);
-        this.rightIsBinary = isBinaryExpression(bexpr.right);
-        this.rightIsUnary = isUnaryExpression(bexpr.right);
+        this.left = new ExpressionEntity(BinaryExpressionEntity.generateChild(bexpr.left, resolver));
+        this.right = new ExpressionEntity(BinaryExpressionEntity.generateChild(bexpr.right, resolver));
     }
 
     public static generateChild(expr: Expression, resolver: GclReferenceStorage): PrimaryExpressionEntity | BinaryExpressionEntity | UnaryExpressionEntity {
@@ -216,16 +204,24 @@ export class BinaryExpressionEntity {
 }
 
 export class UnaryExpressionEntity {
-    readonly expr: PrimaryExpressionEntity | BinaryExpressionEntity | UnaryExpressionEntity;
-    readonly exprIsBinary: boolean;
-    readonly exprIsUnary: boolean;
+    readonly expr: ExpressionEntity;
     readonly operator: string;
 
     constructor(uexpr: UnaryExpression, resolver: GclReferenceStorage) {
         this.operator = uexpr.operator;
-        this.expr = BinaryExpressionEntity.generateChild(uexpr.expr, resolver);
-        this.exprIsBinary = isBinaryExpression(uexpr.expr);
-        this.exprIsUnary = isUnaryExpression(uexpr.expr);
+        this.expr = new ExpressionEntity(BinaryExpressionEntity.generateChild(uexpr.expr, resolver));
+    }
+}
+
+export class ExpressionEntity {
+    readonly expr: PrimaryExpressionEntity | BinaryExpressionEntity | UnaryExpressionEntity;
+    readonly isBinary: boolean;
+    readonly isUnary: boolean;
+
+    constructor(expr: PrimaryExpressionEntity | BinaryExpressionEntity | UnaryExpressionEntity) {
+        this.expr = expr;
+        this.isUnary = expr instanceof UnaryExpressionEntity;
+        this.isBinary = expr instanceof BinaryExpressionEntity;
     }
 }
 
