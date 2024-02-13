@@ -3,18 +3,25 @@ import {
     Attribute,
     BinaryExpression,
     CompactBindingStatement,
+    Constraint,
+    ConstraintAssertion,
     ConstraintDocument,
+    ConstraintPatternDeclaration,
+    DescriptionAnnotation,
     EnforceAnnotation,
     EnumEntry,
     Expression,
     ForbidAnnotation,
     isBinaryExpression,
+    isConstraintPatternDeclaration,
+    isDescriptionAnnotation,
     isDisableDefaultNodeConstraintsAnnotation,
     isEnforceAnnotation,
     isForbidAnnotation,
     isNodeConstraintAnnotation,
     isPattern,
     isPatternObject,
+    isTitleAnnotation,
     isUnaryExpression,
     isValueExpr,
     NodeConstraintAnnotation,
@@ -22,6 +29,7 @@ import {
     PatternAttributeConstraint,
     PatternObject,
     PatternObjectReference,
+    TitleAnnotation,
     UnaryExpression
 } from "../generated/ast.js";
 import {GclReferenceStorage} from "./gcl-reference-storage.js";
@@ -181,6 +189,13 @@ export class BinaryExpressionEntity {
         if (isValueExpr(expr)) {
             return new PrimaryExpressionEntity(expr.value, resolver);
         }
+        if (ExprUtils.isPatternInvocationVariableExpr(expr) && expr.val.ref != undefined) {
+            if (isConstraintPatternDeclaration(expr.val.ref.$container)) {
+                return new PrimaryExpressionEntity("", resolver, "", "", resolver.resolve(expr.val), false, false, true);
+            } else {
+                throw new Error(`PatternInvocationVariable "${expr.val.$refText}" contained in unsupported container "${expr.val.ref.$container.$type}"`);
+            }
+        }
         if (ExprUtils.isEnumValueExpression(expr) && expr.val.ref != undefined) {
             const enumLit: EnumEntry = expr.val.ref;
             return new PrimaryExpressionEntity(enumLit.name, resolver, "", "", "", false, true);
@@ -233,9 +248,9 @@ export class PrimaryExpressionEntity {
     readonly nodeId: string;
     readonly isAttribute: boolean;
     readonly isEnumLiteral: boolean;
+    readonly isPatternDeclarationReference: boolean;
 
-
-    constructor(value: number | boolean | string, resolver: GclReferenceStorage, containerFQName: string = "", elementName: string = "", nodeId: string = "", isAttribute: boolean = false, isEnumLiteral: boolean = false) {
+    constructor(value: number | boolean | string, resolver: GclReferenceStorage, containerFQName: string = "", elementName: string = "", nodeId: string = "", isAttribute: boolean = false, isEnumLiteral: boolean = false, isPatternDeclarationReference: boolean = false) {
         this.value = value;
         this.valueType = typeof value;
         this.className = containerFQName;
@@ -243,15 +258,62 @@ export class PrimaryExpressionEntity {
         this.nodeId = nodeId;
         this.isAttribute = isAttribute;
         this.isEnumLiteral = isEnumLiteral;
+        this.isPatternDeclarationReference = isPatternDeclarationReference;
+    }
+}
+
+export class ConstraintEntity {
+    readonly title: string;
+    readonly description: string;
+    readonly name: string;
+    readonly patternDeclarations: ConstraintPatternDeclarationEntity[];
+    readonly assertions: ConstraintAssertionEntity[];
+
+
+    constructor(constraint: Constraint, resolver: GclReferenceStorage) {
+        this.name = constraint.name;
+
+        const titleAnnotations: TitleAnnotation[] = constraint.annotations.filter(x => isTitleAnnotation(x)).map(x => x as TitleAnnotation);
+        const descriptionAnnotations: DescriptionAnnotation[] = constraint.annotations.filter(x => isDescriptionAnnotation(x)).map(x => x as DescriptionAnnotation);
+
+        this.title = titleAnnotations.at(0)?.value ?? constraint.name;
+        this.description = descriptionAnnotations.map(x => x.value).join("\n");
+
+        this.patternDeclarations = constraint.patternDeclarations.map(x => new ConstraintPatternDeclarationEntity(x, resolver));
+        this.assertions = constraint.assertions.map(x => new ConstraintAssertionEntity(x, resolver));
+    }
+}
+
+export class ConstraintPatternDeclarationEntity {
+    readonly patternId: string;
+    readonly declarationId: string;
+    readonly name: string;
+
+
+    constructor(pDeclaration: ConstraintPatternDeclaration, resolver: GclReferenceStorage) {
+        this.name = pDeclaration.var.name;
+        this.patternId = resolver.resolve(pDeclaration.pattern);
+        this.declarationId = resolver.getNodeReferenceId(pDeclaration);
+    }
+}
+
+export class ConstraintAssertionEntity {
+    readonly expr: ExpressionEntity;
+
+
+    constructor(assertion: ConstraintAssertion, resolver: GclReferenceStorage) {
+        this.expr = new ExpressionEntity(BinaryExpressionEntity.generateChild(assertion.expr, resolver));
     }
 }
 
 export class ConstraintDocumentEntity {
     readonly patterns: PatternEntity[];
+    readonly constraints: ConstraintEntity[];
     readonly packageName: string;
 
     constructor(constraintDoc: ConstraintDocument, packageName: string, resolver: GclReferenceStorage) {
         this.patterns = constraintDoc.patterns.map(x => new PatternEntity(x, resolver));
+        this.constraints = constraintDoc.constraints.map(x => new ConstraintEntity(x, resolver))
         this.packageName = packageName;
     }
 }

@@ -40,7 +40,8 @@ import {
     StringExpr,
     TypedVariable,
     UntypedVariable,
-    Variable
+    Variable,
+    VariableValueExpr
 } from "./generated/ast.js";
 
 export class ExprUtils {
@@ -290,6 +291,15 @@ export class ExprUtils {
      */
     public static isAttributeInvocationVariableExpr(expr: Expression): expr is QualifiedValueExpr {
         return isQualifiedValueExpr(expr) && isAttribute(expr.val.ref);
+    }
+
+    /**
+     * Check if Expression resolves to an pattern invocation for constraints
+     * @param expr Expression to be checked
+     */
+    public static isPatternInvocationVariableExpr(expr: Expression): expr is VariableValueExpr {
+        const exprContainer = ExprUtils.getExprContainer(expr);
+        return isVariableValueExpr(expr) && (isConstraintAssertion(exprContainer) || isConstraintJustification(exprContainer));
     }
 
     public static getExprContainer(expr: Expression): Attribute | ConstraintAssertion | ConstraintJustification | FunctionArgument | ImplicitlyTypedValue | JustificationRequirement | MacroAttributeStatement | PatternAttributeConstraint | EnumEntry {
