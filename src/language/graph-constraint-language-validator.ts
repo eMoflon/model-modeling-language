@@ -6,10 +6,12 @@ import {
     BinaryExpression,
     Class,
     CompactBindingStatement,
+    Constraint,
     ConstraintAssertion,
     ConstraintDocument,
     ConstraintJustification,
     CReference,
+    DescriptionAnnotation,
     DisableDefaultNodeConstraintsAnnotation,
     isClass,
     isConstraint,
@@ -31,6 +33,7 @@ import {
     PatternObject,
     PatternObjectReference,
     ReferencedModelStatement,
+    TitleAnnotation,
     TypedVariable,
     VariableType
 } from "./generated/ast.js";
@@ -78,6 +81,9 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
         Annotation: [
             validator.checkAnnotationContextValidity
         ],
+        Constraint: [
+            validator.checkConstraintAnnotationValidity
+        ],
         ConstraintAssertion: [
             validator.checkConstraintAssertionType
         ],
@@ -121,6 +127,8 @@ export namespace IssueCodes {
     export const ConstraintNameNotUnique = "constraint-name-not-unique";
     export const JustificationCaseNameNotUnique = "justification-case-name-not-unique";
     export const PatternElementAliasNotUnique = "pattern-element-alias-name-not-unique";
+    export const MultipleConstraintTitlesDefined = "multiple-constraint-titles-defined";
+    export const MultipleConstraintDescriptionsDefined = "multiple-constraint-descriptions-defined";
 }
 
 /**
@@ -587,5 +595,26 @@ export class GraphConstraintLanguageValidator {
                 knownAlias.add(constraint.alias);
             }
         });
+    }
+
+    checkConstraintAnnotationValidity(constraint: Constraint, accept: ValidationAcceptor) {
+        const titleAnnotations: TitleAnnotation[] = constraint.annotations.filter(x => isTitleAnnotation(x)).map(x => x as TitleAnnotation);
+        const descriptionAnnotations: DescriptionAnnotation[] = constraint.annotations.filter(x => isDescriptionAnnotation(x)).map(x => x as DescriptionAnnotation);
+
+        if (titleAnnotations.length > 1) {
+            titleAnnotations.forEach(anno =>
+                accept('error', `There can only be a maximum of one title annotation!`, {
+                    node: anno,
+                    code: IssueCodes.MultipleConstraintTitlesDefined
+                }))
+        }
+
+        if (descriptionAnnotations.length > 1) {
+            descriptionAnnotations.forEach(anno =>
+                accept('info', `Several constraint description annotations have been defined! These will be combined into one description during the evaluation.`, {
+                    node: anno,
+                    code: IssueCodes.MultipleConstraintDescriptionsDefined
+                }))
+        }
     }
 }
