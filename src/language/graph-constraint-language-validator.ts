@@ -511,14 +511,14 @@ export class GraphConstraintLanguageValidator {
     checkUniqueConstraintNames(cDoc: ConstraintDocument, accept: ValidationAcceptor) {
         const reportedElements = new Set();
         cDoc.constraints.forEach(constraint => {
-            if (reportedElements.has(constraint.name)) {
-                accept('error', `${constraint.$type} has non-unique name '${constraint.name}'.`, {
+            if (reportedElements.has(constraint.name.toLowerCase())) {
+                accept('error', `${constraint.$type} has non-unique name '${constraint.name}' (case-insensitive).`, {
                     node: constraint,
                     property: 'name',
                     code: IssueCodes.ConstraintNameNotUnique
                 })
             }
-            reportedElements.add(constraint.name);
+            reportedElements.add(constraint.name.toLowerCase());
         });
     }
 
