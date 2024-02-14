@@ -4,15 +4,14 @@ import {
     isConstraint,
     isConstraintAssertion,
     isConstraintDocument,
-    isConstraintJustification,
     isConstraintPatternDeclaration,
     isDescriptionAnnotation,
     isDisableDefaultNodeConstraintsAnnotation,
+    isDisableFixContainer,
+    isEnableFixContainer,
     isEnforceAnnotation,
+    isFixInfoStatement,
     isForbidAnnotation,
-    isJustificationCase,
-    isJustificationInfoStatement,
-    isJustificationRequirement,
     isNodeConstraintAnnotation,
     isPattern,
     isPatternAttributeConstraint,
@@ -119,31 +118,31 @@ export class GraphConstraintLanguageFormatter extends AbstractFormatter {
             formatter.property('name').prepend(Formatting.oneSpace());
         } else if (isConstraintPatternDeclaration(node)) {
             const formatter = this.getNodeFormatter(node);
+            const bracesOpen = formatter.keyword('{');
+            const bracesClose = formatter.keyword('}');
+            formatter.interior(bracesOpen, bracesClose).prepend(Formatting.indent());
+            bracesOpen.prepend(Formatting.oneSpace());
+            bracesClose.prepend(Formatting.newLine());
             formatter.property('pattern').surround(Formatting.oneSpace());
             formatter.property('var').append(Formatting.noSpace());
         } else if (isConstraintAssertion(node)) {
             const formatter = this.getNodeFormatter(node);
             formatter.property('expr').prepend(Formatting.oneSpace()).append(Formatting.noSpace());
-        } else if (isConstraintJustification(node)) {
+        } else if (isEnableFixContainer(node)) {
             const formatter = this.getNodeFormatter(node);
             const bracesOpen = formatter.keyword('{');
             const bracesClose = formatter.keyword('}');
             formatter.interior(bracesOpen, bracesClose).prepend(Formatting.indent());
             bracesOpen.prepend(Formatting.oneSpace());
             bracesClose.prepend(Formatting.newLine());
-            formatter.property('condition').prepend(Formatting.oneSpace());
-        } else if (isJustificationRequirement(node)) {
-            const formatter = this.getNodeFormatter(node);
-            formatter.property('condition').prepend(Formatting.oneSpace()).append(Formatting.noSpace());
-        } else if (isJustificationCase(node)) {
+        } else if (isDisableFixContainer(node)) {
             const formatter = this.getNodeFormatter(node);
             const bracesOpen = formatter.keyword('{');
             const bracesClose = formatter.keyword('}');
             formatter.interior(bracesOpen, bracesClose).prepend(Formatting.indent());
             bracesOpen.prepend(Formatting.oneSpace());
             bracesClose.prepend(Formatting.newLine());
-            formatter.property('var').surround(Formatting.oneSpace());
-        } else if (isJustificationInfoStatement(node)) {
+        } else if (isFixInfoStatement(node)) {
             const formatter = this.getNodeFormatter(node);
             formatter.property('msg').prepend(Formatting.oneSpace()).append(Formatting.noSpace());
         }

@@ -9,7 +9,6 @@ import {
     Constraint,
     ConstraintAssertion,
     ConstraintDocument,
-    ConstraintJustification,
     CReference,
     DescriptionAnnotation,
     DisableDefaultNodeConstraintsAnnotation,
@@ -24,7 +23,6 @@ import {
     isPattern,
     isPatternObject,
     isTitleAnnotation,
-    JustificationRequirement,
     Model,
     ModelModelingLanguageAstType,
     NodeConstraintAnnotation,
@@ -86,13 +84,6 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
         ],
         ConstraintAssertion: [
             validator.checkConstraintAssertionType
-        ],
-        ConstraintJustification: [
-            validator.checkJustificationConditionType,
-            validator.checkUniqueJustificationCaseNames
-        ],
-        JustificationRequirement: [
-            validator.checkJustificationRequirementType
         ]
     };
     registry.register(checks, validator);
@@ -122,8 +113,6 @@ export namespace IssueCodes {
     export const UnnecessaryNodeConstraint = "unnecessary-node-constraint";
     export const InvalidAnnotationContext = "invalid-annotation-context";
     export const ConstraintAssertionYieldsNoBoolean = "constraint-assertion-yields-no-boolean";
-    export const JustificationConditionYieldsNoBoolean = "justification-condition-yields-no-boolean";
-    export const JustificationRequirementYieldsNoBoolean = "justification-requirement-yields-no-boolean";
     export const ConstraintNameNotUnique = "constraint-name-not-unique";
     export const JustificationCaseNameNotUnique = "justification-case-name-not-unique";
     export const PatternElementAliasNotUnique = "pattern-element-alias-name-not-unique";
@@ -519,28 +508,6 @@ export class GraphConstraintLanguageValidator {
         }
     }
 
-    checkJustificationConditionType(cj: ConstraintJustification, accept: ValidationAcceptor) {
-        const conditionType: ExprType = ExprUtils.evaluateExpressionType(cj.condition);
-        if (conditionType != ExprType.BOOLEAN) {
-            accept('error', `Justification conditions must yield boolean expressions (not: ${ExprType.toMMLType(conditionType) ?? "UNKNOWN"})!`, {
-                node: cj,
-                property: 'condition',
-                code: IssueCodes.JustificationConditionYieldsNoBoolean
-            })
-        }
-    }
-
-    checkJustificationRequirementType(jr: JustificationRequirement, accept: ValidationAcceptor) {
-        const conditionType: ExprType = ExprUtils.evaluateExpressionType(jr.condition);
-        if (conditionType != ExprType.BOOLEAN) {
-            accept('error', `Requirements must yield boolean expressions (not: ${ExprType.toMMLType(conditionType) ?? "UNKNOWN"})!`, {
-                node: jr,
-                property: 'condition',
-                code: IssueCodes.JustificationRequirementYieldsNoBoolean
-            })
-        }
-    }
-
     checkUniqueConstraintNames(cDoc: ConstraintDocument, accept: ValidationAcceptor) {
         const reportedElements = new Set();
         cDoc.constraints.forEach(constraint => {
@@ -552,20 +519,6 @@ export class GraphConstraintLanguageValidator {
                 })
             }
             reportedElements.add(constraint.name);
-        });
-    }
-
-    checkUniqueJustificationCaseNames(jtfc: ConstraintJustification, accept: ValidationAcceptor) {
-        const reportedElements = new Set();
-        jtfc.cases.forEach(jCase => {
-            if (reportedElements.has(jCase.var.name)) {
-                accept('error', `${jCase.$type} has non-unique name '${jCase.var.name}'.`, {
-                    node: jCase,
-                    property: 'var',
-                    code: IssueCodes.JustificationCaseNameNotUnique
-                })
-            }
-            reportedElements.add(jCase.var.name);
         });
     }
 

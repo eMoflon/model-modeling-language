@@ -56,25 +56,25 @@ PatternAttributeConstraint:
 
 Constraint:
     (annotations+=Annotation)*
-    'constraint' name=ID '{' (patternDeclarations+=ConstraintPatternDeclaration | justifications += ConstraintJustification | assertions+=ConstraintAssertion | statements+=JustificationStatement)* '}';
+    'constraint' name=ID '{' (patternDeclarations+=ConstraintPatternDeclaration | assertions+=ConstraintAssertion)* '}';
 
 ConstraintPatternDeclaration:
-    'specification' pattern=[Pattern:ID] var=UntypedVariable ';';
+    'specification' pattern=[Pattern:ID] var=UntypedVariable '{' (fixContainers+=FixContainer)* '}';
 
 ConstraintAssertion:
     'assert' expr=Expression ';';
 
-ConstraintJustification:
-    'justify' condition=Expression '{' (cases+=JustificationCase | caseRequirements+=JustificationRequirement | statements+=JustificationStatement)*  '}';
+FixContainer:
+    EnableFixContainer | DisableFixContainer;
 
-JustificationRequirement:
-    'require' condition=Expression ';';
+EnableFixContainer:
+    'enable' '{' (fixStatements+=FixStatement)* '}';
 
-JustificationCase:
-    'case' var=UntypedVariable '{' (statements+=JustificationStatement)* '}';
+DisableFixContainer:
+    'disable' '{' (fixStatements+=FixStatement)* '}';
 
-JustificationStatement:
-    JustificationInfoStatement;
+FixStatement:
+    FixInfoStatement;
 
-JustificationInfoStatement:
+FixInfoStatement:
     'info' msg=STRING ';';

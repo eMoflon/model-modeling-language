@@ -17,11 +17,9 @@ import {
     isCompactBindingStatement,
     isConstraintAssertion,
     isConstraintDocument,
-    isConstraintJustification,
     isConstraintPatternDeclaration,
     isEnumValueExpr,
     isInterface,
-    isJustificationRequirement,
     isNodeConstraintAnnotation,
     isPattern,
     isPatternAttributeConstraint,
@@ -105,12 +103,9 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
         } else if (isVariableValueExpr(context.container)) {
             const scopes: Array<Stream<AstNodeDescription>> = [];
             const exprContainer = ExprUtils.getExprContainer(context.container);
-            if (isConstraintAssertion(exprContainer) || isConstraintJustification(exprContainer)) {
+            if (isConstraintAssertion(exprContainer)) {
                 const patternDeclarations: UntypedVariable[] = exprContainer.$container.patternDeclarations.flatMap(x => x.var);
                 scopes.push(ScopingUtils.createScopeElementStream(patternDeclarations, this.descriptions, x => x.name, x => x));
-            } else if (isJustificationRequirement(exprContainer)) {
-                const justificationCases: UntypedVariable[] = exprContainer.$container.cases.map(x => x.var);
-                scopes.push(ScopingUtils.createScopeElementStream(justificationCases, this.descriptions, x => x.name, x => x));
             }
             return ScopingUtils.buildScopeFromAstNodeDesc(scopes, this.createScope);
         }

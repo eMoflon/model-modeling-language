@@ -4,15 +4,14 @@ import {
     isCompactBindingStatement,
     isConstraint,
     isConstraintAssertion,
-    isConstraintJustification,
     isConstraintPatternDeclaration,
     isDescriptionAnnotation,
     isDisableDefaultNodeConstraintsAnnotation,
+    isDisableFixContainer,
+    isEnableFixContainer,
     isEnforceAnnotation,
+    isFixInfoStatement,
     isForbidAnnotation,
-    isJustificationCase,
-    isJustificationInfoStatement,
-    isJustificationRequirement,
     isNodeConstraintAnnotation,
     isPattern,
     isPatternAttributeConstraint,
@@ -53,7 +52,7 @@ export class GraphConstraintLanguageSemanticTokenProvider extends AbstractSemant
             acceptor({node, property: "patternObj", type: SemanticTokenTypes.property});
         } else if (isPatternAttributeConstraint(node)) {
             acceptor({node, keyword: "#", type: SemanticTokenTypes.keyword});
-            if (node.alias != undefined){
+            if (node.alias != undefined) {
                 acceptor({node, keyword: ":", type: SemanticTokenTypes.operator});
             }
         } else if (isCompactBindingStatement(node)) {
@@ -101,13 +100,11 @@ export class GraphConstraintLanguageSemanticTokenProvider extends AbstractSemant
             acceptor({node, property: "pattern", type: SemanticTokenTypes.class});
         } else if (isConstraintAssertion(node)) {
             acceptor({node, keyword: "assert", type: SemanticTokenTypes.keyword});
-        } else if (isConstraintJustification(node)) {
-            acceptor({node, keyword: "justify", type: SemanticTokenTypes.keyword});
-        } else if (isJustificationRequirement(node)) {
-            acceptor({node, keyword: "require", type: SemanticTokenTypes.keyword});
-        } else if (isJustificationCase(node)) {
-            acceptor({node, keyword: "case", type: SemanticTokenTypes.keyword});
-        } else if (isJustificationInfoStatement(node)) {
+        } else if (isEnableFixContainer(node)) {
+            acceptor({node, keyword: "enable", type: SemanticTokenTypes.keyword});
+        } else if (isDisableFixContainer(node)) {
+            acceptor({node, keyword: "disable", type: SemanticTokenTypes.keyword});
+        } else if (isFixInfoStatement(node)) {
             acceptor({node, keyword: "info", type: SemanticTokenTypes.keyword});
         }
     }

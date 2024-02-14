@@ -4,7 +4,6 @@ import {
     BoolExpr,
     Class,
     ConstraintAssertion,
-    ConstraintJustification,
     Enum,
     EnumEntry,
     EnumValueExpr,
@@ -16,15 +15,12 @@ import {
     isBinaryExpression,
     isBoolExpr,
     isConstraintAssertion,
-    isConstraintJustification,
     isConstraintPatternDeclaration,
     isEnumValueExpr,
     isExpression,
     isFunctionLoop,
     isFunctionVariable,
     isInstanceLoop,
-    isJustificationCase,
-    isJustificationRequirement,
     isNumberExpr,
     isQualifiedValueExpr,
     isStringExpr,
@@ -32,7 +28,6 @@ import {
     isUnaryExpression,
     isUntypedVariable,
     isVariableValueExpr,
-    JustificationRequirement,
     MacroAttributeStatement,
     NumberExpr,
     PatternAttributeConstraint,
@@ -97,12 +92,8 @@ export class ExprUtils {
                 } else if (isUntypedVariable(expr.val.ref)) {
                     const untypedVar: UntypedVariable = expr.val.ref;
                     const exprContainer = this.getExprContainer(expr);
-                    if (isConstraintAssertion(exprContainer) || isConstraintJustification(exprContainer)) {
+                    if (isConstraintAssertion(exprContainer)) {
                         if (isConstraintPatternDeclaration(untypedVar.$container)) {
-                            return ExprType.BOOLEAN;
-                        }
-                    } else if (isJustificationRequirement(exprContainer)) {
-                        if (isJustificationCase(untypedVar.$container)) {
                             return ExprType.BOOLEAN;
                         }
                     }
@@ -299,10 +290,10 @@ export class ExprUtils {
      */
     public static isPatternInvocationVariableExpr(expr: Expression): expr is VariableValueExpr {
         const exprContainer = ExprUtils.getExprContainer(expr);
-        return isVariableValueExpr(expr) && (isConstraintAssertion(exprContainer) || isConstraintJustification(exprContainer));
+        return isVariableValueExpr(expr) && isConstraintAssertion(exprContainer);
     }
 
-    public static getExprContainer(expr: Expression): Attribute | ConstraintAssertion | ConstraintJustification | FunctionArgument | ImplicitlyTypedValue | JustificationRequirement | MacroAttributeStatement | PatternAttributeConstraint | EnumEntry {
+    public static getExprContainer(expr: Expression): Attribute | ConstraintAssertion | FunctionArgument | ImplicitlyTypedValue | MacroAttributeStatement | PatternAttributeConstraint | EnumEntry {
         if (isExpression(expr.$container)) {
             return this.getExprContainer(expr.$container);
         }
