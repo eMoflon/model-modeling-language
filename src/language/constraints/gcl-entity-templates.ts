@@ -191,7 +191,7 @@ export class BinaryExpressionEntity {
         }
         if (ExprUtils.isPatternInvocationVariableExpr(expr) && expr.val.ref != undefined) {
             if (isConstraintPatternDeclaration(expr.val.ref.$container)) {
-                return new PrimaryExpressionEntity("", resolver, "", "", resolver.resolve(expr.val), false, false, true);
+                return new PrimaryExpressionEntity(expr.val.ref.name, resolver, "", "", resolver.resolve(expr.val), false, false, true);
             } else {
                 throw new Error(`PatternInvocationVariable "${expr.val.$refText}" contained in unsupported container "${expr.val.ref.$container.$type}"`);
             }
