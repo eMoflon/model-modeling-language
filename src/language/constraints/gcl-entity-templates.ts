@@ -11,12 +11,17 @@ import {
     EnforceAnnotation,
     EnumEntry,
     Expression,
+    FixContainer,
+    FixInfoStatement,
     ForbidAnnotation,
     isBinaryExpression,
     isConstraintPatternDeclaration,
     isDescriptionAnnotation,
     isDisableDefaultNodeConstraintsAnnotation,
+    isDisableFixContainer,
+    isEnableFixContainer,
     isEnforceAnnotation,
+    isFixInfoStatement,
     isForbidAnnotation,
     isNodeConstraintAnnotation,
     isPattern,
@@ -288,18 +293,50 @@ export class ConstraintPatternDeclarationEntity {
     readonly patternId: string;
     readonly declarationId: string;
     readonly name: string;
+    readonly fixContainer: FixContainerEntity[];
 
 
     constructor(pDeclaration: ConstraintPatternDeclaration, resolver: GclReferenceStorage) {
         this.name = pDeclaration.var.name;
         this.patternId = resolver.resolve(pDeclaration.pattern);
         this.declarationId = resolver.getNodeReferenceId(pDeclaration);
+        this.fixContainer = pDeclaration.fixContainers.map(x => new FixContainerEntity(x));
+    }
+}
+
+export class FixContainerEntity {
+    readonly isEnableContainer: boolean;
+    readonly statements: FixStatementEntity[];
+
+
+    constructor(fixContainer: FixContainer) {
+        this.isEnableContainer = isEnableFixContainer(fixContainer) && !isDisableFixContainer(fixContainer)
+        this.statements = fixContainer.fixStatements.map(x => {
+            if (isFixInfoStatement(x)) {
+                return new FixInfoStatementEntity(x);
+            }
+            return undefined;
+        }).filter(x => x != undefined)
+            .map(x => x as FixStatementEntity);
+    }
+}
+
+interface FixStatementEntity {
+    readonly type: string;
+}
+
+export class FixInfoStatementEntity implements FixStatementEntity {
+    readonly msg: string;
+    readonly type: string;
+
+    constructor(infoStmt: FixInfoStatement) {
+        this.msg = infoStmt.msg;
+        this.type = "INFO";
     }
 }
 
 export class ConstraintAssertionEntity {
     readonly expr: ExpressionEntity;
-
 
     constructor(assertion: ConstraintAssertion, resolver: GclReferenceStorage) {
         this.expr = new ExpressionEntity(BinaryExpressionEntity.generateChild(assertion.expr, resolver));
