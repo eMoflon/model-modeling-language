@@ -124,7 +124,6 @@ export class GraphConstraintLanguageFormatter extends AbstractFormatter {
             bracesOpen.prepend(Formatting.oneSpace());
             bracesClose.prepend(Formatting.newLine());
             formatter.property('pattern').surround(Formatting.oneSpace());
-            formatter.property('var').append(Formatting.noSpace());
         } else if (isConstraintAssertion(node)) {
             const formatter = this.getNodeFormatter(node);
             formatter.property('expr').prepend(Formatting.oneSpace()).append(Formatting.noSpace());
