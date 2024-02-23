@@ -530,10 +530,14 @@ export class GraphConstraintLanguageValidator {
 
     checkUniquePatternAlias(pattern: Pattern, accept: ValidationAcceptor) {
         const knownAlias: Set<string> = new Set();
+        pattern.objs.forEach(node => {
+            knownAlias.add(node.var.name);
+        })
+
         pattern.objs.forEach(node => node.connections.forEach(edge => {
             if (edge.alias != undefined) {
                 if (knownAlias.has(edge.alias)) {
-                    accept('error', `The pattern already contains an edge or an attribute condition with the alias: "${edge.alias}"`, {
+                    accept('error', `The pattern already contains an edge, an attribute condition or a node with the alias: "${edge.alias}"`, {
                         node: edge,
                         property: 'alias',
                         code: IssueCodes.PatternElementAliasNotUnique
@@ -545,7 +549,7 @@ export class GraphConstraintLanguageValidator {
         pattern.constraints.forEach(constraint => {
             if (constraint.alias != undefined) {
                 if (knownAlias.has(constraint.alias)) {
-                    accept('error', `The pattern already contains an edge or an attribute condition with the alias: "${constraint.alias}"`, {
+                    accept('error', `The pattern already contains an edge, an attribute condition or a node with the alias: "${constraint.alias}"`, {
                         node: constraint,
                         property: 'alias',
                         code: IssueCodes.PatternElementAliasNotUnique
