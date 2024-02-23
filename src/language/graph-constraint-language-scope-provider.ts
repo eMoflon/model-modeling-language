@@ -1,6 +1,7 @@
 import {
     AstNodeDescription,
     DefaultScopeProvider,
+    EMPTY_SCOPE,
     getContainerOfType,
     getDocument,
     MapScope,
@@ -21,6 +22,8 @@ import {
     isConstraintDocument,
     isConstraintPatternDeclaration,
     isEnumValueExpr,
+    isFixDeleteEdgeStatement,
+    isFixDeleteNodeStatement,
     isFixSetStatement,
     isInterface,
     isNodeConstraintAnnotation,
@@ -127,6 +130,26 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
                 }
             }
             return ScopingUtils.buildScopeFromAstNodeDesc(scopes, this.createScope);
+        } else if (isFixDeleteNodeStatement(context.container)) {
+            const patternDeclaration = context.container.$container.$container;
+            if (patternDeclaration.pattern.ref != undefined) {
+                const pattern = patternDeclaration.pattern.ref;
+                if (context.property == 'node') {
+                    return ScopingUtils.computeCustomScope(pattern.objs, this.descriptions, x => x.var.name, x => x.var, this.createScope);
+                }
+            }
+            return EMPTY_SCOPE;
+        } else if (isFixDeleteEdgeStatement(context.container)) {
+            const patternDeclaration = context.container.$container.$container;
+
+            if (patternDeclaration.pattern.ref != undefined) {
+                const pattern = patternDeclaration.pattern.ref;
+                if (context.property == 'edge') {
+                    const aliasedEdges = pattern.objs.flatMap(x => x.connections).filter(x => x.alias != undefined);
+                    return ScopingUtils.computeCustomScope(aliasedEdges, this.descriptions, x => x.alias, x => x, this.createScope);
+                }
+            }
+            return EMPTY_SCOPE;
         }
 
         return super.getScope(context);

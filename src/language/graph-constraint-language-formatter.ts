@@ -10,6 +10,8 @@ import {
     isDisableFixContainer,
     isEnableFixContainer,
     isEnforceAnnotation,
+    isFixDeleteEdgeStatement,
+    isFixDeleteNodeStatement,
     isFixInfoStatement,
     isFixSetStatement,
     isForbidAnnotation,
@@ -153,6 +155,16 @@ export class GraphConstraintLanguageFormatter extends AbstractFormatter {
             if (node.val != undefined) {
                 formatter.keyword('=').surround(Formatting.oneSpace());
             }
+        } else if (isFixDeleteNodeStatement(node)) {
+            const formatter = this.getNodeFormatter(node);
+            formatter.keyword('delete').append(Formatting.oneSpace());
+            formatter.keyword('node').append(Formatting.oneSpace());
+            formatter.keyword(';').prepend(Formatting.noSpace());
+        } else if (isFixDeleteEdgeStatement(node)) {
+            const formatter = this.getNodeFormatter(node);
+            formatter.keyword('delete').append(Formatting.oneSpace());
+            formatter.keyword('edge').append(Formatting.oneSpace());
+            formatter.keyword(';').prepend(Formatting.noSpace());
         }
     }
 }

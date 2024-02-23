@@ -10,6 +10,8 @@ import {
     isDisableFixContainer,
     isEnableFixContainer,
     isEnforceAnnotation,
+    isFixDeleteEdgeStatement,
+    isFixDeleteNodeStatement,
     isFixInfoStatement,
     isFixSetStatement,
     isForbidAnnotation,
@@ -114,6 +116,14 @@ export class GraphConstraintLanguageSemanticTokenProvider extends AbstractSemant
                 acceptor({node, keyword: "=", type: SemanticTokenTypes.operator});
                 acceptor({node, property: "val", type: SemanticTokenTypes.property});
             }
+        } else if (isFixDeleteNodeStatement(node)) {
+            acceptor({node, keyword: "delete", type: SemanticTokenTypes.keyword});
+            acceptor({node, keyword: "node", type: SemanticTokenTypes.keyword});
+            acceptor({node, property: "node", type: SemanticTokenTypes.property});
+        } else if (isFixDeleteEdgeStatement(node)) {
+            acceptor({node, keyword: "delete", type: SemanticTokenTypes.keyword});
+            acceptor({node, keyword: "edge", type: SemanticTokenTypes.keyword});
+            acceptor({node, property: "edge", type: SemanticTokenTypes.property});
         }
     }
 

@@ -74,10 +74,16 @@ DisableFixContainer:
     'disable' '{' (fixStatements+=FixStatement)* '}';
 
 FixStatement:
-    FixInfoStatement | FixSetStatement;
+    FixInfoStatement | FixSetStatement | FixDeleteNodeStatement | FixDeleteEdgeStatement;
 
 FixInfoStatement:
     'info' msg=STRING ';';
 
 FixSetStatement:
     'set' attr=[Attribute:QNAME] ('=' val=(ValueExpr | EnumValueExpr))? ';';
+
+FixDeleteNodeStatement:
+    'delete' 'node' node=[TypedVariable:ID] ';';
+
+FixDeleteEdgeStatement:
+    'delete' 'edge' edge=[PatternObjectReference:ID] ';';
