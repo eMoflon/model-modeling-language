@@ -3,6 +3,7 @@ import {GraphConstraintLanguageServices} from "./graph-constraint-language-modul
 import {
     AbstractElement,
     Annotation,
+    Attribute,
     BinaryExpression,
     Class,
     CompactBindingStatement,
@@ -12,6 +13,7 @@ import {
     CReference,
     DescriptionAnnotation,
     DisableDefaultNodeConstraintsAnnotation,
+    FixSetStatement,
     isClass,
     isConstraint,
     isDescriptionAnnotation,
@@ -84,6 +86,9 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
         ],
         ConstraintAssertion: [
             validator.checkConstraintAssertionType
+        ],
+        FixSetStatement: [
+            validator.checkFixSetTypes
         ]
     };
     registry.register(checks, validator);
@@ -118,6 +123,7 @@ export namespace IssueCodes {
     export const PatternElementAliasNotUnique = "pattern-element-alias-name-not-unique";
     export const MultipleConstraintTitlesDefined = "multiple-constraint-titles-defined";
     export const MultipleConstraintDescriptionsDefined = "multiple-constraint-descriptions-defined";
+    export const FixSetStatementTypeDoesNotMatch = "fix-set-statement-type-does-not-match";
 }
 
 /**
@@ -568,6 +574,51 @@ export class GraphConstraintLanguageValidator {
                     node: anno,
                     code: IssueCodes.MultipleConstraintDescriptionsDefined
                 }))
+        }
+    }
+
+    checkFixSetTypes(fxSet: FixSetStatement, accept: ValidationAcceptor) {
+        if (fxSet.val != undefined && fxSet.attr.ref != undefined) {
+            const attr: Attribute = fxSet.attr.ref;
+            if (attr.type.ptype != undefined && attr.type.etype == undefined) {
+                // attribute has primitive type, not enum type
+                if (attr.type.ptype == "bool" && !ExprUtils.isBoolExpression(fxSet.val)) {
+                    // bool type but default value is not
+                    accept('error', `Value does not match specified attribute type (${attr.type.ptype})`, {
+                        node: fxSet,
+                        property: 'val',
+                        code: IssueCodes.FixSetStatementTypeDoesNotMatch
+                    })
+                } else if (attr.type.ptype == "string" && !ExprUtils.isStringExpression(fxSet.val)) {
+                    // string type but default value is not
+                    accept('error', `Value does not match specified attribute type (${attr.type.ptype})`, {
+                        node: fxSet,
+                        property: 'val',
+                        code: IssueCodes.FixSetStatementTypeDoesNotMatch
+                    })
+                } else if (attr.type.ptype == "int" && !ExprUtils.isIntExpression(fxSet.val)) {
+                    // int type but default value is not
+                    accept('error', `Value does not match specified attribute type (${attr.type.ptype})`, {
+                        node: fxSet,
+                        property: 'val',
+                        code: IssueCodes.FixSetStatementTypeDoesNotMatch
+                    })
+                } else if ((attr.type.ptype == "double" || attr.type.ptype == "float") && !ExprUtils.isNumberExpressionType(ExprUtils.evaluateExpressionType(fxSet.val))) {
+                    // number type but default value is not
+                    accept('error', `Value does not match specified attribute type (${attr.type.ptype})`, {
+                        node: fxSet,
+                        property: 'val',
+                        code: IssueCodes.FixSetStatementTypeDoesNotMatch
+                    })
+                }
+            } else if (attr.type.ptype == undefined && attr.type.etype != undefined && attr.type.etype.ref != undefined && !ExprUtils.isEnumValueExpression(fxSet.val)) {
+                // attribute has enum type, not primitive type, but default value is no enum value
+                accept('error', `Value does not match specified attribute type (${ModelModelingLanguageUtils.getQualifiedClassName(attr.type.etype.ref, attr.type.etype.ref.name)})`, {
+                    node: fxSet,
+                    property: 'val',
+                    code: IssueCodes.FixSetStatementTypeDoesNotMatch
+                })
+            }
         }
     }
 }

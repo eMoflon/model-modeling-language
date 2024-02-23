@@ -11,6 +11,7 @@ import {
     isEnableFixContainer,
     isEnforceAnnotation,
     isFixInfoStatement,
+    isFixSetStatement,
     isForbidAnnotation,
     isNodeConstraintAnnotation,
     isPattern,
@@ -106,6 +107,13 @@ export class GraphConstraintLanguageSemanticTokenProvider extends AbstractSemant
             acceptor({node, keyword: "disable", type: SemanticTokenTypes.keyword});
         } else if (isFixInfoStatement(node)) {
             acceptor({node, keyword: "info", type: SemanticTokenTypes.keyword});
+        } else if (isFixSetStatement(node)) {
+            acceptor({node, keyword: "set", type: SemanticTokenTypes.keyword});
+            acceptor({node, property: "attr", type: SemanticTokenTypes.property});
+            if (node.val != undefined) {
+                acceptor({node, keyword: "=", type: SemanticTokenTypes.operator});
+                acceptor({node, property: "val", type: SemanticTokenTypes.property});
+            }
         }
     }
 

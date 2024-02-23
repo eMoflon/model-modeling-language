@@ -11,14 +11,17 @@ import {
 } from "langium";
 import {
     AbstractElement,
+    Attribute,
     EnforceAnnotation,
     ForbidAnnotation,
+    isAttribute,
     isClass,
     isCompactBindingStatement,
     isConstraintAssertion,
     isConstraintDocument,
     isConstraintPatternDeclaration,
     isEnumValueExpr,
+    isFixSetStatement,
     isInterface,
     isNodeConstraintAnnotation,
     isPattern,
@@ -106,6 +109,22 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
             if (isConstraintAssertion(exprContainer)) {
                 const patternDeclarations: UntypedVariable[] = exprContainer.$container.patternDeclarations.flatMap(x => x.var);
                 scopes.push(ScopingUtils.createScopeElementStream(patternDeclarations, this.descriptions, x => x.name, x => x));
+            }
+            return ScopingUtils.buildScopeFromAstNodeDesc(scopes, this.createScope);
+        } else if (isFixSetStatement(context.container)) {
+            const patternDeclaration = context.container.$container.$container;
+            const scopes: Array<Stream<AstNodeDescription>> = [];
+            if (patternDeclaration.pattern.ref != undefined) {
+                if (context.property == "attr") {
+                    const pattern = patternDeclaration.pattern.ref;
+                    pattern.objs.forEach(obj => {
+                        const refClass: AbstractElement | undefined = obj.var.typing.type?.ref;
+                        if (refClass != undefined && (isClass(refClass) || isInterface(refClass))) {
+                            const attrs: Attribute[] = refClass.body.filter(x => isAttribute(x)).map(x => x as Attribute);
+                            scopes.push(ScopingUtils.createScopeElementStream(attrs, this.descriptions, x => obj.var.name + "." + x.name, x => x));
+                        }
+                    })
+                }
             }
             return ScopingUtils.buildScopeFromAstNodeDesc(scopes, this.createScope);
         }

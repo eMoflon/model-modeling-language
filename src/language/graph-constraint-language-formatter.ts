@@ -11,6 +11,7 @@ import {
     isEnableFixContainer,
     isEnforceAnnotation,
     isFixInfoStatement,
+    isFixSetStatement,
     isForbidAnnotation,
     isNodeConstraintAnnotation,
     isPattern,
@@ -143,7 +144,15 @@ export class GraphConstraintLanguageFormatter extends AbstractFormatter {
             bracesClose.prepend(Formatting.newLine());
         } else if (isFixInfoStatement(node)) {
             const formatter = this.getNodeFormatter(node);
-            formatter.property('msg').prepend(Formatting.oneSpace()).append(Formatting.noSpace());
+            formatter.property('msg').prepend(Formatting.oneSpace());
+            formatter.keyword(';').prepend(Formatting.noSpace());
+        } else if (isFixSetStatement(node)) {
+            const formatter = this.getNodeFormatter(node);
+            formatter.keyword('set').append(Formatting.oneSpace());
+            formatter.keyword(';').prepend(Formatting.noSpace());
+            if (node.val != undefined) {
+                formatter.keyword('=').surround(Formatting.oneSpace());
+            }
         }
     }
 }

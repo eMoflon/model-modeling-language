@@ -74,7 +74,10 @@ DisableFixContainer:
     'disable' '{' (fixStatements+=FixStatement)* '}';
 
 FixStatement:
-    FixInfoStatement;
+    FixInfoStatement | FixSetStatement;
 
 FixInfoStatement:
     'info' msg=STRING ';';
+
+FixSetStatement:
+    'set' attr=[Attribute:QNAME] ('=' val=(ValueExpr | EnumValueExpr))? ';';
