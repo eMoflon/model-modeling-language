@@ -10,6 +10,8 @@ import {
     isDisableFixContainer,
     isEnableFixContainer,
     isEnforceAnnotation,
+    isFixCreateEdgeStatement,
+    isFixCreateNodeStatement,
     isFixDeleteEdgeStatement,
     isFixDeleteNodeStatement,
     isFixInfoStatement,
@@ -165,6 +167,35 @@ export class GraphConstraintLanguageFormatter extends AbstractFormatter {
             formatter.keyword('delete').append(Formatting.oneSpace());
             formatter.keyword('edge').append(Formatting.oneSpace());
             formatter.keyword(';').prepend(Formatting.noSpace());
+        } else if (isFixCreateEdgeStatement(node)) {
+            const formatter = this.getNodeFormatter(node);
+            formatter.keyword('create').append(Formatting.oneSpace());
+            formatter.keyword('edge').append(Formatting.oneSpace());
+            formatter.property('fromNode').append(Formatting.oneSpace());
+            formatter.keyword('-').append(Formatting.noSpace());
+            formatter.property('reference').append(Formatting.noSpace());
+            formatter.keyword('->').append(Formatting.oneSpace());
+            formatter.keyword(';').prepend(Formatting.noSpace());
+        } else if (isFixCreateNodeStatement(node)) {
+            const formatter = this.getNodeFormatter(node);
+            const varFormatter = this.getNodeFormatter(node.nodeVar);
+            formatter.keyword('create').append(Formatting.oneSpace());
+            formatter.keyword('node').append(Formatting.oneSpace());
+            varFormatter.property('typing').append(Formatting.oneSpace());
+            varFormatter.property('name').append(Formatting.noSpace());
+            formatter.keywords(',').prepend(Formatting.noSpace()).append(Formatting.oneSpace());
+            formatter.keyword(';').prepend(Formatting.noSpace());
+
+            formatter.keyword('(').append(Formatting.noSpace());
+
+            if (node.assignments.length > 0) {
+                formatter.keyword(')').prepend(Formatting.noSpace());
+            }
+
+            node.assignments.forEach(assignment => {
+                const assignmentFormatter = this.getNodeFormatter(assignment);
+                assignmentFormatter.keyword('=').surround(Formatting.oneSpace());
+            })
         }
     }
 }

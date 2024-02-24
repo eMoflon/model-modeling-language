@@ -4,6 +4,7 @@ import {
     BoolExpr,
     Class,
     ConstraintAssertion,
+    CreateNodeAttributeAssignment,
     Enum,
     EnumEntry,
     EnumValueExpr,
@@ -294,7 +295,7 @@ export class ExprUtils {
         return isVariableValueExpr(expr) && isConstraintAssertion(exprContainer);
     }
 
-    public static getExprContainer(expr: Expression): Attribute | ConstraintAssertion | FunctionArgument | ImplicitlyTypedValue | MacroAttributeStatement | PatternAttributeConstraint | EnumEntry | FixSetStatement {
+    public static getExprContainer(expr: Expression): Attribute | ConstraintAssertion | FunctionArgument | ImplicitlyTypedValue | MacroAttributeStatement | PatternAttributeConstraint | EnumEntry | FixSetStatement | CreateNodeAttributeAssignment {
         if (isExpression(expr.$container)) {
             return this.getExprContainer(expr.$container);
         }

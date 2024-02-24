@@ -74,7 +74,7 @@ DisableFixContainer:
     'disable' '{' (fixStatements+=FixStatement)* '}';
 
 FixStatement:
-    FixInfoStatement | FixSetStatement | FixDeleteNodeStatement | FixDeleteEdgeStatement;
+    FixInfoStatement | FixSetStatement | FixDeleteNodeStatement | FixDeleteEdgeStatement | FixCreateNodeStatement | FixCreateEdgeStatement;
 
 FixInfoStatement:
     'info' msg=STRING ';';
@@ -87,3 +87,12 @@ FixDeleteNodeStatement:
 
 FixDeleteEdgeStatement:
     'delete' 'edge' edge=[PatternObjectReference:ID] ';';
+
+CreateNodeAttributeAssignment:
+    attr=[Attribute:ID] '=' val=(ValueExpr | EnumValueExpr);
+
+FixCreateNodeStatement:
+    'create' 'node' nodeVar=TypedVariable '(' (assignments+=CreateNodeAttributeAssignment (',' assignments+=CreateNodeAttributeAssignment)*)? ')' ';';
+
+FixCreateEdgeStatement:
+    'create' 'edge' fromNode=[TypedVariable:ID] '-'reference=[CReference:ID]'->' toNode=[TypedVariable:ID] ';';

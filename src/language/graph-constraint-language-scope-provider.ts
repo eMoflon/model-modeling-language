@@ -13,15 +13,23 @@ import {
 import {
     AbstractElement,
     Attribute,
+    Class,
+    CReference,
     EnforceAnnotation,
+    FixCreateNodeStatement,
     ForbidAnnotation,
+    Interface,
     isAttribute,
     isClass,
     isCompactBindingStatement,
     isConstraintAssertion,
     isConstraintDocument,
     isConstraintPatternDeclaration,
+    isCreateNodeAttributeAssignment,
+    isCReference,
     isEnumValueExpr,
+    isFixCreateEdgeStatement,
+    isFixCreateNodeStatement,
     isFixDeleteEdgeStatement,
     isFixDeleteNodeStatement,
     isFixSetStatement,
@@ -34,6 +42,7 @@ import {
     isVariableValueExpr,
     Pattern,
     PatternObject,
+    TypedVariable,
     UntypedVariable
 } from "./generated/ast.js";
 import {GraphConstraintLanguageServices} from "./graph-constraint-language-module.js";
@@ -147,6 +156,43 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
                 if (context.property == 'edge') {
                     const aliasedEdges = pattern.objs.flatMap(x => x.connections).filter(x => x.alias != undefined);
                     return ScopingUtils.computeCustomScope(aliasedEdges, this.descriptions, x => x.alias, x => x, this.createScope);
+                }
+            }
+            return EMPTY_SCOPE;
+        } else if (isFixCreateEdgeStatement(context.container)) {
+            const patternDeclaration = context.container.$container.$container;
+
+            if (patternDeclaration.pattern.ref != undefined) {
+                const pattern = patternDeclaration.pattern.ref;
+                if (context.property == 'fromNode') {
+                    const patternObjVars: TypedVariable[] = pattern.objs.map(x => x.var);
+                    const createdNodeVars: TypedVariable[] = context.container.$container.fixStatements.filter(x => isFixCreateNodeStatement(x)).map(x => (x as FixCreateNodeStatement).nodeVar);
+                    const varsInScope: TypedVariable[] = patternObjVars.concat(createdNodeVars);
+                    return ScopingUtils.computeCustomScope(varsInScope, this.descriptions, x => x.name, x => x, this.createScope);
+                } else if (context.property == 'toNode') {
+                    const patternObjVars: TypedVariable[] = pattern.objs.map(x => x.var);
+                    const createdNodeVars: TypedVariable[] = context.container.$container.fixStatements.filter(x => isFixCreateNodeStatement(x)).map(x => (x as FixCreateNodeStatement).nodeVar);
+                    const varsInScope: TypedVariable[] = patternObjVars.concat(createdNodeVars);
+                    return ScopingUtils.computeCustomScope(varsInScope, this.descriptions, x => x.name, x => x, this.createScope);
+                } else if (context.property == 'reference' && context.container.fromNode.ref != undefined) {
+                    const outgoingNode: PatternObject = context.container.fromNode.ref.$container as PatternObject;
+                    if (outgoingNode.var.typing.type != undefined && outgoingNode.var.typing.type.ref != undefined) {
+                        const outgoingTypeAbstractElement: AbstractElement = outgoingNode.var.typing.type.ref;
+                        if (isInterface(outgoingTypeAbstractElement) || isClass(outgoingTypeAbstractElement)) {
+                            const outgoingReferences: CReference[] = (outgoingTypeAbstractElement as Class | Interface).body.filter(x => isCReference(x)).map(x => x as CReference);
+                            return ScopingUtils.computeCustomScope(outgoingReferences, this.descriptions, x => x.name, x => x, this.createScope);
+                        }
+                    }
+                }
+            }
+            return EMPTY_SCOPE;
+        } else if (isCreateNodeAttributeAssignment(context.container)) {
+            const nodeTyping = context.container.$container.nodeVar.typing;
+            if (nodeTyping.type != undefined && nodeTyping.type.ref != undefined && (isClass(nodeTyping.type.ref) || isInterface(nodeTyping.type.ref))) {
+                const nodeDef: Class | Interface = nodeTyping.type.ref as Class | Interface;
+                if (context.property == 'attr') {
+                    const attributes: Attribute[] = nodeDef.body.filter(x => isAttribute(x)).map(x => x as Attribute);
+                    return ScopingUtils.computeCustomScope(attributes, this.descriptions, x => x.name, x => x, this.createScope);
                 }
             }
             return EMPTY_SCOPE;

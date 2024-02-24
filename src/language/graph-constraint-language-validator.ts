@@ -10,9 +10,11 @@ import {
     Constraint,
     ConstraintAssertion,
     ConstraintDocument,
+    CreateNodeAttributeAssignment,
     CReference,
     DescriptionAnnotation,
     DisableDefaultNodeConstraintsAnnotation,
+    FixCreateEdgeStatement,
     FixSetStatement,
     isClass,
     isConstraint,
@@ -89,6 +91,12 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
         ],
         FixSetStatement: [
             validator.checkFixSetTypes
+        ],
+        FixCreateEdgeStatement: [
+            validator.checkFixCreateEdgeTargetType
+        ],
+        CreateNodeAttributeAssignment: [
+            validator.checkFixCreateNodeAttributeTypes
         ]
     };
     registry.register(checks, validator);
@@ -124,6 +132,8 @@ export namespace IssueCodes {
     export const MultipleConstraintTitlesDefined = "multiple-constraint-titles-defined";
     export const MultipleConstraintDescriptionsDefined = "multiple-constraint-descriptions-defined";
     export const FixSetStatementTypeDoesNotMatch = "fix-set-statement-type-does-not-match";
+    export const FixCreateEdgeStatementReferenceTypeDoesNotMatch = "fix-create-edge-statement-reference-type-does-not-match";
+    export const FixCreateNodeStatementAttributeTypeDoesNotMatch = "fix-create-node-statement-attribute-type-does-not-match";
 }
 
 /**
@@ -621,6 +631,66 @@ export class GraphConstraintLanguageValidator {
                     node: fxSet,
                     property: 'val',
                     code: IssueCodes.FixSetStatementTypeDoesNotMatch
+                })
+            }
+        }
+    }
+
+    checkFixCreateEdgeTargetType(fxCreateEdge: FixCreateEdgeStatement, accept: ValidationAcceptor) {
+        if (fxCreateEdge.reference != undefined && fxCreateEdge.reference.ref != undefined && fxCreateEdge.reference.ref.type.ref != undefined && fxCreateEdge.toNode != undefined && fxCreateEdge.toNode.ref != undefined && fxCreateEdge.toNode.ref.typing.type != undefined && fxCreateEdge.toNode.ref.typing.type.ref != undefined) {
+            const reference: CReference = fxCreateEdge.reference.ref;
+            const target: AbstractElement = fxCreateEdge.toNode.ref.typing.type.ref as AbstractElement;
+
+            if (reference.type.ref != undefined && target != reference.type.ref) {
+                accept('error', `${fxCreateEdge.toNode.ref.name} [type: ${target.name}] does not match reference [type: ${reference.type.ref.name}].`, {
+                    node: fxCreateEdge,
+                    property: 'toNode',
+                    code: IssueCodes.FixCreateEdgeStatementReferenceTypeDoesNotMatch
+                })
+            }
+        }
+    }
+
+    checkFixCreateNodeAttributeTypes(fxAttrAssign: CreateNodeAttributeAssignment, accept: ValidationAcceptor) {
+        if (fxAttrAssign.val != undefined && fxAttrAssign.attr.ref != undefined) {
+            const attr: Attribute = fxAttrAssign.attr.ref;
+            if (attr.type.ptype != undefined && attr.type.etype == undefined) {
+                // attribute has primitive type, not enum type
+                if (attr.type.ptype == "bool" && !ExprUtils.isBoolExpression(fxAttrAssign.val)) {
+                    // bool type but default value is not
+                    accept('error', `Value does not match specified attribute type (${attr.type.ptype})`, {
+                        node: fxAttrAssign,
+                        property: 'val',
+                        code: IssueCodes.FixCreateNodeStatementAttributeTypeDoesNotMatch
+                    })
+                } else if (attr.type.ptype == "string" && !ExprUtils.isStringExpression(fxAttrAssign.val)) {
+                    // string type but default value is not
+                    accept('error', `Value does not match specified attribute type (${attr.type.ptype})`, {
+                        node: fxAttrAssign,
+                        property: 'val',
+                        code: IssueCodes.FixCreateNodeStatementAttributeTypeDoesNotMatch
+                    })
+                } else if (attr.type.ptype == "int" && !ExprUtils.isIntExpression(fxAttrAssign.val)) {
+                    // int type but default value is not
+                    accept('error', `Value does not match specified attribute type (${attr.type.ptype})`, {
+                        node: fxAttrAssign,
+                        property: 'val',
+                        code: IssueCodes.FixCreateNodeStatementAttributeTypeDoesNotMatch
+                    })
+                } else if ((attr.type.ptype == "double" || attr.type.ptype == "float") && !ExprUtils.isNumberExpressionType(ExprUtils.evaluateExpressionType(fxAttrAssign.val))) {
+                    // number type but default value is not
+                    accept('error', `Value does not match specified attribute type (${attr.type.ptype})`, {
+                        node: fxAttrAssign,
+                        property: 'val',
+                        code: IssueCodes.FixCreateNodeStatementAttributeTypeDoesNotMatch
+                    })
+                }
+            } else if (attr.type.ptype == undefined && attr.type.etype != undefined && attr.type.etype.ref != undefined && !ExprUtils.isEnumValueExpression(fxAttrAssign.val)) {
+                // attribute has enum type, not primitive type, but default value is no enum value
+                accept('error', `Value does not match specified attribute type (${ModelModelingLanguageUtils.getQualifiedClassName(attr.type.etype.ref, attr.type.etype.ref.name)})`, {
+                    node: fxAttrAssign,
+                    property: 'val',
+                    code: IssueCodes.FixCreateNodeStatementAttributeTypeDoesNotMatch
                 })
             }
         }

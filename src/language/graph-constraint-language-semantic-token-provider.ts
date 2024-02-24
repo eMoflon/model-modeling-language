@@ -5,11 +5,14 @@ import {
     isConstraint,
     isConstraintAssertion,
     isConstraintPatternDeclaration,
+    isCreateNodeAttributeAssignment,
     isDescriptionAnnotation,
     isDisableDefaultNodeConstraintsAnnotation,
     isDisableFixContainer,
     isEnableFixContainer,
     isEnforceAnnotation,
+    isFixCreateEdgeStatement,
+    isFixCreateNodeStatement,
     isFixDeleteEdgeStatement,
     isFixDeleteNodeStatement,
     isFixInfoStatement,
@@ -124,6 +127,20 @@ export class GraphConstraintLanguageSemanticTokenProvider extends AbstractSemant
             acceptor({node, keyword: "delete", type: SemanticTokenTypes.keyword});
             acceptor({node, keyword: "edge", type: SemanticTokenTypes.keyword});
             acceptor({node, property: "edge", type: SemanticTokenTypes.property});
+        } else if (isFixCreateEdgeStatement(node)) {
+            acceptor({node, keyword: "create", type: SemanticTokenTypes.keyword});
+            acceptor({node, keyword: "edge", type: SemanticTokenTypes.keyword});
+            acceptor({node, property: "fromNode", type: SemanticTokenTypes.property});
+            acceptor({node, keyword: "-", type: SemanticTokenTypes.operator});
+            acceptor({node, property: "reference", type: SemanticTokenTypes.property});
+            acceptor({node, keyword: "->", type: SemanticTokenTypes.operator});
+            acceptor({node, property: "toNode", type: SemanticTokenTypes.property});
+        } else if (isFixCreateNodeStatement(node)) {
+            acceptor({node, keyword: "create", type: SemanticTokenTypes.keyword});
+            acceptor({node, keyword: "node", type: SemanticTokenTypes.keyword});
+        } else if (isCreateNodeAttributeAssignment(node)) {
+            acceptor({node, property: "attr", type: SemanticTokenTypes.property});
+            acceptor({node, keyword: "=", type: SemanticTokenTypes.operator});
         }
     }
 
