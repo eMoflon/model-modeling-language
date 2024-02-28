@@ -7,12 +7,18 @@ import {
     ConstraintAssertion,
     ConstraintDocument,
     ConstraintPatternDeclaration,
+    CreateNodeAttributeAssignment,
     DescriptionAnnotation,
     EnforceAnnotation,
     EnumEntry,
     Expression,
     FixContainer,
+    FixCreateEdgeStatement,
+    FixCreateNodeStatement,
+    FixDeleteEdgeStatement,
+    FixDeleteNodeStatement,
     FixInfoStatement,
+    FixSetStatement,
     ForbidAnnotation,
     isBinaryExpression,
     isConstraintPatternDeclaration,
@@ -21,7 +27,12 @@ import {
     isDisableFixContainer,
     isEnableFixContainer,
     isEnforceAnnotation,
+    isFixCreateEdgeStatement,
+    isFixCreateNodeStatement,
+    isFixDeleteEdgeStatement,
+    isFixDeleteNodeStatement,
     isFixInfoStatement,
+    isFixSetStatement,
     isForbidAnnotation,
     isNodeConstraintAnnotation,
     isPattern,
@@ -35,6 +46,7 @@ import {
     PatternObject,
     PatternObjectReference,
     TitleAnnotation,
+    TypedVariable,
     UnaryExpression
 } from "../generated/ast.js";
 import {GclReferenceStorage} from "./gcl-reference-storage.js";
@@ -300,7 +312,7 @@ export class ConstraintPatternDeclarationEntity {
         this.name = pDeclaration.var.name;
         this.patternId = resolver.resolve(pDeclaration.pattern);
         this.declarationId = resolver.getNodeReferenceId(pDeclaration);
-        this.fixContainer = pDeclaration.fixContainers.map(x => new FixContainerEntity(x));
+        this.fixContainer = pDeclaration.fixContainers.map(x => new FixContainerEntity(x, resolver));
     }
 }
 
@@ -309,11 +321,21 @@ export class FixContainerEntity {
     readonly statements: FixStatementEntity[];
 
 
-    constructor(fixContainer: FixContainer) {
+    constructor(fixContainer: FixContainer, resolver: GclReferenceStorage) {
         this.isEnableContainer = isEnableFixContainer(fixContainer) && !isDisableFixContainer(fixContainer)
         this.statements = fixContainer.fixStatements.map(x => {
             if (isFixInfoStatement(x)) {
                 return new FixInfoStatementEntity(x);
+            } else if (isFixCreateNodeStatement(x)) {
+                return new FixCreateNodeEntity(x, resolver);
+            } else if (isFixCreateEdgeStatement(x)) {
+                return new FixCreateEdgeEntity(x, resolver);
+            } else if (isFixDeleteNodeStatement(x)) {
+                return new FixDeleteNodeEntity(x);
+            } else if (isFixDeleteEdgeStatement(x)) {
+                return new FixDeleteEdgeEntity(x);
+            } else if (isFixSetStatement(x)) {
+                return new FixSetStatementEntity(x, resolver);
             }
             return undefined;
         }).filter(x => x != undefined)
@@ -332,6 +354,150 @@ export class FixInfoStatementEntity implements FixStatementEntity {
     constructor(infoStmt: FixInfoStatement) {
         this.msg = infoStmt.msg;
         this.type = "INFO";
+    }
+}
+
+export class FixSetStatementEntity implements FixStatementEntity {
+    readonly type: string;
+    readonly patternNodeName: string;
+    readonly attributeName: string;
+    readonly customizationRequired: boolean;
+    readonly attributeValue: PrimaryExpressionEntity | undefined;
+
+    constructor(setStmt: FixSetStatement, resolver: GclReferenceStorage) {
+        this.type = "SET";
+        const splitted = setStmt.attr.$refText.split(".");
+        if (setStmt.attr.ref == undefined || splitted.length != 2) {
+            throw new Error("Invalid FixSetStatement attribute!");
+        }
+        this.patternNodeName = splitted.at(0) as string;
+        this.attributeName = splitted.at(1) as string;
+
+        this.customizationRequired = setStmt.val == undefined;
+
+        if (setStmt.val != undefined) {
+            if (ExprUtils.isEnumValueExpression(setStmt.val) && setStmt.val.val.ref != undefined) {
+                this.attributeValue = new PrimaryExpressionEntity(setStmt.val.val.ref.name, resolver);
+            } else if (isValueExpr(setStmt.val)) {
+                this.attributeValue = new PrimaryExpressionEntity(setStmt.val.value, resolver);
+            } else {
+                throw new Error(`Unable to assign attribute value: ${setStmt.attr.$refText}`);
+            }
+        }
+    }
+}
+
+export class FixDeleteEdgeEntity implements FixStatementEntity {
+    readonly fromPatternNodeName: string;
+    readonly toPatternNodeName: string;
+    readonly referenceName: string;
+    readonly type: string;
+
+
+    constructor(delEdgeStmt: FixDeleteEdgeStatement) {
+        if (delEdgeStmt.edge.ref != undefined && delEdgeStmt.edge.ref.ref != undefined && delEdgeStmt.edge.ref.ref.ref != undefined && delEdgeStmt.edge.ref.patternObj.ref != undefined) {
+            this.referenceName = delEdgeStmt.edge.ref.ref.ref.name;
+            this.fromPatternNodeName = delEdgeStmt.edge.ref.$container.var.name;
+            this.toPatternNodeName = delEdgeStmt.edge.ref.patternObj.ref.name;
+            this.type = "DELETE_EDGE";
+        } else {
+            throw new Error("Unable to resolve FixDeleteEdgeStatement edge reference!");
+        }
+    }
+}
+
+export class FixDeleteNodeEntity implements FixStatementEntity {
+    readonly nodeAlias: string;
+    readonly type: string;
+
+    constructor(delNodeStmt: FixDeleteNodeStatement) {
+        if (delNodeStmt.node.ref != undefined) {
+            this.nodeAlias = delNodeStmt.node.ref.name;
+            this.type = "DELETE_EDGE";
+        } else {
+            throw new Error("Unable to resolve FixDeleteEdgeStatement edge reference!");
+        }
+    }
+}
+
+export class FixCreateEdgeEntity implements FixStatementEntity {
+    readonly fromPatternNodeName: string;
+    readonly fromNameIsTemp: boolean;
+    readonly toPatternNodeName: string;
+    readonly toNameIsTemp: boolean;
+    readonly referenceName: string;
+    readonly type: string;
+
+    constructor(creEdgeStmt: FixCreateEdgeStatement, resolver: GclReferenceStorage) {
+        this.type = "CREATE_EDGE";
+        if (creEdgeStmt.fromNode.ref == undefined || creEdgeStmt.toNode.ref == undefined) {
+            throw new Error("Unable to resolve FixCreateEdgeStatement node!");
+        } else if (creEdgeStmt.reference.ref == undefined) {
+            throw new Error("Unable to resolve FixCreateEdgeStatement reference!");
+        }
+
+        this.referenceName = creEdgeStmt.reference.ref.name;
+
+        const fromVar: TypedVariable = creEdgeStmt.fromNode.ref;
+        const toVar: TypedVariable = creEdgeStmt.toNode.ref;
+        if (isFixCreateNodeStatement(fromVar.$container)) {
+            this.fromPatternNodeName = resolver.resolveNode(fromVar);
+            this.fromNameIsTemp = true;
+        } else if (isPatternObject(fromVar.$container)) {
+            this.fromPatternNodeName = fromVar.name
+            this.fromNameIsTemp = false;
+        } else {
+            throw new Error("Invalid TypedVariable container -> fromVar");
+        }
+
+        if (isFixCreateNodeStatement(toVar.$container)) {
+            this.toPatternNodeName = resolver.resolveNode(toVar);
+            this.toNameIsTemp = true;
+        } else if (isPatternObject(toVar.$container)) {
+            this.toPatternNodeName = toVar.name
+            this.toNameIsTemp = false;
+        } else {
+            throw new Error("Invalid TypedVariable container -> toVar");
+        }
+    }
+}
+
+export class FixCreateNodeEntity implements FixStatementEntity {
+    readonly tempNodeName: string;
+    readonly nodeType: string;
+    readonly attributeAssignments: CreateNodeAttributeAssignmentEntity[];
+    readonly type: string;
+
+    constructor(creNodeStmt: FixCreateNodeStatement, resolver: GclReferenceStorage) {
+        this.type = "CREATE_NODE";
+        this.tempNodeName = resolver.resolveNode(creNodeStmt.nodeVar);
+        if (creNodeStmt.nodeVar.typing.type != undefined && creNodeStmt.nodeVar.typing.type.ref != undefined) {
+            const abstractElement: AbstractElement = creNodeStmt.nodeVar.typing.type.ref;
+            this.nodeType = ModelModelingLanguageUtils.getQualifiedClassName(abstractElement, abstractElement.name);
+        } else {
+            throw new Error("Could not resolve EClass name");
+        }
+        this.attributeAssignments = creNodeStmt.assignments.map(x => new CreateNodeAttributeAssignmentEntity(x, resolver));
+    }
+}
+
+export class CreateNodeAttributeAssignmentEntity {
+    readonly attributeName: string;
+    readonly attributeValue: PrimaryExpressionEntity;
+
+    constructor(assignment: CreateNodeAttributeAssignment, resolver: GclReferenceStorage) {
+        if (assignment.attr.ref != undefined) {
+            this.attributeName = assignment.attr.ref.name;
+            if (ExprUtils.isEnumValueExpression(assignment.val) && assignment.val.val.ref != undefined) {
+                this.attributeValue = new PrimaryExpressionEntity(assignment.val.val.ref.name, resolver);
+            } else if (isValueExpr(assignment.val)) {
+                this.attributeValue = new PrimaryExpressionEntity(assignment.val.value, resolver);
+            } else {
+                throw new Error(`Unable to assign attribute value: ${assignment.attr.$refText}`);
+            }
+        } else {
+            throw new Error(`Unable to resolve attribute: ${assignment.attr.$refText}`);
+        }
     }
 }
 
