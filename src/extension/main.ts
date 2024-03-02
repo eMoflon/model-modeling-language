@@ -99,6 +99,6 @@ function registerGMNotebook(context: vscode.ExtensionContext) {
         vscode.workspace.registerNotebookSerializer(
             'gm-notebook', new GMNotebookSerializer(), {transientOutputs: true}
         ),
-        new GMNotebookKernel()
+        new GMNotebookKernel(modelServerConnector)
     );
 }

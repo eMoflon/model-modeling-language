@@ -8,10 +8,22 @@ TargetNode:
     nodeId=NUM | tempNodeVar=[UntypedVariable:ID];
 
 GMStatement:
-    ReferencedModelStatement | SetAttributeStatement;
-
-ReferencedModelStatement:
-    'model' path=STRING ';';
+    SetAttributeStatement | CreateEdgeStatement | DeleteEdgeStatement | CreateNodeStatement | DeleteNodeStatement;
 
 SetAttributeStatement:
-    'set' target=TargetNode ':' attr=[Attribute:QNAME] ('=' val=(ValueExpr | EnumValueExpr))? ';';
+    'set' target=TargetNode ':' attr=UntypedVariable '=' val=(ValueExpr | EnumValueExpr) ';';
+
+CreateNodeStatementAttrAssignment:
+    attr=UntypedVariable '=' val=ValueExpr;
+
+CreateNodeStatement:
+    'create' 'node' nodeType=QNAME nodeVar=UntypedVariable '(' (assignments+=CreateNodeStatementAttrAssignment (',' assignments+=CreateNodeStatementAttrAssignment)*)? ')' ';';
+
+DeleteNodeStatement:
+    'delete' 'node' node=TargetNode ';';
+
+CreateEdgeStatement:
+    'create' 'edge' fromNode=TargetNode '-'reference=UntypedVariable'->' toNode=TargetNode ';';
+
+DeleteEdgeStatement:
+    'delete' 'edge' fromNode=TargetNode '-'reference=UntypedVariable'->' toNode=TargetNode ';';

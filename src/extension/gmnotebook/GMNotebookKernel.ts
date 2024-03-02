@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 
-//import {GMInterpreter} from "./GMInterpreter.js";
+import {GMInterpreter} from "./GMInterpreter.js";
+import {ModelServerConnector} from "../model-server-connector.js";
 
 export class GMNotebookKernel {
     readonly id = 'gm-kernel';
@@ -10,7 +11,9 @@ export class GMNotebookKernel {
     private _executionOrder = 0;
     private readonly _controller: vscode.NotebookController;
 
-    constructor() {
+    private readonly _interpreter: GMInterpreter;
+
+    constructor(modelServerConnector: ModelServerConnector) {
 
         this._controller = vscode.notebooks.createNotebookController(this.id,
             'gm-notebook',
@@ -19,6 +22,8 @@ export class GMNotebookKernel {
         this._controller.supportedLanguages = this.supportedLanguages;
         this._controller.supportsExecutionOrder = true;
         this._controller.executeHandler = this._executeAll.bind(this);
+
+        this._interpreter = new GMInterpreter(modelServerConnector);
     }
 
     dispose(): void {
@@ -47,9 +52,13 @@ export class GMNotebookKernel {
         }
 
         try {
-            log(text) // TODO: REMOVE
-            //await GMInterpreter.runInterpreter(text, { log });
-            execution.end(true, Date.now());
+            await log(text) // TODO: REMOVE
+            await log(`EXECUTION ORDER: ${execution.executionOrder}`)
+            await this._interpreter.runInterpreter(text, {log})
+                .then(x => execution.end(true, Date.now()))
+                .catch(reason => {
+                    throw new Error(reason)
+                })
         } catch (err) {
             const errString = err instanceof Error ? err.message : String(err);
             await execution.appendOutput(
