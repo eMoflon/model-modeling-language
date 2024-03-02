@@ -92,6 +92,17 @@
         "path": "syntaxes/graph-constraint-language.tmLanguage.json"
       }
     ],
+    "notebooks": [
+      {
+        "type": "gm-notebook",
+        "displayName": "Graph Manipulation Notebook",
+        "selector": [
+          {
+            "filenamePattern": "*.gmnb"
+          }
+        ]
+      }
+    ],
     "configuration": {
       "title": "Model Modeling Language",
       "properties": {
