@@ -2,13 +2,8 @@ import {EmptyFileSystem, interruptAndCheck, LangiumDocument, MaybePromise, URI} 
 import {
     GMStatement,
     GraphManipulationDocument,
-    isCreateEdgeStatement,
-    isCreateNodeStatement,
-    isDeleteEdgeStatement,
-    isDeleteNodeStatement,
+    isGMChainStatement,
     isReferencedModelStatement,
-    isSetAttributeStatement,
-    isValueExpr,
     TargetNode
 } from "../../language/generated/ast.js";
 import {v4} from "uuid";
@@ -17,23 +12,8 @@ import {CancellationToken, CancellationTokenSource} from "vscode-languageserver"
 import {ModelServerConnector} from "../model-server-connector.js";
 import {createMmlAndGclServices} from "../../language/main-module.js";
 import {PostEditRequest} from "../generated/de/nexus/modelserver/ModelServerEdits_pb.js";
-import {
-    EditCreateEdgeRequest,
-    EditCreateEdgeResponse,
-    EditCreateNodeAttributeAssignment,
-    EditCreateNodeRequest,
-    EditCreateNodeResponse,
-    EditDeleteEdgeRequest,
-    EditDeleteEdgeResponse,
-    EditDeleteNodeRequest,
-    EditDeleteNodeResponse,
-    EditRequest,
-    EditSetAttributeRequest,
-    EditSetAttributeResponse,
-    EditState,
-    Node
-} from "../generated/de/nexus/modelserver/ModelServerEditStatements_pb.js";
-import {ExprUtils} from "../../language/expr-utils.js";
+import {EditChainRequest, EditRequest, Node} from "../generated/de/nexus/modelserver/ModelServerEditStatements_pb.js";
+import {GMProtoMapper} from "./GMProtoMapper.js";
 
 
 export class GMInterpreter {
@@ -98,237 +78,39 @@ export class GMInterpreter {
     async runStatement(element: GMStatement, context: RunnerContext, returnFn: ReturnFunction): Promise<void> {
         await interruptAndCheck(context.cancellationToken);
 
-        if (isSetAttributeStatement(element)) {
-            const targetNode: Node | undefined = GMInterpreter.getMappedNode(element.target);
-            if (targetNode == undefined) {
-                return Promise.reject("Unable to determine target node!");
-            }
-
-            const editSetAttrReq: EditSetAttributeRequest = new EditSetAttributeRequest();
-            editSetAttrReq.node = targetNode;
-            editSetAttrReq.attributeName = element.attr.name;
-            if (ExprUtils.isEnumValueExpression(element.val) && element.val.val.ref != undefined) {
-                editSetAttrReq.attributeValue = element.val.val.ref.name;
-            } else if (isValueExpr(element.val)) {
-                editSetAttrReq.attributeValue = `${element.val.value}`;
+        try {
+            if (isGMChainStatement(element)) {
+                const req: EditChainRequest = GMProtoMapper.mapEditRequest(element) as EditChainRequest;
+                return this._modelServerConnector.clients.editClient.requestEdit(
+                    new PostEditRequest(
+                        {
+                            request: {
+                                case: "editChain",
+                                value: req
+                            }
+                        }
+                    )
+                ).then(response => GMProtoMapper.processResponse(response, context));
             } else {
-                return Promise.reject(`Unable to assign attribute value: ${element.attr.name}`);
-            }
+                const req: EditRequest = GMProtoMapper.mapEditRequest(element) as EditRequest;
 
-            return this._modelServerConnector.clients.editClient.requestEdit(
-                new PostEditRequest(
-                    {
-                        request: {
-                            case: "edit",
-                            value: new EditRequest(
-                                {
-                                    request: {
-                                        case: "setAttributeRequest",
-                                        value: editSetAttrReq
-                                    }
-                                }
-                            )
-                        }
-                    }
-                )
-            ).then(response => {
-                    if (response.response.case == "edit") {
-                        if (response.response.value.response.case == "setAttributeResponse") {
-                            const editResponse: EditSetAttributeResponse = response.response.value.response.value;
-                            if (editResponse.state == EditState.SUCCESS) {
-                                context.log("Cool, success!");
-                            } else if (editResponse.state == EditState.FAILURE) {
-                                context.log(`ERROR: ${editResponse.message}`)
-                            } else {
-                                context.log("UNKNOWN ERROR!");
+                return this._modelServerConnector.clients.editClient.requestEdit(
+                    new PostEditRequest(
+                        {
+                            request: {
+                                case: "edit",
+                                value: req
                             }
                         }
-
-                    }
-                }
-            )
-        } else if (isCreateEdgeStatement(element)) {
-            const fromNode: Node | undefined = GMInterpreter.getMappedNode(element.fromNode);
-            if (fromNode == undefined) {
-                return Promise.reject("Unable to determine target node!");
+                    )
+                ).then(response => GMProtoMapper.processResponse(response, context));
             }
-            const toNode: Node | undefined = GMInterpreter.getMappedNode(element.toNode);
-            if (toNode == undefined) {
-                return Promise.reject("Unable to determine target node!");
+        } catch (ex) {
+            if (typeof ex === "string") {
+                return Promise.reject(ex.toUpperCase());
+            } else if (ex instanceof Error) {
+                return Promise.reject(ex.message);
             }
-
-            const createEdgeReq: EditCreateEdgeRequest = new EditCreateEdgeRequest();
-            createEdgeReq.startNode = fromNode;
-            createEdgeReq.targetNode = toNode;
-            createEdgeReq.referenceName = element.reference.name;
-
-            return this._modelServerConnector.clients.editClient.requestEdit(
-                new PostEditRequest(
-                    {
-                        request: {
-                            case: "edit",
-                            value: new EditRequest(
-                                {
-                                    request: {
-                                        case: "createEdgeRequest",
-                                        value: createEdgeReq
-                                    }
-                                }
-                            )
-                        }
-                    }
-                )
-            ).then(response => {
-                    if (response.response.case == "edit") {
-                        if (response.response.value.response.case == "createEdgeResponse") {
-                            const editResponse: EditCreateEdgeResponse = response.response.value.response.value;
-                            if (editResponse.state == EditState.SUCCESS) {
-                                context.log("Cool, success!");
-                            } else if (editResponse.state == EditState.FAILURE) {
-                                context.log(`ERROR: ${editResponse.message}`)
-                            } else {
-                                context.log("UNKNOWN ERROR!");
-                            }
-                        }
-
-                    }
-                }
-            )
-        } else if (isDeleteEdgeStatement(element)) {
-            const fromNode: Node | undefined = GMInterpreter.getMappedNode(element.fromNode);
-            if (fromNode == undefined) {
-                return Promise.reject("Unable to determine start node!");
-            }
-            const toNode: Node | undefined = GMInterpreter.getMappedNode(element.toNode);
-            if (toNode == undefined) {
-                return Promise.reject("Unable to determine target node!");
-            }
-
-            const deleteEdgeReq: EditDeleteEdgeRequest = new EditDeleteEdgeRequest();
-            deleteEdgeReq.startNode = fromNode;
-            deleteEdgeReq.targetNode = toNode;
-            deleteEdgeReq.referenceName = element.reference.name;
-
-            return this._modelServerConnector.clients.editClient.requestEdit(
-                new PostEditRequest(
-                    {
-                        request: {
-                            case: "edit",
-                            value: new EditRequest(
-                                {
-                                    request: {
-                                        case: "deleteEdgeRequest",
-                                        value: deleteEdgeReq
-                                    }
-                                }
-                            )
-                        }
-                    }
-                )
-            ).then(response => {
-                    if (response.response.case == "edit") {
-                        if (response.response.value.response.case == "deleteEdgeResponse") {
-                            const editResponse: EditDeleteEdgeResponse = response.response.value.response.value;
-                            if (editResponse.state == EditState.SUCCESS) {
-                                context.log("Cool, success!");
-                            } else if (editResponse.state == EditState.FAILURE) {
-                                context.log(`ERROR: ${editResponse.message}`)
-                            } else {
-                                context.log("UNKNOWN ERROR!");
-                            }
-                        }
-
-                    }
-                }
-            )
-        } else if (isDeleteNodeStatement(element)) {
-            const targetNode: Node | undefined = GMInterpreter.getMappedNode(element.node);
-            if (targetNode == undefined) {
-                return Promise.reject("Unable to determine node!");
-            }
-
-            const deleteNodeReq: EditDeleteNodeRequest = new EditDeleteNodeRequest();
-            deleteNodeReq.node = targetNode;
-
-            return this._modelServerConnector.clients.editClient.requestEdit(
-                new PostEditRequest(
-                    {
-                        request: {
-                            case: "edit",
-                            value: new EditRequest(
-                                {
-                                    request: {
-                                        case: "deleteNodeRequest",
-                                        value: deleteNodeReq
-                                    }
-                                }
-                            )
-                        }
-                    }
-                )
-            ).then(response => {
-                    if (response.response.case == "edit") {
-                        if (response.response.value.response.case == "deleteNodeResponse") {
-                            const editResponse: EditDeleteNodeResponse = response.response.value.response.value;
-                            if (editResponse.state == EditState.SUCCESS) {
-                                context.log("Cool, success!");
-                                for (const removedEdge of editResponse.removedEdges) {
-                                    context.log(`[ImplicitlyRemovedEdge] (${removedEdge.fromNode?.nodeType.value ?? "UNKNOWN"})-${removedEdge.reference}->(${removedEdge.toNode?.nodeType.value ?? "UNKNOWN"})`);
-                                }
-                            } else if (editResponse.state == EditState.FAILURE) {
-                                context.log(`ERROR: ${editResponse.message}`)
-                            } else {
-                                context.log("UNKNOWN ERROR!");
-                            }
-                        }
-
-                    }
-                }
-            )
-        } else if (isCreateNodeStatement(element)) {
-            const createNodeReq: EditCreateNodeRequest = new EditCreateNodeRequest();
-            createNodeReq.tempId = element.nodeVar.name;
-            createNodeReq.nodeType = element.nodeType;
-            createNodeReq.assignments = element.assignments.map(x => {
-                const attrAssignment: EditCreateNodeAttributeAssignment = new EditCreateNodeAttributeAssignment();
-                attrAssignment.attributeName = x.attr.name;
-                attrAssignment.attributeValue = `${x.val.value}`;
-                return attrAssignment;
-            }).map(x => x as EditCreateNodeAttributeAssignment);
-
-            return this._modelServerConnector.clients.editClient.requestEdit(
-                new PostEditRequest(
-                    {
-                        request: {
-                            case: "edit",
-                            value: new EditRequest(
-                                {
-                                    request: {
-                                        case: "createNodeRequest",
-                                        value: createNodeReq
-                                    }
-                                }
-                            )
-                        }
-                    }
-                )
-            ).then(response => {
-                    if (response.response.case == "edit") {
-                        if (response.response.value.response.case == "createNodeResponse") {
-                            const editResponse: EditCreateNodeResponse = response.response.value.response.value;
-                            if (editResponse.state == EditState.SUCCESS) {
-                                context.log("Cool, success!");
-                                context.log(`Created new node with id: ${editResponse.createdNodeId}`);
-                            } else if (editResponse.state == EditState.FAILURE) {
-                                context.log(`ERROR: ${editResponse.message}`)
-                            } else {
-                                context.log("UNKNOWN ERROR!");
-                            }
-                        }
-
-                    }
-                }
-            )
         }
     }
 
@@ -361,7 +143,7 @@ export class GMInterpreter {
     }
 }
 
-interface RunnerContext {
+export interface RunnerContext {
     cancellationToken: CancellationToken,
     timeout: NodeJS.Timeout,
     log: (value: unknown) => MaybePromise<void>,

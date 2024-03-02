@@ -8,7 +8,10 @@ TargetNode:
     nodeId=NUM | tempNodeVar=[UntypedVariable:ID];
 
 GMStatement:
-    SetAttributeStatement | CreateEdgeStatement | DeleteEdgeStatement | CreateNodeStatement | DeleteNodeStatement;
+    SetAttributeStatement | CreateEdgeStatement | DeleteEdgeStatement | CreateNodeStatement | DeleteNodeStatement | GMChainStatement;
+
+GMChainStatement:
+    'chain' '{' (chain+=GMStatement)* '}';
 
 SetAttributeStatement:
     'set' target=TargetNode ':' attr=UntypedVariable '=' val=(ValueExpr | EnumValueExpr) ';';
