@@ -1,6 +1,7 @@
 import {createPromiseClient, PromiseClient} from "@connectrpc/connect";
 import {
     ModelServerConstraints,
+    ModelServerEdits,
     ModelServerManagement,
     ModelServerPattern
 } from "./generated/de/nexus/modelserver/ModelServer_connect.js";
@@ -11,6 +12,7 @@ export type ClientCollection = {
     managementClient: PromiseClient<typeof ModelServerManagement>,
     patternClient: PromiseClient<typeof ModelServerPattern>,
     constraintClient: PromiseClient<typeof ModelServerConstraints>
+    editClient: PromiseClient<typeof ModelServerEdits>
 }
 
 export class ModelServerConnector {
@@ -31,7 +33,8 @@ export class ModelServerConnector {
         return {
             managementClient: createPromiseClient(ModelServerManagement, transport),
             patternClient: createPromiseClient(ModelServerPattern, transport),
-            constraintClient: createPromiseClient(ModelServerConstraints, transport)
+            constraintClient: createPromiseClient(ModelServerConstraints, transport),
+            editClient: createPromiseClient(ModelServerEdits, transport)
         } as ClientCollection
     }
 
@@ -52,6 +55,4 @@ export class ModelServerConnector {
         }
         return this._clients;
     }
-
-
 }
