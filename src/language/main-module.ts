@@ -8,6 +8,7 @@ import type {DefaultSharedModuleContext, LangiumSharedServices} from 'langium';
 import {createDefaultModule, createDefaultSharedModule, inject} from 'langium';
 import {
     GraphConstraintLanguageGeneratedModule,
+    GraphManipulationLanguageGeneratedModule,
     ModelModelingLanguageGeneratedModule,
     ModelModelingLanguageGeneratedSharedModule,
 } from './generated/module.js';
@@ -19,6 +20,10 @@ import {
 import {
     registerValidationChecks as registerGraphConstraintLanguageValidations
 } from "./graph-constraint-language-validator.js";
+import {
+    GraphManipulationLanguageModule,
+    GraphManipulationLanguageServices
+} from "./graph-manipulation-language-module.js";
 
 /**
  * Create the full set of services required by Langium.
@@ -38,7 +43,8 @@ import {
 export function createMmlAndGclServices(context: DefaultSharedModuleContext): {
     shared: LangiumSharedServices,
     mmlServices: ModelModelingLanguageServices,
-    gclServices: GraphConstraintLanguageServices
+    gclServices: GraphConstraintLanguageServices,
+    gmlServices: GraphManipulationLanguageServices
 } {
     const shared = inject(
         createDefaultSharedModule(context),
@@ -54,9 +60,16 @@ export function createMmlAndGclServices(context: DefaultSharedModuleContext): {
         GraphConstraintLanguageGeneratedModule,
         GraphConstraintLanguageModule
     );
+    const gmlServices = inject(
+        createDefaultModule({shared}),
+        GraphManipulationLanguageGeneratedModule,
+        GraphManipulationLanguageModule
+    );
     shared.ServiceRegistry.register(mmlServices);
     shared.ServiceRegistry.register(gclServices);
+    shared.ServiceRegistry.register(gmlServices);
     registerModelModelingLanguageValidations(mmlServices);
     registerGraphConstraintLanguageValidations(gclServices);
-    return {shared, mmlServices, gclServices};
+    //registerGraphManipulationLanguageValidations(gmlServices);
+    return {shared, mmlServices, gclServices, gmlServices};
 }

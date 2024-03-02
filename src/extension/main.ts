@@ -62,6 +62,10 @@ function startLanguageClient(context: vscode.ExtensionContext): LanguageClient {
             {
                 scheme: 'file',
                 language: 'graph-constraint-language'
+            },
+            {
+                scheme: 'vscode-notebook-cell',
+                language: 'graph-manipulation-language'
             }],
         synchronize: {
             // Notify the server about file changes to files contained in the workspace

@@ -34,6 +34,7 @@ import {
     NumberExpr,
     PatternAttributeConstraint,
     QualifiedValueExpr,
+    SetAttributeStatement,
     StringExpr,
     TypedVariable,
     UntypedVariable,
@@ -295,7 +296,7 @@ export class ExprUtils {
         return isVariableValueExpr(expr) && isConstraintAssertion(exprContainer);
     }
 
-    public static getExprContainer(expr: Expression): Attribute | ConstraintAssertion | FunctionArgument | ImplicitlyTypedValue | MacroAttributeStatement | PatternAttributeConstraint | EnumEntry | FixSetStatement | CreateNodeAttributeAssignment {
+    public static getExprContainer(expr: Expression): Attribute | ConstraintAssertion | FunctionArgument | ImplicitlyTypedValue | MacroAttributeStatement | PatternAttributeConstraint | EnumEntry | FixSetStatement | CreateNodeAttributeAssignment | SetAttributeStatement {
         if (isExpression(expr.$container)) {
             return this.getExprContainer(expr.$container);
         }
