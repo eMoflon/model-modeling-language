@@ -2,9 +2,33 @@ syntax = "proto3";
 package de.nexus.modelserver.proto;
 
 message GetPatternsRequest{
-
 }
 
 message GetPatternsResponse{
+  repeated Pattern patterns = 1;
+}
 
+message GetPatternRequest{
+  string patternName = 1;
+}
+
+message GetPatternResponse{
+  Pattern pattern = 1;
+}
+
+message Pattern{
+  string name = 1;
+  int32 numberOfMatches = 2;
+  repeated Match matches = 3;
+}
+
+message Match {
+  repeated string nodes = 1;
+}
+
+message ListPatternsRequest{
+}
+
+message ListPatternsResponse{
+  repeated string patterns = 1;
 }

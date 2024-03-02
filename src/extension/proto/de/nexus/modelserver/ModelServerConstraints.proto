@@ -1,8 +1,71 @@
 syntax = "proto3";
 package de.nexus.modelserver.proto;
 
+import "de/nexus/modelserver/ModelServerEditStatements.proto";
+
 message GetConstraintsRequest{
 }
 
 message GetConstraintsResponse{
+  repeated Constraint constraints = 1;
+}
+
+message GetConstraintRequest{
+  string constraintName = 1;
+}
+
+message GetConstraintResponse{
+  Constraint constraint = 1;
+}
+
+message ListConstraintsRequest{
+}
+
+message ListConstraintsResponse{
+  repeated string constraints = 1;
+}
+
+message Constraint {
+  string title = 1;
+  string description = 2;
+  string name = 3;
+  bool violated = 4;
+  repeated ConstraintAssertion assertions = 5;
+  repeated FixProposal proposals = 6;
+}
+
+message ConstraintAssertion {
+  bool violated = 1;
+  string expression = 2;
+}
+
+message FixProposal {
+  FixProposalType type = 1;
+  string patternName = 2;
+  repeated FixMatch matches = 3;
+}
+
+message FixMatch {
+  repeated FixVariant variants = 1;
+}
+
+message FixVariant {
+  repeated FixStatement statements = 1;
+}
+
+message FixStatement {
+  oneof stmt {
+    FixInfoStatement infoStatement = 1;
+    EditRequest edit = 2;
+  }
+}
+
+message FixInfoStatement {
+  string msg = 1;
+}
+
+enum FixProposalType {
+  UNKNOWN = 0;
+  ENABLE_PATTERN = 1;
+  DISABLE_PATTERN = 2;
 }

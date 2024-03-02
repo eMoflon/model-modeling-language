@@ -16,3 +16,13 @@ message TerminateServerRequest{
 message TerminateServerResponse{
 
 }
+
+message ExportModelRequest {
+  string exportName = 2;
+  string exportPath = 3;
+}
+
+message ExportModelResponse {
+  bool success = 1;
+  string message = 2;
+}
