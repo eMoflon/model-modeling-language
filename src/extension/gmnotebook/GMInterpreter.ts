@@ -81,29 +81,27 @@ export class GMInterpreter {
         try {
             if (isGMChainStatement(element)) {
                 const req: EditChainRequest = GMProtoMapper.mapEditRequest(element) as EditChainRequest;
-                return this._modelServerConnector.clients.editClient.requestEdit(
-                    new PostEditRequest(
-                        {
-                            request: {
-                                case: "editChain",
-                                value: req
-                            }
+                const fullReq: PostEditRequest = new PostEditRequest(
+                    {
+                        request: {
+                            case: "editChain",
+                            value: req
                         }
-                    )
-                ).then(response => GMProtoMapper.processResponse(response, context));
+                    }
+                )
+                return this._modelServerConnector.clients.editClient.requestEdit(fullReq).then(response => GMProtoMapper.processResponse(fullReq, response, context));
             } else {
                 const req: EditRequest = GMProtoMapper.mapEditRequest(element) as EditRequest;
-
-                return this._modelServerConnector.clients.editClient.requestEdit(
-                    new PostEditRequest(
-                        {
-                            request: {
-                                case: "edit",
-                                value: req
-                            }
+                const fullReq: PostEditRequest = new PostEditRequest(
+                    {
+                        request: {
+                            case: "edit",
+                            value: req
                         }
-                    )
-                ).then(response => GMProtoMapper.processResponse(response, context));
+                    }
+                )
+
+                return this._modelServerConnector.clients.editClient.requestEdit(fullReq).then(response => GMProtoMapper.processResponse(fullReq, response, context));
             }
         } catch (ex) {
             if (typeof ex === "string") {

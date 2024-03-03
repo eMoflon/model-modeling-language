@@ -33,7 +33,7 @@ import {
 } from "../generated/de/nexus/modelserver/ModelServerEditStatements_pb.js";
 import {ExprUtils} from "../../language/expr-utils.js";
 import {GMInterpreter, RunnerContext} from "./GMInterpreter.js";
-import {PostEditResponse} from "../generated/de/nexus/modelserver/ModelServerEdits_pb.js";
+import {PostEditRequest, PostEditResponse} from "../generated/de/nexus/modelserver/ModelServerEdits_pb.js";
 
 export class GMProtoMapper {
 
@@ -174,63 +174,80 @@ export class GMProtoMapper {
         );
     }
 
-    public static processResponse(response: PostEditResponse, context: RunnerContext) {
-        if (response.response.case == "edit") {
-            GMProtoMapper._processResponse(response.response.value, context);
-        } else if (response.response.case == "editChain") {
-            response.response.value.edits.forEach(edit => GMProtoMapper._processResponse(edit, context))
+    public static processResponse(request: PostEditRequest, response: PostEditResponse, context: RunnerContext) {
+        if (request.request.case == "edit" && response.response.case == "edit") {
+            GMProtoMapper._processResponse(request.request.value, response.response.value, context);
+        } else if (request.request.case == "editChain" && response.response.case == "editChain") {
+            const editRequests: EditRequest[] = request.request.value.edits;
+            const editResponses: EditResponse[] = response.response.value.edits;
+            if (editRequests.length != editResponses.length) {
+                throw new Error("EditChain request and response length does not match!");
+            }
+
+            for (let i = 0; i < editRequests.length; i++) {
+                const editReq: EditRequest = editRequests.at(i) as EditRequest;
+                const editRes: EditResponse = editResponses.at(i) as EditResponse;
+
+                GMProtoMapper._processResponse(editReq, editRes, context);
+            }
+        } else {
+            throw new Error("Invalid combination of PostEditRequest and PostEditResponse type!");
         }
     }
 
-    private static _processResponse(response: EditResponse, context: RunnerContext) {
-        if (response.response.case == "setAttributeResponse") {
+    private static _processResponse(request: EditRequest, response: EditResponse, context: RunnerContext) {
+        if (request.request.case == "setAttributeRequest" && response.response.case == "setAttributeResponse") {
+            const editRequest: EditSetAttributeRequest = request.request.value;
             const editResponse: EditSetAttributeResponse = response.response.value;
             if (editResponse.state == EditState.SUCCESS) {
-                context.log("Cool, success!");
+                context.log(`[SUCCESS] Updated Node ${editRequest.node?.nodeType.value}["${editRequest.attributeName}"] -> ${editRequest.attributeValue}`);
             } else if (editResponse.state == EditState.FAILURE) {
-                context.log(`ERROR: ${editResponse.message}`)
+                throw new Error(`${editResponse.message}`)
             } else {
-                context.log("UNKNOWN ERROR!");
+                throw new Error("UNKNOWN ERROR!");
             }
-        } else if (response.response.case == "createEdgeResponse") {
+        } else if (request.request.case == "createEdgeRequest" && response.response.case == "createEdgeResponse") {
+            const editRequest: EditCreateEdgeRequest = request.request.value;
             const editResponse: EditCreateEdgeResponse = response.response.value;
             if (editResponse.state == EditState.SUCCESS) {
-                context.log("Cool, success!");
+                context.log(`[SUCCESS] Created ${editRequest.startNode?.nodeType.value} -${editRequest.referenceName}-> ${editRequest.targetNode?.nodeType.value}`);
             } else if (editResponse.state == EditState.FAILURE) {
-                context.log(`ERROR: ${editResponse.message}`)
+                throw new Error(`${editResponse.message}`)
             } else {
-                context.log("UNKNOWN ERROR!");
+                throw new Error("UNKNOWN ERROR!");
             }
-        } else if (response.response.case == "createNodeResponse") {
+        } else if (request.request.case == "createNodeRequest" && response.response.case == "createNodeResponse") {
+            const editRequest: EditCreateNodeRequest = request.request.value;
             const editResponse: EditCreateNodeResponse = response.response.value;
             if (editResponse.state == EditState.SUCCESS) {
-                context.log("Cool, success!");
-                context.log(`Created new node with id: ${editResponse.createdNodeId}`);
+                context.log(`[SUCCESS] Created new ${editRequest.nodeType}(${editRequest.assignments.map(x => `${x.attributeName} = ${x.attributeValue}`).join(", ")}) -> NEW ID: ${editResponse.createdNodeId}`);
             } else if (editResponse.state == EditState.FAILURE) {
-                context.log(`ERROR: ${editResponse.message}`)
+                throw new Error(`${editResponse.message}`)
             } else {
-                context.log("UNKNOWN ERROR!");
+                throw new Error("UNKNOWN ERROR!");
             }
-        } else if (response.response.case == "deleteEdgeResponse") {
+        } else if (request.request.case == "deleteEdgeRequest" && response.response.case == "deleteEdgeResponse") {
+            const editRequest: EditDeleteEdgeRequest = request.request.value;
             const editResponse: EditDeleteEdgeResponse = response.response.value;
             if (editResponse.state == EditState.SUCCESS) {
-                context.log("Cool, success!");
+                context.log(`[SUCCESS] Deleted ${editRequest.startNode?.nodeType.value} -${editRequest.referenceName}-> ${editRequest.targetNode?.nodeType.value}`);
             } else if (editResponse.state == EditState.FAILURE) {
-                context.log(`ERROR: ${editResponse.message}`)
+                throw new Error(`${editResponse.message}`)
             } else {
-                context.log("UNKNOWN ERROR!");
+                throw new Error("UNKNOWN ERROR!");
             }
-        } else if (response.response.case == "deleteNodeResponse") {
+        } else if (request.request.case == "deleteNodeRequest" && response.response.case == "deleteNodeResponse") {
+            const editRequest: EditDeleteNodeRequest = request.request.value;
             const editResponse: EditDeleteNodeResponse = response.response.value;
             if (editResponse.state == EditState.SUCCESS) {
-                context.log("Cool, success!");
+                context.log(`[SUCCESS] Deleted Node (${editRequest.node?.nodeType.value})`);
                 for (const removedEdge of editResponse.removedEdges) {
                     context.log(`[ImplicitlyRemovedEdge] (${removedEdge.fromNode?.nodeType.value ?? "UNKNOWN"})-${removedEdge.reference}->(${removedEdge.toNode?.nodeType.value ?? "UNKNOWN"})`);
                 }
             } else if (editResponse.state == EditState.FAILURE) {
-                context.log(`ERROR: ${editResponse.message}`)
+                throw new Error(`${editResponse.message}`)
             } else {
-                context.log("UNKNOWN ERROR!");
+                throw new Error("UNKNOWN ERROR!");
             }
         }
     }
