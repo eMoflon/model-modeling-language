@@ -1,4 +1,5 @@
 import type {LangiumServices, Module, PartialLangiumServices} from 'langium';
+import {GraphManipulationLanguageScopeProvider} from "./graph-manipulation-language-scope-provider.js";
 
 
 /**
@@ -8,9 +9,9 @@ export type GraphManipulationLanguageAddedServices = {
     // validation: {
     //     GraphManipulationLanguageValidator: GraphManipulationLanguageValidator
     // },
-    // references:{
-    //     ScopeProvider: GraphManipulationLanguageScopeProvider
-    // },
+    references: {
+        ScopeProvider: GraphManipulationLanguageScopeProvider
+    },
     // lsp: {
     //     CompletionProvider: GraphManipulationLanguageCompletionProvider,
     //     Formatter: GraphManipulationLanguageFormatter,
@@ -33,9 +34,9 @@ export const GraphManipulationLanguageModule: Module<GraphManipulationLanguageSe
     // validation: {
     //     GraphManipulationLanguageValidator: (services) => new GraphManipulationLanguageValidator(services),
     // },
-    // references: {
-    //     ScopeProvider: (services) => new GraphManipulationLanguageScopeProvider(services),
-    // },
+    references: {
+        ScopeProvider: (services) => new GraphManipulationLanguageScopeProvider(services),
+    },
     // lsp: {
     //     CompletionProvider: (services) => new GraphManipulationLanguageCompletionProvider(services),
     //     Formatter: () => new GraphManipulationLanguageFormatter(),
