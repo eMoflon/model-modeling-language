@@ -1,6 +1,7 @@
 import type {LangiumServices, Module, PartialLangiumServices} from 'langium';
 import {GraphManipulationLanguageScopeProvider} from "./graph-manipulation-language-scope-provider.js";
 import {GraphManipulationLanguageCompletionProvider} from "./graph-manipulation-language-completion-provider.js";
+import {GraphManipulationLanguageSemanticTokenProvider} from "./graph-manipulation-language-semantic-token-provider.js";
 
 
 /**
@@ -16,7 +17,7 @@ export type GraphManipulationLanguageAddedServices = {
     lsp: {
         CompletionProvider: GraphManipulationLanguageCompletionProvider,
         //     Formatter: GraphManipulationLanguageFormatter,
-        //     SemanticTokenProvider: GraphManipulationLanguageSemanticTokenProvider
+        SemanticTokenProvider: GraphManipulationLanguageSemanticTokenProvider
     }
 }
 
@@ -41,6 +42,6 @@ export const GraphManipulationLanguageModule: Module<GraphManipulationLanguageSe
     lsp: {
         CompletionProvider: (services) => new GraphManipulationLanguageCompletionProvider(services),
         //     Formatter: () => new GraphManipulationLanguageFormatter(),
-        //     SemanticTokenProvider: (services) => new GraphManipulationLanguageSemanticTokenProvider(services)
+        SemanticTokenProvider: (services) => new GraphManipulationLanguageSemanticTokenProvider(services)
     }
 };
