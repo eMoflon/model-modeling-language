@@ -3,15 +3,16 @@ import {GraphManipulationLanguageScopeProvider} from "./graph-manipulation-langu
 import {GraphManipulationLanguageCompletionProvider} from "./graph-manipulation-language-completion-provider.js";
 import {GraphManipulationLanguageSemanticTokenProvider} from "./graph-manipulation-language-semantic-token-provider.js";
 import {GraphManipulationLanguageFormatter} from "./graph-manipulation-language-formatter.js";
+import {GraphManipulationLanguageValidator} from "./graph-manipulation-language-validator.js";
 
 
 /**
  * Declaration of custom services - add your own service classes here.
  */
 export type GraphManipulationLanguageAddedServices = {
-    // validation: {
-    //     GraphManipulationLanguageValidator: GraphManipulationLanguageValidator
-    // },
+    validation: {
+        GraphManipulationLanguageValidator: GraphManipulationLanguageValidator
+    },
     references: {
         ScopeProvider: GraphManipulationLanguageScopeProvider
     },
@@ -34,9 +35,9 @@ export type GraphManipulationLanguageServices = LangiumServices & GraphManipulat
  * selected services, while the custom services must be fully specified.
  */
 export const GraphManipulationLanguageModule: Module<GraphManipulationLanguageServices, PartialLangiumServices & GraphManipulationLanguageAddedServices> = {
-    // validation: {
-    //     GraphManipulationLanguageValidator: (services) => new GraphManipulationLanguageValidator(services),
-    // },
+    validation: {
+        GraphManipulationLanguageValidator: (services) => new GraphManipulationLanguageValidator(services),
+    },
     references: {
         ScopeProvider: (services) => new GraphManipulationLanguageScopeProvider(services),
     },

@@ -21,6 +21,9 @@ import {
     registerValidationChecks as registerGraphConstraintLanguageValidations
 } from "./graph-constraint-language-validator.js";
 import {
+    registerValidationChecks as registerGraphManipulationLanguageValidations
+} from "./graph-manipulation-language-validator.js";
+import {
     GraphManipulationLanguageModule,
     GraphManipulationLanguageServices
 } from "./graph-manipulation-language-module.js";
@@ -70,6 +73,6 @@ export function createMmlAndGclServices(context: DefaultSharedModuleContext): {
     shared.ServiceRegistry.register(gmlServices);
     registerModelModelingLanguageValidations(mmlServices);
     registerGraphConstraintLanguageValidations(gclServices);
-    //registerGraphManipulationLanguageValidations(gmlServices);
+    registerGraphManipulationLanguageValidations(gmlServices);
     return {shared, mmlServices, gclServices, gmlServices};
 }
