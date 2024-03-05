@@ -49,7 +49,7 @@ function startLanguageClient(context: vscode.ExtensionContext): LanguageClient {
         debug: {module: serverModule, transport: TransportKind.ipc, options: debugOptions}
     };
 
-    const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*.(mml|gc)');
+    const fileSystemWatcher = vscode.workspace.createFileSystemWatcher('**/*.(mml|gc|gm)');
     context.subscriptions.push(fileSystemWatcher);
 
     // Options to control the language client
@@ -62,6 +62,10 @@ function startLanguageClient(context: vscode.ExtensionContext): LanguageClient {
             {
                 scheme: 'file',
                 language: 'graph-constraint-language'
+            },
+            {
+                scheme: 'file',
+                language: 'graph-manipulation-language'
             },
             {
                 scheme: 'vscode-notebook-cell',
