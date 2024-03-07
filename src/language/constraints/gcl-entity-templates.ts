@@ -318,11 +318,13 @@ export class ConstraintPatternDeclarationEntity {
 
 export class FixContainerEntity {
     readonly isEnableContainer: boolean;
+    readonly fixTitle: string;
     readonly statements: FixStatementEntity[];
 
 
     constructor(fixContainer: FixContainer, resolver: GclReferenceStorage) {
         this.isEnableContainer = isEnableFixContainer(fixContainer) && !isDisableFixContainer(fixContainer)
+        this.fixTitle = fixContainer.fixTitle ?? `QuickFix ${fixContainer.$containerIndex ?? "UNKNOWN"}`;
         this.statements = fixContainer.fixStatements.map(x => {
             if (isFixInfoStatement(x)) {
                 return new FixInfoStatementEntity(x);

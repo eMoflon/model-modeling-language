@@ -139,6 +139,10 @@ export class GraphConstraintLanguageFormatter extends AbstractFormatter {
             formatter.interior(bracesOpen, bracesClose).prepend(Formatting.indent());
             bracesOpen.prepend(Formatting.oneSpace());
             bracesClose.prepend(Formatting.newLine());
+            if (node.fixTitle != undefined) {
+                formatter.keyword('(').prepend(Formatting.noSpace());
+                formatter.property('fixTitle').surround(Formatting.noSpace());
+            }
         } else if (isDisableFixContainer(node)) {
             const formatter = this.getNodeFormatter(node);
             const bracesOpen = formatter.keyword('{');
