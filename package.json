@@ -219,6 +219,27 @@
           "group": "navigation"
         }
       ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "model-server-generator",
+          "title": "Model Server Generator",
+          "icon": "$(coffee)"
+        }
+      ]
+    },
+    "views": {
+      "model-server-generator": [
+        {
+          "id": "model-server-file-explorer",
+          "name": "Project Resources"
+        },
+        {
+          "id": "model-server-selected-resources",
+          "name": "Selected Resources"
+        }
+      ]
     }
   },
   "activationEvents": [
