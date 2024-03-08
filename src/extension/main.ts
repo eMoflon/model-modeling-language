@@ -10,6 +10,7 @@ import {TestModelServerCommand} from "./commands/test-model-server-command.js";
 import {ModelServerConnector} from "./model-server-connector.js";
 import {GMNotebookSerializer} from "./gmnotebook/GMNotebookSerializer.js";
 import {GMNotebookKernel} from "./gmnotebook/GMNotebookKernel.js";
+import {ModelServerGeneratorProjectResourcesView} from "./views/model-server-generator-project-resources-view.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
@@ -25,6 +26,7 @@ export function activate(context: vscode.ExtensionContext): void {
     modelServerConnector = new ModelServerConnector(modelServerLogger);
     registerCommands(context);
     registerGMNotebook(context);
+    registerViews();
 }
 
 // This function is called when the extension is deactivated.
@@ -105,4 +107,12 @@ function registerGMNotebook(context: vscode.ExtensionContext) {
         ),
         new GMNotebookKernel(modelServerConnector)
     );
+}
+
+function registerViews() {
+    const rootPath =
+        vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
+            ? vscode.workspace.workspaceFolders[0].uri.fsPath
+            : undefined;
+    new ModelServerGeneratorProjectResourcesView(rootPath).register();
 }
