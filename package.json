@@ -154,6 +154,12 @@
         "command": "model-modeling-language.testModelServer",
         "title": "Test Model Server",
         "category": "Model Modeling Language"
+      },
+      {
+        "command": "model-modeling-language.startModelServer",
+        "title": "Build and start ModelServer",
+        "category": "Model Modeling Language",
+        "icon": "$(run)"
       }
     ],
     "menus": {
@@ -172,6 +178,10 @@
         },
         {
           "command": "model-modeling-language.serializeConstraintFileToFile",
+          "when": "false"
+        },
+        {
+          "command": "model-modeling-language.startModelServer",
           "when": "false"
         }
       ],
@@ -216,6 +226,13 @@
         {
           "when": "resourceLangId == graph-constraint-language",
           "command": "model-modeling-language.serializeConstraintFileToFile",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "model-modeling-language.startModelServer",
+          "when": "view == model-server-selected-resources",
           "group": "navigation"
         }
       ]
