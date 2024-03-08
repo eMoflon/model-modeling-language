@@ -8,6 +8,7 @@ import {DeserializeEcoreToMmlCommand} from "./commands/deserialize-ecore-to-mml-
 import {SerializeConstraintFileToFileCommand} from "./commands/serialize-constraint-file-to-file-command.js";
 import {TestModelServerCommand} from "./commands/test-model-server-command.js";
 import {ModelServerConnector} from "./model-server-connector.js";
+import {ModelServerGeneratorProjectResourcesView} from "./views/model-server-generator-project-resources-view.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
@@ -22,6 +23,7 @@ export function activate(context: vscode.ExtensionContext): void {
     modelServerLogger = vscode.window.createOutputChannel("Model Modeling Language Model Server")
     modelServerConnector = new ModelServerConnector(modelServerLogger);
     registerCommands(context);
+    registerViews();
 }
 
 // This function is called when the extension is deactivated.
@@ -85,4 +87,12 @@ function registerCommands(context: vscode.ExtensionContext) {
     new DeserializeEcoreToMmlCommand(client, logger).register(context);
     new SerializeConstraintFileToFileCommand(client, logger).register(context);
     new TestModelServerCommand(client, logger, modelServerConnector).register(context);
+}
+
+function registerViews() {
+    const rootPath =
+        vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
+            ? vscode.workspace.workspaceFolders[0].uri.fsPath
+            : undefined;
+    new ModelServerGeneratorProjectResourcesView(rootPath).register();
 }
