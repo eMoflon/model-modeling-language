@@ -10,6 +10,7 @@ import {TestModelServerCommand} from "./commands/test-model-server-command.js";
 import {ModelServerConnector} from "./model-server-connector.js";
 import {ModelServerGeneratorViewContainer} from "./views/model-server-generator-view-container.js";
 import {StartModelServerCommand} from "./commands/start-model-server-command.js";
+import {RemoveSelectedResourceCommand} from "./commands/remove-selected-resource-command.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
@@ -90,4 +91,5 @@ function registerCommands(context: vscode.ExtensionContext) {
     new SerializeConstraintFileToFileCommand(client, logger).register(context);
     new TestModelServerCommand(client, logger, modelServerConnector).register(context);
     new StartModelServerCommand(client, logger, modelServerGeneratorViewContainer).register(context);
+    new RemoveSelectedResourceCommand(client, logger, modelServerGeneratorViewContainer).register(context);
 }

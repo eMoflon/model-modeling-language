@@ -133,6 +133,12 @@
         "title": "Build and start ModelServer",
         "category": "Model Modeling Language",
         "icon": "$(run)"
+      },
+      {
+        "command": "model-modeling-language.removeSelectedResource",
+        "title": "Unselect a selected Project Resource",
+        "category": "Model Modeling Language",
+        "icon": "$(close)"
       }
     ],
     "menus": {
@@ -155,6 +161,10 @@
         },
         {
           "command": "model-modeling-language.startModelServer",
+          "when": "false"
+        },
+        {
+          "command": "model-modeling-language.removeSelectedResource",
           "when": "false"
         }
       ],
@@ -207,6 +217,13 @@
           "command": "model-modeling-language.startModelServer",
           "when": "view == model-server-selected-resources",
           "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "model-modeling-language.removeSelectedResource",
+          "when": "view == model-server-selected-resources && viewItem != DIRECTORY",
+          "group": "inline"
         }
       ]
     },
