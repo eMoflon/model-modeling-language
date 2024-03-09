@@ -4,7 +4,7 @@ import {URI} from "vscode-uri";
 export class ProjectResource extends vscode.TreeItem {
 
     constructor(public override readonly label: string,
-                public override readonly resourceUri: URI,
+                public override readonly resourceUri: URI | undefined,
                 private resourceType: ProjectResourceType,
                 public override readonly collapsibleState: vscode.TreeItemCollapsibleState) {
         super(label, collapsibleState);

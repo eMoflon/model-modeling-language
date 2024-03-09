@@ -21,7 +21,10 @@ export class ModelServerGeneratorProjectResourcesView extends ExtensionTreeView<
         }
 
         if (element) {
-            return Promise.resolve(this.getDirectoryElements(element.resourceUri.fsPath));
+            if (element.resourceUri != undefined) {
+                return Promise.resolve(this.getDirectoryElements(element.resourceUri.fsPath));
+            }
+            return Promise.resolve([]);
         } else {
             return Promise.resolve(this.getDirectoryElements(this.workspaceRoot));
         }
