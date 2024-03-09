@@ -15,21 +15,18 @@ export class ModelServerGeneratorProjectResourcesView extends ExtensionTreeView<
 
     getChildren(element: ProjectResource | undefined): ProviderResult<ProjectResource[]> {
         if (!this.workspaceRoot) {
-            showUIMessage(MessageType.INFO, "Could not determine workspace!");
+            showUIMessage(MessageType.ERROR, "Could not determine workspace!");
             return Promise.resolve([]);
         }
 
         if (element) {
-            showUIMessage(MessageType.INFO, `GetChildren with element`)
             return Promise.resolve(this.getDirectoryElements(element.resourceUri.fsPath));
         } else {
-            showUIMessage(MessageType.INFO, `GetChildren without element`)
             return Promise.resolve(this.getDirectoryElements(this.workspaceRoot));
         }
     }
 
     getDirectoryElements(directoryPath: string): ProjectResource[] {
-        showUIMessage(MessageType.INFO, `getDirectoryElements -> ${directoryPath}`);
         if (!this.pathExists(directoryPath)) {
             return [];
         }
