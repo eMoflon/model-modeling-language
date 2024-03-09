@@ -38,16 +38,16 @@ export class ModelServerGeneratorProjectResourcesView extends ExtensionTreeView<
             const fileUri: URI = URI.file(fullFilePath);
 
             if (fs.lstatSync(fileUri.fsPath).isDirectory()) {
-                resources.push(new ProjectResource(file, fileUri, "", vscode.TreeItemCollapsibleState.Collapsed))
+                resources.push(new ProjectResource(file, fileUri, ProjectResourceType.DIRECTORY, vscode.TreeItemCollapsibleState.Collapsed))
             } else {
                 const fileExtension: string = Utils.extname(fileUri);
-                let resourceType: string | undefined = undefined;
+                let resourceType: ProjectResourceType | undefined = undefined;
                 if (fileExtension == ".ecore") {
-                    resourceType = "Ecore";
+                    resourceType = ProjectResourceType.ECORE_RESOURCE;
                 } else if (fileExtension == ".xmi") {
-                    resourceType = "XMI";
+                    resourceType = ProjectResourceType.XMI_RESOURCE;
                 } else if (fileExtension == ".gc") {
-                    resourceType = "GCL";
+                    resourceType = ProjectResourceType.GC_RESOURCE;
                 }
                 if (resourceType != undefined) {
                     resources.push(new ProjectResource(file, fileUri, resourceType, vscode.TreeItemCollapsibleState.None))
@@ -77,11 +77,30 @@ export class ProjectResource extends vscode.TreeItem {
 
     constructor(public override readonly label: string,
                 public override readonly resourceUri: URI,
-                private resourceType: string,
+                private resourceType: ProjectResourceType,
                 public override readonly collapsibleState: vscode.TreeItemCollapsibleState) {
         super(label, collapsibleState);
-        this.tooltip = this.resourceType != "" ? `${label} (${this.resourceType})` : undefined;
-        this.description = this.resourceType;
-        this.iconPath = new ThemeIcon("coffee");
+
+        if (this.resourceType == ProjectResourceType.ECORE_RESOURCE) {
+            this.description = "Ecore";
+            this.iconPath = new ThemeIcon("circuit-board");
+        } else if (this.resourceType == ProjectResourceType.XMI_RESOURCE) {
+            this.description = "XMI";
+            this.iconPath = new ThemeIcon("combine");
+        } else if (this.resourceType == ProjectResourceType.GC_RESOURCE) {
+            this.description = "GC";
+            this.iconPath = new ThemeIcon("github-action");
+        }
+
+        if (this.resourceType != ProjectResourceType.DIRECTORY) {
+            this.tooltip = `${this.label} (${this.description})`;
+        }
     }
+}
+
+enum ProjectResourceType {
+    DIRECTORY,
+    ECORE_RESOURCE,
+    XMI_RESOURCE,
+    GC_RESOURCE
 }
