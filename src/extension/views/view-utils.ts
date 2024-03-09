@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import {ProviderResult, TreeItem} from "vscode";
+import {ProviderResult, TreeDragAndDropController, TreeItem} from "vscode";
 
 export abstract class ExtensionView {
     protected readonly viewId: string;
@@ -17,14 +17,15 @@ export abstract class ExtensionTreeView<T> extends ExtensionView implements vsco
     private _onDidChangeTreeData: vscode.EventEmitter<T | undefined | null | void> = new vscode.EventEmitter<T | undefined | null | void>();
     readonly onDidChangeTreeData: vscode.Event<T | undefined | null | void> = this._onDidChangeTreeData.event;
 
-    constructor(viewId: string) {
+    protected constructor(viewId: string) {
         super(viewId);
     }
 
     register() {
         this._treeView = vscode.window.createTreeView(this.viewId, {
             canSelectMany: false,
-            treeDataProvider: this
+            treeDataProvider: this,
+            dragAndDropController: this.getDragAndDropController()
         })
     }
 
@@ -34,8 +35,10 @@ export abstract class ExtensionTreeView<T> extends ExtensionView implements vsco
     }
 
     refresh(): void {
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(undefined);
     }
+
+    abstract getDragAndDropController(): TreeDragAndDropController<T> | undefined;
 
     abstract getChildren(element?: T): ProviderResult<T[]>;
 

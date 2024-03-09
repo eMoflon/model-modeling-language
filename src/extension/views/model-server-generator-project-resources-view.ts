@@ -1,6 +1,6 @@
 import {ExtensionTreeView} from "./view-utils.js";
 import * as vscode from "vscode";
-import {ProviderResult, TreeItem} from "vscode";
+import {CancellationToken, DataTransfer, ProviderResult, TreeDragAndDropController, TreeItem} from "vscode";
 import {URI, Utils} from "vscode-uri";
 import {showUIMessage} from "../../shared/NotificationUtil.js";
 import {MessageType} from "../../shared/MmlNotificationTypes.js";
@@ -73,6 +73,28 @@ export class ModelServerGeneratorProjectResourcesView extends ExtensionTreeView<
 
     getTreeItem(element: ProjectResource): TreeItem | Thenable<TreeItem> {
         return element;
+    }
+
+    override getDragAndDropController(): vscode.TreeDragAndDropController<ProjectResource> | undefined {
+        return new ProjectResourcesDragAndDropController();
+    }
+}
+
+class ProjectResourcesDragAndDropController implements TreeDragAndDropController<ProjectResource> {
+    readonly dragMimeTypes: readonly string[];
+    readonly dropMimeTypes: readonly string[];
+
+    constructor() {
+        this.dragMimeTypes = ['application/vnd.code.tree.model-server-selected-resources'];
+        this.dropMimeTypes = [];
+    }
+
+    handleDrag(source: ProjectResource[], dataTransfer: DataTransfer, token: CancellationToken): Thenable<void> | void {
+        const filteredResources: ProjectResource[] = source.filter(x => x.resourceType != ProjectResourceType.DIRECTORY);
+
+        if (filteredResources.length > 0) {
+            dataTransfer.set('application/vnd.code.tree.model-server-selected-resources', new vscode.DataTransferItem(filteredResources));
+        }
     }
 }
 

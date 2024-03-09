@@ -1,39 +1,39 @@
 import {ExtensionTreeView} from "./view-utils.js";
 import {ProjectResource, ProjectResourceType} from "./project-resource-item.js";
-import {URI, Utils} from "vscode-uri";
-import vscode, {ProviderResult, TreeItem} from "vscode";
+import vscode, {CancellationToken, DataTransfer, ProviderResult, TreeDragAndDropController, TreeItem} from "vscode";
+import {showUIMessage} from "../../shared/NotificationUtil.js";
+import {MessageType} from "../../shared/MmlNotificationTypes.js";
 
 export class ModelServerGeneratorSelectedResourcesView extends ExtensionTreeView<ProjectResource> {
-    private selectedEcore: URI | undefined;
-    private selectedXMI: URI | undefined;
-    private selectedGC: URI | undefined;
+    private selectedEcore: ProjectResource | undefined = undefined;
+    private selectedXMI: ProjectResource | undefined = undefined;
+    private selectedGC: ProjectResource | undefined = undefined;
 
     constructor() {
         super('model-server-selected-resources');
     }
 
-    selectFile(selectedFile: URI): boolean {
-        const fileExtension: string = Utils.extname(selectedFile);
-        if (fileExtension == ".ecore") {
+    selectFile(selectedResource: ProjectResource): boolean {
+        if (selectedResource.resourceType == ProjectResourceType.ECORE_RESOURCE) {
             if (this.selectedEcore == undefined) {
-                this.selectedEcore = selectedFile;
+                this.selectedEcore = selectedResource;
                 return true;
             }
-        } else if (fileExtension == ".xmi") {
+        } else if (selectedResource.resourceType == ProjectResourceType.XMI_RESOURCE) {
             if (this.selectedXMI == undefined) {
-                this.selectedXMI = selectedFile;
+                this.selectedXMI = selectedResource;
                 return true;
             }
-        } else if (fileExtension == ".gc") {
+        } else if (selectedResource.resourceType == ProjectResourceType.GC_RESOURCE) {
             if (this.selectedGC == undefined) {
-                this.selectedGC = selectedFile;
+                this.selectedGC = selectedResource;
                 return true;
             }
         }
         return false;
     }
 
-    unselectFile(selectedFile: URI): boolean {
+    /*unselectFile(selectedFile: URI): boolean {
         const fileExtension: string = Utils.extname(selectedFile);
         if (fileExtension == ".ecore") {
             if (this.selectedEcore != undefined && this.selectedEcore == selectedFile) {
@@ -52,19 +52,16 @@ export class ModelServerGeneratorSelectedResourcesView extends ExtensionTreeView
             }
         }
         return false;
-    }
+    }*/
 
     getChildren(element?: ProjectResource): ProviderResult<ProjectResource[]> {
         if (element) {
-            if (element.resourceUri != undefined) {
-                const fileName = Utils.basename(element.resourceUri);
-                if (element.label == "Metamodel" && this.selectedEcore != undefined) {
-                    return Promise.resolve([new ProjectResource(fileName, element.resourceUri, ProjectResourceType.ECORE_RESOURCE, vscode.TreeItemCollapsibleState.None)]);
-                } else if (element.label == "Model" && this.selectedXMI != undefined) {
-                    return Promise.resolve([new ProjectResource(fileName, element.resourceUri, ProjectResourceType.XMI_RESOURCE, vscode.TreeItemCollapsibleState.None)]);
-                } else if (element.label == "Constraints" && this.selectedGC != undefined) {
-                    return Promise.resolve([new ProjectResource(fileName, element.resourceUri, ProjectResourceType.GC_RESOURCE, vscode.TreeItemCollapsibleState.None)]);
-                }
+            if (element.label == "Metamodel" && this.selectedEcore != undefined) {
+                return Promise.resolve([new ProjectResource(this.selectedEcore.label, this.selectedEcore.resourceUri, this.selectedEcore.resourceType, vscode.TreeItemCollapsibleState.None)]);
+            } else if (element.label == "Model" && this.selectedXMI != undefined) {
+                return Promise.resolve([new ProjectResource(this.selectedXMI.label, this.selectedXMI.resourceUri, this.selectedXMI.resourceType, vscode.TreeItemCollapsibleState.None)]);
+            } else if (element.label == "Constraints" && this.selectedGC != undefined) {
+                return Promise.resolve([new ProjectResource(this.selectedGC.label, this.selectedGC.resourceUri, this.selectedGC.resourceType, vscode.TreeItemCollapsibleState.None)]);
             }
             return Promise.resolve([]);
         } else {
@@ -79,5 +76,43 @@ export class ModelServerGeneratorSelectedResourcesView extends ExtensionTreeView
     getTreeItem(element: ProjectResource): TreeItem | Thenable<TreeItem> {
         return element;
     }
+
+    override getDragAndDropController(): vscode.TreeDragAndDropController<ProjectResource> | undefined {
+        return new SelectedResourcesDragAndDropController(this);
+    }
 }
 
+
+class SelectedResourcesDragAndDropController implements TreeDragAndDropController<ProjectResource> {
+    readonly dragMimeTypes: readonly string[];
+    readonly dropMimeTypes: readonly string[];
+    private readonly _view: ModelServerGeneratorSelectedResourcesView;
+
+    constructor(view: ModelServerGeneratorSelectedResourcesView) {
+        this.dragMimeTypes = [];
+        this.dropMimeTypes = ['application/vnd.code.tree.model-server-file-explorer'];
+        this._view = view;
+    }
+
+    handleDrop(target: ProjectResource | undefined, dataTransfer: DataTransfer, token: CancellationToken): Thenable<void> | void {
+        const transferItemAppContent = dataTransfer.get('application/vnd.code.tree.model-server-selected-resources');
+        if (transferItemAppContent) {
+            const droppedResources: ProjectResource[] = JSON.parse(transferItemAppContent.value) as ProjectResource[];
+            if (droppedResources.length == 0) {
+                return;
+            } else if (droppedResources.length > 1) {
+                showUIMessage(MessageType.ERROR, "You can only drop a single ProjectResource!");
+            } else {
+                const droppedResource: ProjectResource = droppedResources.at(0)!;
+                if (droppedResource.resourceType == ProjectResourceType.DIRECTORY) {
+                    showUIMessage(MessageType.ERROR, "You can not drop a directory!");
+                } else if (!this._view.selectFile(droppedResource)) {
+                    showUIMessage(MessageType.ERROR, "Could not select ProjectResource! Is there already a resource of this type selected?");
+                } else {
+                    this._view.refresh();
+                }
+            }
+            return;
+        }
+    }
+}
