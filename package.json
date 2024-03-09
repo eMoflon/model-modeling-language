@@ -162,6 +162,12 @@
         "icon": "$(run)"
       },
       {
+        "command": "model-modeling-language.refreshProjectResources",
+        "title": "Refresh all Project Resources",
+        "category": "Model Modeling Language",
+        "icon": "$(refresh)"
+      },
+      {
         "command": "model-modeling-language.removeSelectedResource",
         "title": "Unselect a selected Project Resource",
         "category": "Model Modeling Language",
@@ -188,6 +194,10 @@
         },
         {
           "command": "model-modeling-language.startModelServer",
+          "when": "false"
+        },
+        {
+          "command": "model-modeling-language.refreshProjectResources",
           "when": "false"
         },
         {
@@ -243,6 +253,11 @@
         {
           "command": "model-modeling-language.startModelServer",
           "when": "view == model-server-selected-resources",
+          "group": "navigation"
+        },
+        {
+          "command": "model-modeling-language.refreshProjectResources",
+          "when": "view == model-server-file-explorer",
           "group": "navigation"
         }
       ],
