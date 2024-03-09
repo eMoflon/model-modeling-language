@@ -10,11 +10,13 @@ import {TestModelServerCommand} from "./commands/test-model-server-command.js";
 import {ModelServerConnector} from "./model-server-connector.js";
 import {ModelServerGeneratorProjectResourcesView} from "./views/model-server-generator-project-resources-view.js";
 import {ModelServerGeneratorSelectedResourcesView} from "./views/model-server-generator-selected-resources-view.js";
+import {ModelServerGeneratorViewContainer} from "./views/model-server-generator-view-container.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
 let modelServerLogger: vscode.OutputChannel;
 let modelServerConnector: ModelServerConnector;
+let modelServerGeneratorViewContainer: ModelServerGeneratorViewContainer;
 
 
 // This function is called when the extension is activated.
@@ -23,8 +25,8 @@ export function activate(context: vscode.ExtensionContext): void {
     logger = vscode.window.createOutputChannel("Model Modeling Language CLI")
     modelServerLogger = vscode.window.createOutputChannel("Model Modeling Language Model Server")
     modelServerConnector = new ModelServerConnector(modelServerLogger);
+    modelServerGeneratorViewContainer = new ModelServerGeneratorViewContainer();
     registerCommands(context);
-    registerViews();
 }
 
 // This function is called when the extension is deactivated.
@@ -88,13 +90,4 @@ function registerCommands(context: vscode.ExtensionContext) {
     new DeserializeEcoreToMmlCommand(client, logger).register(context);
     new SerializeConstraintFileToFileCommand(client, logger).register(context);
     new TestModelServerCommand(client, logger, modelServerConnector).register(context);
-}
-
-function registerViews() {
-    const rootPath =
-        vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
-            ? vscode.workspace.workspaceFolders[0].uri.fsPath
-            : undefined;
-    new ModelServerGeneratorProjectResourcesView(rootPath).register();
-    new ModelServerGeneratorSelectedResourcesView().register();
 }

@@ -1,6 +1,7 @@
 import {ExtensionTreeView} from "./view-utils.js";
 import {ProjectResource, ProjectResourceType} from "./project-resource-item.js";
 import vscode, {CancellationToken, DataTransfer, ProviderResult, TreeDragAndDropController, TreeItem} from "vscode";
+import {URI} from "vscode-uri";
 import {showUIMessage} from "../../shared/NotificationUtil.js";
 import {MessageType} from "../../shared/MmlNotificationTypes.js";
 
@@ -33,26 +34,31 @@ export class ModelServerGeneratorSelectedResourcesView extends ExtensionTreeView
         return false;
     }
 
-    /*unselectFile(selectedFile: URI): boolean {
-        const fileExtension: string = Utils.extname(selectedFile);
-        if (fileExtension == ".ecore") {
-            if (this.selectedEcore != undefined && this.selectedEcore == selectedFile) {
+    unselectResource(selectedResource: ProjectResource): boolean {
+        if (selectedResource.resourceType == ProjectResourceType.ECORE_RESOURCE) {
+            if (this.selectedEcore != undefined && this.selectedEcore.resourceUri == selectedResource.resourceUri) {
                 this.selectedEcore = undefined;
                 return true;
             }
-        } else if (fileExtension == ".xmi") {
-            if (this.selectedXMI != undefined && this.selectedXMI == selectedFile) {
+        } else if (selectedResource.resourceType == ProjectResourceType.XMI_RESOURCE) {
+            if (this.selectedXMI != undefined && this.selectedXMI.resourceUri == selectedResource.resourceUri) {
                 this.selectedXMI = undefined;
                 return true;
             }
-        } else if (fileExtension == ".gc") {
-            if (this.selectedGC != undefined && this.selectedGC == selectedFile) {
+        } else if (selectedResource.resourceType == ProjectResourceType.GC_RESOURCE) {
+            if (this.selectedGC != undefined && this.selectedGC.resourceUri == selectedResource.resourceUri) {
                 this.selectedGC = undefined;
                 return true;
             }
         }
         return false;
-    }*/
+    }
+
+    unselectAllResources(): void {
+        this.selectedEcore = undefined;
+        this.selectedXMI = undefined;
+        this.selectedGC = undefined;
+    }
 
     getChildren(element?: ProjectResource): ProviderResult<ProjectResource[]> {
         if (element) {
@@ -79,6 +85,14 @@ export class ModelServerGeneratorSelectedResourcesView extends ExtensionTreeView
 
     override getDragAndDropController(): vscode.TreeDragAndDropController<ProjectResource> | undefined {
         return new SelectedResourcesDragAndDropController(this);
+    }
+
+    get selectedResources(): { ecore: URI | undefined, xmi: URI | undefined, gc: URI | undefined } {
+        return {
+            ecore: this.selectedEcore?.resourceUri,
+            xmi: this.selectedXMI?.resourceUri,
+            gc: this.selectedGC?.resourceUri
+        }
     }
 }
 
