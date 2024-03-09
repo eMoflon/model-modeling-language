@@ -1,11 +1,12 @@
 import {ExtensionTreeView} from "./view-utils.js";
 import * as vscode from "vscode";
-import {ProviderResult, ThemeIcon, TreeItem} from "vscode";
+import {ProviderResult, TreeItem} from "vscode";
 import {URI, Utils} from "vscode-uri";
 import {showUIMessage} from "../../shared/NotificationUtil.js";
 import {MessageType} from "../../shared/MmlNotificationTypes.js";
 import fs from "fs";
 import path from "node:path";
+import {ProjectResource, ProjectResourceType} from "./project-resource-item.js";
 
 export class ModelServerGeneratorProjectResourcesView extends ExtensionTreeView<ProjectResource> {
 
@@ -70,37 +71,5 @@ export class ModelServerGeneratorProjectResourcesView extends ExtensionTreeView<
     getTreeItem(element: ProjectResource): TreeItem | Thenable<TreeItem> {
         return element;
     }
-
 }
 
-export class ProjectResource extends vscode.TreeItem {
-
-    constructor(public override readonly label: string,
-                public override readonly resourceUri: URI,
-                private resourceType: ProjectResourceType,
-                public override readonly collapsibleState: vscode.TreeItemCollapsibleState) {
-        super(label, collapsibleState);
-
-        if (this.resourceType == ProjectResourceType.ECORE_RESOURCE) {
-            this.description = "Ecore";
-            this.iconPath = new ThemeIcon("circuit-board");
-        } else if (this.resourceType == ProjectResourceType.XMI_RESOURCE) {
-            this.description = "XMI";
-            this.iconPath = new ThemeIcon("combine");
-        } else if (this.resourceType == ProjectResourceType.GC_RESOURCE) {
-            this.description = "GC";
-            this.iconPath = new ThemeIcon("github-action");
-        }
-
-        if (this.resourceType != ProjectResourceType.DIRECTORY) {
-            this.tooltip = `${this.label} (${this.description})`;
-        }
-    }
-}
-
-enum ProjectResourceType {
-    DIRECTORY,
-    ECORE_RESOURCE,
-    XMI_RESOURCE,
-    GC_RESOURCE
-}
