@@ -11,6 +11,7 @@ import {ModelServerConnector} from "./model-server-connector.js";
 import {GMNotebookSerializer} from "./gmnotebook/GMNotebookSerializer.js";
 import {GMNotebookKernel} from "./gmnotebook/GMNotebookKernel.js";
 import {ModelServerGeneratorViewContainer} from "./views/model-server-generator-view-container.js";
+import {StartModelServerCommand} from "./commands/start-model-server-command.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
@@ -99,6 +100,7 @@ function registerCommands(context: vscode.ExtensionContext) {
     new DeserializeEcoreToMmlCommand(client, logger).register(context);
     new SerializeConstraintFileToFileCommand(client, logger).register(context);
     new TestModelServerCommand(client, logger, modelServerConnector).register(context);
+    new StartModelServerCommand(client, logger, modelServerGeneratorViewContainer).register(context);
 }
 
 function registerGMNotebook(context: vscode.ExtensionContext) {
