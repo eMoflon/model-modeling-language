@@ -8,9 +8,8 @@ import {DeserializeEcoreToMmlCommand} from "./commands/deserialize-ecore-to-mml-
 import {SerializeConstraintFileToFileCommand} from "./commands/serialize-constraint-file-to-file-command.js";
 import {TestModelServerCommand} from "./commands/test-model-server-command.js";
 import {ModelServerConnector} from "./model-server-connector.js";
-import {ModelServerGeneratorProjectResourcesView} from "./views/model-server-generator-project-resources-view.js";
-import {ModelServerGeneratorSelectedResourcesView} from "./views/model-server-generator-selected-resources-view.js";
 import {ModelServerGeneratorViewContainer} from "./views/model-server-generator-view-container.js";
+import {StartModelServerCommand} from "./commands/start-model-server-command.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
@@ -90,4 +89,5 @@ function registerCommands(context: vscode.ExtensionContext) {
     new DeserializeEcoreToMmlCommand(client, logger).register(context);
     new SerializeConstraintFileToFileCommand(client, logger).register(context);
     new TestModelServerCommand(client, logger, modelServerConnector).register(context);
+    new StartModelServerCommand(client, logger, modelServerGeneratorViewContainer).register(context);
 }
