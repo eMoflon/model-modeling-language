@@ -1,4 +1,4 @@
-import {ExtensionCommand, writeGeneratedMmlFile} from "./command-utils.js";
+import {ExtensionCommand, getCliPath, writeGeneratedMmlFile} from "./command-utils.js";
 import {LanguageClient} from "vscode-languageclient/node.js";
 import * as vscode from "vscode";
 import {showUIMessage} from "../../shared/NotificationUtil.js";
@@ -26,8 +26,10 @@ export class DeserializeEcoreToMmlCommand extends ExtensionCommand {
             return;
         }
 
-        const workspaceConfiguration = vscode.workspace.getConfiguration('model-modeling-language');
-        const connectorPath: string | undefined = workspaceConfiguration.get('cli.path');
+        const connectorPath: string | undefined = getCliPath();
+        if (connectorPath == undefined) {
+            return;
+        }
 
         const connectorCommand = `java -jar ${connectorPath} serialize ${selection.fsPath}`;
 

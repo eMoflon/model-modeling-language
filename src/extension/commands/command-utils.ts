@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import {Uri} from "vscode";
 import {EnhancedSerializedWorkspace, MmlGeneratorRequest, SerializedWorkspace} from "../../shared/MmlConnectorTypes.js";
-import {showUIMessage} from "../../shared/NotificationUtil.js";
+import {showInteractiveUIMessage, showUIMessage} from "../../shared/NotificationUtil.js";
 import {MessageType} from "../../shared/MmlNotificationTypes.js";
 import fs from "fs";
 import path from "node:path";
@@ -122,4 +122,19 @@ export function writeSerializedConstraintDocToFile(serializerResponse: GclSerial
     if (writeToFile(serializerResponse.parentDirPath, `${serializerResponse.filename}.json`, serializerResponse.data)) {
         showUIMessage(MessageType.INFO, `Stored serialized constraints (${targetPath})`);
     }
+}
+
+export function getCliPath(): string | undefined {
+    const workspaceConfiguration: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('model-modeling-language');
+    const connectorPath: string | undefined = workspaceConfiguration.get('cli.path');
+
+    if (connectorPath == undefined || connectorPath == "" || !fs.existsSync(connectorPath)) {
+        showInteractiveUIMessage(MessageType.ERROR, "Could not find the model-modeling-language-cli! Check if the correct path is set!", ["Check settings"]).then((sel: string | undefined) => {
+            if (sel != undefined && sel == "Check settings") {
+                vscode.commands.executeCommand('workbench.action.openSettings', 'model-modeling-language.cli.path');
+            }
+        });
+        return undefined;
+    }
+    return connectorPath;
 }
