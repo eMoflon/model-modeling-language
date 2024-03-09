@@ -11,6 +11,7 @@ import {ModelServerConnector} from "./model-server-connector.js";
 import {GMNotebookSerializer} from "./gmnotebook/GMNotebookSerializer.js";
 import {GMNotebookKernel} from "./gmnotebook/GMNotebookKernel.js";
 import {ModelServerGeneratorProjectResourcesView} from "./views/model-server-generator-project-resources-view.js";
+import {ModelServerGeneratorSelectedResourcesView} from "./views/model-server-generator-selected-resources-view.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
@@ -115,4 +116,5 @@ function registerViews() {
             ? vscode.workspace.workspaceFolders[0].uri.fsPath
             : undefined;
     new ModelServerGeneratorProjectResourcesView(rootPath).register();
+    new ModelServerGeneratorSelectedResourcesView().register();
 }
