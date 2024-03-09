@@ -1,8 +1,7 @@
-import {ExtensionCommand, getSerializedWorkspace} from "./command-utils.js";
+import {ExtensionCommand, getCliPath, getSerializedWorkspace} from "./command-utils.js";
 import {LanguageClient} from "vscode-languageclient/node.js";
 import * as vscode from "vscode";
-import fs from "fs";
-import {showInteractiveUIMessage, showUIMessage} from "../../shared/NotificationUtil.js";
+import {showUIMessage} from "../../shared/NotificationUtil.js";
 import {MessageType} from "../../shared/MmlNotificationTypes.js";
 import {spawn} from "node:child_process";
 import os from "os";
@@ -15,15 +14,8 @@ export class SerializeToEmfCommand extends ExtensionCommand {
 
     execute(...args: any[]): any {
         getSerializedWorkspace(this.client, ...args).then(value => {
-            const workspaceConfiguration = vscode.workspace.getConfiguration('model-modeling-language');
-            const connectorPath: string | undefined = workspaceConfiguration.get('cli.path');
-
-            if (connectorPath == undefined || connectorPath == "" || !fs.existsSync(connectorPath)) {
-                showInteractiveUIMessage(MessageType.ERROR, "Could not find the model-modeling-language-cli! Check if the correct path is set!", ["Check settings"]).then((sel: string | undefined) => {
-                    if (sel != undefined && sel == "Check settings") {
-                        vscode.commands.executeCommand('workbench.action.openSettings', 'model-modeling-language.cli.path');
-                    }
-                });
+            const connectorPath: string | undefined = getCliPath();
+            if (connectorPath == undefined) {
                 return;
             }
 
