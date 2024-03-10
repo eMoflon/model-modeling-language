@@ -14,20 +14,23 @@ import {ModelServerGeneratorViewContainer} from "./views/model-server-generator-
 import {StartModelServerCommand} from "./commands/start-model-server-command.js";
 import {RefreshProjectResourcesCommand} from "./commands/refresh-project-resources-command.js";
 import {RemoveSelectedResourceCommand} from "./commands/remove-selected-resource-command.js";
+import {ModelServerStarter} from "./model-server-starter.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
 let modelServerLogger: vscode.OutputChannel;
 let modelServerConnector: ModelServerConnector;
 let modelServerGeneratorViewContainer: ModelServerGeneratorViewContainer;
+let modelServerStarter: ModelServerStarter;
 
 
 // This function is called when the extension is activated.
 export function activate(context: vscode.ExtensionContext): void {
     client = startLanguageClient(context);
     logger = vscode.window.createOutputChannel("Model Modeling Language CLI")
-    modelServerLogger = vscode.window.createOutputChannel("Model Modeling Language Model Server")
+    modelServerLogger = vscode.window.createOutputChannel("MML Model Server")
     modelServerConnector = new ModelServerConnector(modelServerLogger);
+    modelServerStarter = new ModelServerStarter(modelServerLogger, client);
     modelServerGeneratorViewContainer = new ModelServerGeneratorViewContainer();
     registerCommands(context);
     registerGMNotebook(context);
@@ -103,6 +106,7 @@ function registerCommands(context: vscode.ExtensionContext) {
     new SerializeConstraintFileToFileCommand(client, logger).register(context);
     new TestModelServerCommand(client, logger, modelServerConnector).register(context);
     new StartModelServerCommand(client, logger, modelServerGeneratorViewContainer).register(context);
+    new StartModelServerCommand(client, logger, modelServerGeneratorViewContainer, modelServerStarter).register(context);
     new RefreshProjectResourcesCommand(client, logger, modelServerGeneratorViewContainer).register(context);
     new RemoveSelectedResourceCommand(client, logger, modelServerGeneratorViewContainer).register(context);
 }

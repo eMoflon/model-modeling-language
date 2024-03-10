@@ -252,7 +252,7 @@
       "view/title": [
         {
           "command": "model-modeling-language.startModelServer",
-          "when": "view == model-server-selected-resources",
+          "when": "view == model-server-selected-resources && !model-modeling-language.isModelServerRunning",
           "group": "navigation"
         },
         {
