@@ -310,7 +310,17 @@
           "name": "Selected Resources"
         }
       ]
-    }
+    },
+    "viewsWelcome": [
+      {
+        "view": "model-server-file-explorer",
+        "contents": "No viable ProjectResources in current workspace!\nCreate a ProjectResource in the Explorer to access it here."
+      },
+      {
+        "view": "model-server-selected-resources",
+        "contents": "Trying to load selected ProjectResources!"
+      }
+    ]
   },
   "activationEvents": [
     "onLanguage:model-modeling-and-constraint-language",
