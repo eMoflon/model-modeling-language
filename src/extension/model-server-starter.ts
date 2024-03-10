@@ -7,17 +7,20 @@ import {getCliPath, getSerializedConstraintDocument} from "./commands/command-ut
 import {GclSerializerRequest, GclSerializerResponse} from "../shared/GclConnectorTypes.js";
 import {LanguageClient} from "vscode-languageclient/node.js";
 import {URI} from "vscode-uri";
+import {ModelServerConnector} from "./model-server-connector.js";
 
 export class ModelServerStarter {
     private _isRunning: boolean = false;
     private _logger: vscode.OutputChannel;
     private _client: LanguageClient;
+    private _modelServerConnector: ModelServerConnector;
     private proc: ChildProcessWithoutNullStreams | undefined = undefined;
 
 
-    constructor(logger: vscode.OutputChannel, client: LanguageClient) {
+    constructor(logger: vscode.OutputChannel, client: LanguageClient, modelServerConnector: ModelServerConnector) {
         this._logger = logger;
         this._client = client;
+        this._modelServerConnector = modelServerConnector;
 
         this.setRunningState(false);
     }
@@ -69,11 +72,13 @@ export class ModelServerStarter {
             this._logger.appendLine("[ERROR] " + data);
         });
 
-        this.proc.on('close', (code) => {
+        this.proc.on('close', (code, signal) => {
             this.setRunningState(false);
             this._logger.appendLine(`[DEBUG] Terminated with code ${code}`);
             this.proc = undefined;
-            if (code != 0) {
+            if (code == null && signal != null) {
+                showUIMessage(MessageType.INFO, `ModelServer terminated! (Signal: ${signal})`);
+            } else if (code != 0) {
                 showUIMessage(MessageType.ERROR, `ModelServer terminated with error! (Code: ${code})`);
             }
         });
@@ -81,12 +86,21 @@ export class ModelServerStarter {
         return {success: true, message: ""};
     }
 
-    terminate(): boolean {
-        // TODO: Does not kill the child process properly
-        if (this.proc != undefined) {
-            return this.proc.kill('SIGINT');
+    async terminate(forcibly: boolean): Promise<boolean> {
+        if (forcibly || this._isRunning) {
+            try {
+                await this._modelServerConnector.terminate();
+                return Promise.resolve(true);
+            } catch (e) {
+                this._logger.appendLine("[DEBUG] Failed to terminate ModelServer! Assuming it did not start yet...")
+            }
         }
-        return false;
+        if (this.proc != undefined && this._isRunning) {
+            return Promise.resolve(this.proc.kill('SIGINT'));
+        } else {
+            this._logger.appendLine("[DEBUG] Failed to terminate ModelServer Process! Assuming it is not running!")
+        }
+        return Promise.resolve(false);
     }
 }
 

@@ -38,11 +38,17 @@ export class ModelServerConnector {
         } as ClientCollection
     }
 
-    public terminate() {
-        if (this._clients != undefined) {
-            this._clients.managementClient.terminateServer({}).then(() => this.log("Terminated!"))
-            this._clients = undefined;
+    public async terminate(): Promise<void> {
+        if (this.clients != undefined && this.clients.managementClient != undefined) {
+            return new Promise((resolve, reject) => {
+                this.clients.managementClient.terminateServer({})
+                    .then(val => {
+                        this._clients = undefined;
+                        resolve();
+                    }).catch(reason => reject(reason));
+            });
         }
+        return Promise.reject("Unable to connect to the ModelServer!");
     }
 
     public log(msg: string) {
