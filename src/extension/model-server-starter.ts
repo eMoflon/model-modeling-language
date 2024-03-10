@@ -52,6 +52,8 @@ export class ModelServerStarter {
         const connectorCommand: string[] = ['-jar', connectorPath, 'hipegen', config.workspace.fsPath, config.ecore.fsPath, config.xmi.fsPath, '--run-model-server', '--run-model-extender'];
         const connectorMessage = gclResponse.data;
 
+        this._logger.clear();
+
         this._logger.appendLine("[INFO] " + "======== Model Modeling Language CLI ========");
         this._logger.appendLine("[INFO] " + connectorCommand.join(" "));
         this._logger.appendLine("[INFO] ");
