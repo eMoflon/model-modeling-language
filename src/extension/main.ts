@@ -39,6 +39,9 @@ export function deactivate(): Thenable<void> | undefined {
     if (client) {
         return client.stop();
     }
+    if (modelServerStarter) {
+        modelServerStarter.terminate();
+    }
     return undefined;
 }
 
