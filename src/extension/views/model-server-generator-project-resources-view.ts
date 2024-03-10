@@ -42,7 +42,14 @@ export class ModelServerGeneratorProjectResourcesView extends ExtensionTreeView<
             const fileUri: URI = URI.file(fullFilePath);
 
             if (fs.lstatSync(fileUri.fsPath).isDirectory()) {
-                resources.push(new ProjectResource(file, fileUri, ProjectResourceType.DIRECTORY, vscode.TreeItemCollapsibleState.Collapsed))
+                const containsProjectResources: boolean = fs.readdirSync(fileUri.fsPath, {
+                    recursive: true
+                }).filter(name => (name as string).endsWith(".ecore") || (name as string).endsWith(".xmi") || (name as string).endsWith(".gc"))
+                    .filter(name => fs.statSync(path.join(fileUri.fsPath, name as string)).isFile()).length > 0;
+
+                if (containsProjectResources) {
+                    resources.push(new ProjectResource(file, fileUri, ProjectResourceType.DIRECTORY, vscode.TreeItemCollapsibleState.Collapsed))
+                }
             } else {
                 const fileExtension: string = Utils.extname(fileUri);
                 let resourceType: ProjectResourceType | undefined = undefined;
