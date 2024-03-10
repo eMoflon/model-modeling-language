@@ -162,6 +162,12 @@
         "icon": "$(run)"
       },
       {
+        "command": "model-modeling-language.stopModelServer",
+        "title": "Terminate ModelServer",
+        "category": "Model Modeling Language",
+        "icon": "$(debug-stop)"
+      },
+      {
         "command": "model-modeling-language.refreshProjectResources",
         "title": "Refresh all Project Resources",
         "category": "Model Modeling Language",
@@ -194,6 +200,10 @@
         },
         {
           "command": "model-modeling-language.startModelServer",
+          "when": "false"
+        },
+        {
+          "command": "model-modeling-language.stopModelServer",
           "when": "false"
         },
         {
@@ -253,6 +263,11 @@
         {
           "command": "model-modeling-language.startModelServer",
           "when": "view == model-server-selected-resources && !model-modeling-language.isModelServerRunning",
+          "group": "navigation"
+        },
+        {
+          "command": "model-modeling-language.stopModelServer",
+          "when": "view == model-server-selected-resources && model-modeling-language.isModelServerRunning",
           "group": "navigation"
         },
         {

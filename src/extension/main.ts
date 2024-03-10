@@ -15,6 +15,7 @@ import {StartModelServerCommand} from "./commands/start-model-server-command.js"
 import {RefreshProjectResourcesCommand} from "./commands/refresh-project-resources-command.js";
 import {RemoveSelectedResourceCommand} from "./commands/remove-selected-resource-command.js";
 import {ModelServerStarter} from "./model-server-starter.js";
+import {StopModelServerCommand} from "./commands/stop-model-server-command.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
@@ -105,8 +106,8 @@ function registerCommands(context: vscode.ExtensionContext) {
     new DeserializeEcoreToMmlCommand(client, logger).register(context);
     new SerializeConstraintFileToFileCommand(client, logger).register(context);
     new TestModelServerCommand(client, logger, modelServerConnector).register(context);
-    new StartModelServerCommand(client, logger, modelServerGeneratorViewContainer).register(context);
     new StartModelServerCommand(client, logger, modelServerGeneratorViewContainer, modelServerStarter).register(context);
+    new StopModelServerCommand(client, logger, modelServerStarter).register(context);
     new RefreshProjectResourcesCommand(client, logger, modelServerGeneratorViewContainer).register(context);
     new RemoveSelectedResourceCommand(client, logger, modelServerGeneratorViewContainer).register(context);
 }
