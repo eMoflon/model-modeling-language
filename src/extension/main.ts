@@ -110,7 +110,7 @@ function registerCommands(context: vscode.ExtensionContext) {
     new SerializeConstraintFileToFileCommand(client, logger).register(context);
     new TestModelServerCommand(client, logger, modelServerConnector).register(context);
     new StartModelServerCommand(client, logger, modelServerGeneratorViewContainer, modelServerStarter).register(context);
-    new StopModelServerCommand(client, logger, modelServerStarter).register(context);
+    new StopModelServerCommand(client, logger, modelServerStarter, modelServerConnector).register(context);
     new RefreshProjectResourcesCommand(client, logger, modelServerGeneratorViewContainer).register(context);
     new RemoveSelectedResourceCommand(client, logger, modelServerGeneratorViewContainer).register(context);
 }
