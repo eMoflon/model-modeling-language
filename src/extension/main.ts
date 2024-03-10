@@ -16,6 +16,7 @@ import {RefreshProjectResourcesCommand} from "./commands/refresh-project-resourc
 import {RemoveSelectedResourceCommand} from "./commands/remove-selected-resource-command.js";
 import {ModelServerStarter} from "./model-server-starter.js";
 import {StopModelServerCommand} from "./commands/stop-model-server-command.js";
+import {ForceStopModelServerCommand} from "./commands/force-stop-model-server-command.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
@@ -111,6 +112,7 @@ function registerCommands(context: vscode.ExtensionContext) {
     new TestModelServerCommand(client, logger, modelServerConnector).register(context);
     new StartModelServerCommand(client, logger, modelServerGeneratorViewContainer, modelServerStarter).register(context);
     new StopModelServerCommand(client, logger, modelServerStarter, modelServerConnector).register(context);
+    new ForceStopModelServerCommand(client, logger, modelServerStarter).register(context);
     new RefreshProjectResourcesCommand(client, logger, modelServerGeneratorViewContainer).register(context);
     new RemoveSelectedResourceCommand(client, logger, modelServerGeneratorViewContainer).register(context);
 }

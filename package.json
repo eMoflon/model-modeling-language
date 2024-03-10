@@ -168,6 +168,12 @@
         "icon": "$(debug-stop)"
       },
       {
+        "command": "model-modeling-language.forceStopModelServer",
+        "title": "Terminate ModelServer forcibly",
+        "category": "Model Modeling Language",
+        "icon": "$(debug-stop)"
+      },
+      {
         "command": "model-modeling-language.refreshProjectResources",
         "title": "Refresh all Project Resources",
         "category": "Model Modeling Language",
