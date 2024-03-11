@@ -15,6 +15,7 @@ export class ModelServerStarter {
     private _client: LanguageClient;
     private _modelServerConnector: ModelServerConnector;
     private proc: ChildProcessWithoutNullStreams | undefined = undefined;
+    private statusBarItem: vscode.StatusBarItem | undefined = undefined;
 
 
     constructor(logger: vscode.OutputChannel, client: LanguageClient, modelServerConnector: ModelServerConnector) {
@@ -28,6 +29,18 @@ export class ModelServerStarter {
     private setRunningState(state: boolean) {
         this._isRunning = state;
         vscode.commands.executeCommand('setContext', 'model-modeling-language.isModelServerRunning', state);
+
+        if (state) {
+            if (this.statusBarItem == undefined) {
+                this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0);
+            }
+            this.statusBarItem.text = "ModelServer running";
+            this.statusBarItem.show();
+        } else {
+            if (this.statusBarItem != undefined) {
+                this.statusBarItem.hide();
+            }
+        }
     }
 
     async startModelServer(config: ModelServerStarterConfig): Promise<ModelServerStarterResponse> {
