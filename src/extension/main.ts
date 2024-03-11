@@ -17,6 +17,7 @@ import {RemoveSelectedResourceCommand} from "./commands/remove-selected-resource
 import {ModelServerStarter} from "./model-server-starter.js";
 import {StopModelServerCommand} from "./commands/stop-model-server-command.js";
 import {ForceStopModelServerCommand} from "./commands/force-stop-model-server-command.js";
+import {ShowModelServerEvaluationViewCommand} from "./commands/show-model-server-evaluation-view-command.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
@@ -116,6 +117,7 @@ function registerCommands(context: vscode.ExtensionContext) {
     new ForceStopModelServerCommand(client, logger, modelServerStarter).register(context);
     new RefreshProjectResourcesCommand(client, logger, modelServerGeneratorViewContainer).register(context);
     new RemoveSelectedResourceCommand(client, logger, modelServerGeneratorViewContainer).register(context);
+    new ShowModelServerEvaluationViewCommand(client, logger, context).register(context);
 }
 
 function registerGMNotebook(context: vscode.ExtensionContext) {
