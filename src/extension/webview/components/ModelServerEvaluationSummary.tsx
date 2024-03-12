@@ -9,21 +9,24 @@ interface vscode {
 
 declare const vscode: vscode;
 
-const requestConstraints = () => {
-    console.log('button clicked')
-    vscode.postMessage({command: 'updateConstraints'});
-}
-
 export function ModelServerEvaluationSummary(props: {
     totalConstraints?: number | undefined;
     violatedConstraints?: number | undefined;
     state?: "loaded" | "loading" | "notLoaded" | "error" | undefined;
+    setLoading?: Function;
 }) {
     let {
         totalConstraints = 0,
         violatedConstraints = 0,
-        state = "noLoaded"
+        state = "noLoaded",
+        setLoading = () => undefined
     } = props;
+
+    const requestConstraints = () => {
+        console.log('button clicked')
+        setLoading();
+        vscode.postMessage({command: 'updateConstraints'});
+    }
 
     const fulfilledConstraints: number = totalConstraints - violatedConstraints;
     const loading: boolean = state == "loading";
