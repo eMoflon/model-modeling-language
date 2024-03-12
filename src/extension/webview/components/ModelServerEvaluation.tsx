@@ -2,10 +2,11 @@ import * as React from 'react';
 import {ModelServerEvaluationSummary} from "./ModelServerEvaluationSummary.js";
 
 import {Constraint} from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
+import {ModelServerEvaluationConstraintList} from "./ModelServerEvaluationConstraintList.js";
 
 const ModelServerEvaluation = () => {
     const [debugText, setDebugText] = React.useState('');
-    //const [constraints, setConstraints] = React.useState([] as Constraint[]);
+    const [constraints, setConstraints] = React.useState([] as Constraint[]);
     const [loadState, setLoadState] = React.useState("notLoaded" as "notLoaded" | "loaded" | "loading" | "error");
     const [totalConstraints, setTotalConstraints] = React.useState(0);
     const [violatedConstraints, setViolatedConstraints] = React.useState(0);
@@ -18,7 +19,7 @@ const ModelServerEvaluation = () => {
                     console.log("[ModelServerEvaluation] Received updateView");
                     if (message.success) {
                         console.log("[ModelServerEvaluation] Request was successful");
-                        //setConstraints(message.data);
+                        setConstraints(message.data);
                         const constraints: Constraint[] = message.data;
                         setDebugText(JSON.stringify(constraints));
                         console.log(message.data);
@@ -29,9 +30,13 @@ const ModelServerEvaluation = () => {
                         setLoadState("loaded");
                     } else {
                         console.log("[ModelServerEvaluation] Request was NOT successful");
-                        //setConstraints([]);
+                        setConstraints([]);
                         setDebugText(`Could not reach ModelServer!\n(Reason: ${message.data})`);
                         console.log(message.data);
+
+                        setTotalConstraints(0);
+                        setViolatedConstraints(0);
+
                         setLoadState("error");
                     }
                     break;
@@ -44,6 +49,7 @@ const ModelServerEvaluation = () => {
             <ModelServerEvaluationSummary state={loadState} violatedConstraints={violatedConstraints}
                                           totalConstraints={totalConstraints}/>
             <p>{debugText}</p>
+            <ModelServerEvaluationConstraintList constraints={constraints}/>
         </div>
     );
 };
