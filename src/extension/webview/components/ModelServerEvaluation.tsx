@@ -1,21 +1,14 @@
 import * as React from 'react';
+import {ModelServerEvaluationSummary} from "./ModelServerEvaluationSummary.js";
 
-//import {Constraint} from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
-
-interface vscode {
-    postMessage(message: any): void;
-}
-
-declare const vscode: vscode;
-
-const requestConstraints = () => {
-    console.log('button clicked')
-    vscode.postMessage({command: 'updateConstraints'});
-}
+import {Constraint} from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
 
 const ModelServerEvaluation = () => {
     const [debugText, setDebugText] = React.useState('');
     //const [constraints, setConstraints] = React.useState([] as Constraint[]);
+    const [loadState, setLoadState] = React.useState("notLoaded" as "notLoaded" | "loaded" | "loading" | "error");
+    const [totalConstraints, setTotalConstraints] = React.useState(0);
+    const [violatedConstraints, setViolatedConstraints] = React.useState(0);
 
     React.useEffect(() => {
         window.addEventListener('message', event => {
@@ -26,13 +19,20 @@ const ModelServerEvaluation = () => {
                     if (message.success) {
                         console.log("[ModelServerEvaluation] Request was successful");
                         //setConstraints(message.data);
-                        setDebugText(JSON.stringify(message.data));
+                        const constraints: Constraint[] = message.data;
+                        setDebugText(JSON.stringify(constraints));
                         console.log(message.data);
+
+                        setTotalConstraints(constraints.length);
+                        setViolatedConstraints(constraints.filter(x => x.violated).length);
+
+                        setLoadState("loaded");
                     } else {
                         console.log("[ModelServerEvaluation] Request was NOT successful");
                         //setConstraints([]);
                         setDebugText(`Could not reach ModelServer!\n(Reason: ${message.data})`);
                         console.log(message.data);
+                        setLoadState("error");
                     }
                     break;
             }
@@ -41,8 +41,8 @@ const ModelServerEvaluation = () => {
 
     return (
         <div>
-            <h1>Functional Components Work!</h1>
-            <button onClick={requestConstraints}>Get Constraints!</button>
+            <ModelServerEvaluationSummary state={loadState} violatedConstraints={violatedConstraints}
+                                          totalConstraints={totalConstraints}/>
             <p>{debugText}</p>
         </div>
     );
