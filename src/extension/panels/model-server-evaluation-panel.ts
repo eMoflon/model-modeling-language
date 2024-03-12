@@ -39,6 +39,7 @@ export class ModelServerEvaluationPanel {
             // Enable javascript in the webview
             enableScripts: true,
             localResourceRoots: [this._extensionUri],
+            retainContextWhenHidden: true
         });
 
         // Set the webview's initial html content
