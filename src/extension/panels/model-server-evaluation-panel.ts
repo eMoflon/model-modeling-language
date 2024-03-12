@@ -1,18 +1,20 @@
 import * as vscode from 'vscode';
 import {getNonce} from "./panel-utils.js";
+import {ModelServerConnector} from "../model-server-connector.js";
 
 export class ModelServerEvaluationPanel {
 
     public static currentPanel: ModelServerEvaluationPanel | undefined;
 
-    private static readonly viewType = "PanelNameGoesHere";
+    private static readonly viewType = "ModelServerEvaluation";
 
     private readonly _panel: vscode.WebviewPanel;
     private readonly _extensionUri: vscode.Uri;
     private readonly _extContext: vscode.ExtensionContext;
+    private readonly _modelServerConnector: ModelServerConnector;
     private _disposables: vscode.Disposable[] = [];
 
-    public static createOrShow(extContext: vscode.ExtensionContext) {
+    public static createOrShow(extContext: vscode.ExtensionContext, modelServerConnector: ModelServerConnector) {
         const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
 
         // If we already have a panel, show it.
@@ -21,17 +23,19 @@ export class ModelServerEvaluationPanel {
             ModelServerEvaluationPanel.currentPanel._panel.reveal(column);
         } else {
             // ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
-            ModelServerEvaluationPanel.currentPanel = new ModelServerEvaluationPanel(extContext, column || vscode.ViewColumn.One);
+            ModelServerEvaluationPanel.currentPanel = new ModelServerEvaluationPanel(extContext, column || vscode.ViewColumn.One, modelServerConnector);
         }
     }
 
     //temporarily setting extcontext to any type
-    private constructor(_extContext: vscode.ExtensionContext, column: vscode.ViewColumn) {
+    private constructor(_extContext: vscode.ExtensionContext, column: vscode.ViewColumn, modelServerConnector: ModelServerConnector) {
         this._extContext = _extContext;
         this._extensionUri = this._extContext.extensionUri;
 
+        this._modelServerConnector = modelServerConnector;
+
         // Create and show a new webview panel
-        this._panel = vscode.window.createWebviewPanel(ModelServerEvaluationPanel.viewType, "ReacTree", column, {
+        this._panel = vscode.window.createWebviewPanel(ModelServerEvaluationPanel.viewType, "ModelServer Evaluation", column, {
             // Enable javascript in the webview
             enableScripts: true,
             localResourceRoots: [this._extensionUri],
@@ -48,12 +52,23 @@ export class ModelServerEvaluationPanel {
         this._panel.webview.onDidReceiveMessage(
             async (msg: any) => {
                 switch (msg.command) {
-                    case 'startup':
-                        console.log('message received')
-                        break;
-                    case 'testing':
-                        console.log('reachedBrain')
-                        this._panel!.webview.postMessage({command: 'refactor'});
+                    case 'updateConstraints':
+                        console.log('received: updateConstraints');
+                        this._modelServerConnector.clients.constraintClient.getConstraints({})
+                            .then(res => {
+                                this._panel!.webview.postMessage({
+                                    command: 'updateView',
+                                    success: true,
+                                    data: res.constraints
+                                });
+                            })
+                            .catch(reason => {
+                                this._panel!.webview.postMessage({
+                                    command: 'updateView',
+                                    success: false,
+                                    data: JSON.stringify(reason)
+                                });
+                            });
                         break;
                 }
             },
@@ -101,10 +116,6 @@ export class ModelServerEvaluationPanel {
         <div id="root"></div>
         <script nonce="${nonce}">
           const vscode = acquireVsCodeApi();
-          window.onload = function() {
-            vscode.postMessage({ command: 'startup' });
-            console.log('HTML started up.');
-          };
         </script>
         <script type="module" nonce="${nonce}" src="${scriptUri}"></script>
       </body>
