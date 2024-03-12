@@ -1,0 +1,26 @@
+.ms-eval-constraint-wrapper {
+    width: 100%;
+    height: fit-content;
+    overflow: hidden;
+    margin-bottom: 1em;
+}
+
+.ms-eval-constraint-icon-wrapper {
+    display: inline-block;
+    float: left;
+}
+
+.ms-eval-constraint-title-wrapper {
+    display: inline-block;
+    margin-left: 2em;
+    height: fit-content;
+}
+
+.ms-eval-constraint-title {
+    font-weight: bold;
+    font-size: larger;
+}
+
+.ms-eval-constraint-description {;
+    height: fit-content;
+}
