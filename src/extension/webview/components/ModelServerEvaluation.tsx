@@ -1,25 +1,39 @@
 import * as React from 'react';
 
+//import {Constraint} from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
+
 interface vscode {
     postMessage(message: any): void;
 }
 
 declare const vscode: vscode;
 
-const sendMessage = () => {
+const requestConstraints = () => {
     console.log('button clicked')
-    vscode.postMessage({command: 'testing'});
+    vscode.postMessage({command: 'updateConstraints'});
 }
 
 const ModelServerEvaluation = () => {
-    const [buttonText, setButtonText] = React.useState('The brain is pending');
+    const [debugText, setDebugText] = React.useState('');
+    //const [constraints, setConstraints] = React.useState([] as Constraint[]);
 
     React.useEffect(() => {
         window.addEventListener('message', event => {
             const message = event.data; // The json data that the extension sent
             switch (message.command) {
-                case 'refactor':
-                    setButtonText('The brain is working');
+                case 'updateView':
+                    console.log("[ModelServerEvaluation] Received updateView");
+                    if (message.success) {
+                        console.log("[ModelServerEvaluation] Request was successful");
+                        //setConstraints(message.data);
+                        setDebugText(JSON.stringify(message.data));
+                        console.log(message.data);
+                    } else {
+                        console.log("[ModelServerEvaluation] Request was NOT successful");
+                        //setConstraints([]);
+                        setDebugText(`Could not reach ModelServer!\n(Reason: ${message.data})`);
+                        console.log(message.data);
+                    }
                     break;
             }
         });
@@ -28,7 +42,8 @@ const ModelServerEvaluation = () => {
     return (
         <div>
             <h1>Functional Components Work!</h1>
-            <button onClick={sendMessage}>{buttonText}</button>
+            <button onClick={requestConstraints}>Get Constraints!</button>
+            <p>{debugText}</p>
         </div>
     );
 };

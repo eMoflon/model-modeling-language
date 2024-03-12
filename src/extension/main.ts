@@ -117,7 +117,7 @@ function registerCommands(context: vscode.ExtensionContext) {
     new ForceStopModelServerCommand(client, logger, modelServerStarter).register(context);
     new RefreshProjectResourcesCommand(client, logger, modelServerGeneratorViewContainer).register(context);
     new RemoveSelectedResourceCommand(client, logger, modelServerGeneratorViewContainer).register(context);
-    new ShowModelServerEvaluationViewCommand(client, logger, context).register(context);
+    new ShowModelServerEvaluationViewCommand(client, logger, context, modelServerConnector).register(context);
 }
 
 function registerGMNotebook(context: vscode.ExtensionContext) {
