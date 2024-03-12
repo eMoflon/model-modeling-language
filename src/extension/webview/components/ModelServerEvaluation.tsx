@@ -12,6 +12,10 @@ const ModelServerEvaluation = () => {
     const [totalConstraints, setTotalConstraints] = React.useState(0);
     const [violatedConstraints, setViolatedConstraints] = React.useState(0);
 
+    const setLoading = () => {
+        setLoadState("loading");
+    }
+
     React.useEffect(() => {
         window.addEventListener('message', event => {
             const message = event.data; // The json data that the extension sent
@@ -48,7 +52,7 @@ const ModelServerEvaluation = () => {
     return (
         <div>
             <ModelServerEvaluationSummary state={loadState} violatedConstraints={violatedConstraints}
-                                          totalConstraints={totalConstraints}/>
+                                          totalConstraints={totalConstraints} setLoading={setLoading}/>
             <VSCodeDivider/>
             {/*<p>{debugText}</p>*/}
             <ModelServerEvaluationConstraintList constraints={constraints}/>
