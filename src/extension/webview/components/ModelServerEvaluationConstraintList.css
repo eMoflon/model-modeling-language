@@ -1,0 +1,4 @@
+.ms-eval-constraint-list-wrapper {
+    display: flex;
+    flex-direction: column;
+}
