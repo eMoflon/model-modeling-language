@@ -28,7 +28,7 @@ export function ModelServerEvaluationSummary(props: {
     const fulfilledConstraints: number = totalConstraints - violatedConstraints;
     const loading: boolean = state == "loading";
     const loaded: boolean = state == "loaded";
-    const progress: number = loading ? 10 : Math.floor((fulfilledConstraints / totalConstraints) * 100);
+    const progress: number = loading || totalConstraints == 0 ? 10 : Math.floor((fulfilledConstraints / totalConstraints) * 100);
     let summaryText: string = "";
     let trackColor: string = "gray";
     let indicatorColor: string = "gray";
