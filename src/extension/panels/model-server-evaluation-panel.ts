@@ -98,6 +98,8 @@ export class ModelServerEvaluationPanel {
             vscode.Uri.joinPath(this._extensionUri, "out", "extension", "webview", "index.wv.css")
         );
 
+        const codiconsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'node_modules', '@vscode/codicons', 'dist', 'codicon.css'));
+
         const nonce = getNonce();
 
         return `<!DOCTYPE html>
@@ -108,10 +110,11 @@ export class ModelServerEvaluationPanel {
         Use a content security policy to only allow loading images from https or from our extension directory,
         and only allow scripts that have a specific nonce.
         -->
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${webview.cspSource}; style-src ${webview.cspSource} unsafe-inline; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Panel Title Goes Here</title>
         <link rel="stylesheet" href="${styleUri}">
+        <link rel="stylesheet" href="${codiconsUri}"/>
       </head>
       <body>
         <div id="root"></div>
