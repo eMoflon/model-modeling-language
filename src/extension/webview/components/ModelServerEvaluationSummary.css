@@ -1,0 +1,32 @@
+.ms-eval-summary-wrapper {
+    width: 100%;
+    height: fit-content;
+    overflow: hidden;
+    margin-top: 2em;
+    margin-bottom: 2em;
+}
+
+.ms-eval-summary-pi-wrapper {
+    display: inline-block;
+    float: left;
+}
+
+.ms-eval-summary-title-wrapper {
+    display: inline-block;
+    height: 100%;
+    margin-left: 2em;
+}
+
+.ms-eval-summary-button-wrapper {
+    display: inline-block;
+    height: 100%;
+    float: right;
+}
+
+.ms-eval-summary-title {
+    font-weight: bold;
+}
+
+.ms-eval-summary-subtitle {
+
+}
