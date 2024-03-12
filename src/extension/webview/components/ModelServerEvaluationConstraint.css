@@ -3,15 +3,21 @@
     height: fit-content;
     overflow: hidden;
     margin-bottom: 1em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 .ms-eval-constraint-icon-wrapper {
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
     float: left;
 }
 
 .ms-eval-constraint-title-wrapper {
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
     margin-left: 2em;
     height: fit-content;
 }
@@ -23,4 +29,5 @@
 
 .ms-eval-constraint-description {;
     height: fit-content;
+    margin-top: 0.25em;
 }

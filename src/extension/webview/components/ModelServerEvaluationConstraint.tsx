@@ -22,7 +22,7 @@ export function ModelServerEvaluationConstraint(props: { constraintKey: string, 
                                          backgroundColor={iconBackgroundColor}/>
                 </div>
                 <div className="ms-eval-constraint-title-wrapper">
-                    <span className="ms-eval-constraint-title">{constraint.title}</span><br/>
+                    <span className="ms-eval-constraint-title">{constraint.title}</span>
                     <span className="ms-eval-constraint-description">{constraint.description}</span>
                 </div>
             </div>

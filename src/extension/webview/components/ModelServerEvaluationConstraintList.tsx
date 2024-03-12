@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import {Constraint} from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
 import {ModelServerEvaluationConstraint} from "./ModelServerEvaluationConstraint.js";
+import "./ModelServerEvaluationConstraintList.css";
 
 export function ModelServerEvaluationConstraintList(props: { constraints?: Constraint[] | undefined; }) {
     let {
@@ -13,7 +14,7 @@ export function ModelServerEvaluationConstraintList(props: { constraints?: Const
 
     return (
         <>
-            <div>
+            <div className="ms-eval-constraint-list-wrapper">
                 {constraintItems}
             </div>
         </>
