@@ -95,7 +95,7 @@ export class ModelServerEvaluationPanel {
         );
 
         const styleUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(this._extensionUri, "media", "styles.css")
+            vscode.Uri.joinPath(this._extensionUri, "out", "extension", "webview", "index.wv.css")
         );
 
         const nonce = getNonce();
