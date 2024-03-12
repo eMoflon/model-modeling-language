@@ -33,7 +33,7 @@ export function ModelServerEvaluationSummary(props: {
     let trackColor: string = "gray";
     let indicatorColor: string = "gray";
     if (state == "notLoaded") {
-        summaryText = "Constraint not yet evaluated!";
+        summaryText = "Constraints not yet evaluated!";
     } else if (state == "loading") {
         summaryText = "Loading...";
         trackColor = "gray";
