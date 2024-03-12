@@ -3,6 +3,7 @@ import {ModelServerEvaluationSummary} from "./ModelServerEvaluationSummary.js";
 
 import {Constraint} from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
 import {ModelServerEvaluationConstraintList} from "./ModelServerEvaluationConstraintList.js";
+import {VSCodeDivider} from "@vscode/webview-ui-toolkit/react";
 
 const ModelServerEvaluation = () => {
     const [debugText, setDebugText] = React.useState('');
@@ -48,6 +49,7 @@ const ModelServerEvaluation = () => {
         <div>
             <ModelServerEvaluationSummary state={loadState} violatedConstraints={violatedConstraints}
                                           totalConstraints={totalConstraints}/>
+            <VSCodeDivider/>
             <p>{debugText}</p>
             <ModelServerEvaluationConstraintList constraints={constraints}/>
         </div>
