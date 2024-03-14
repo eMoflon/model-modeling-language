@@ -6,9 +6,8 @@ import {CircularCodiconIcon} from "./CircularCodiconIcon.js";
 import "./ModelServerEvaluationConstraint.css";
 import {VSCodeButton} from "@vscode/webview-ui-toolkit/react";
 
-export function ModelServerEvaluationConstraint(props: { constraintKey: string, constraint: Constraint; }) {
+export function ModelServerEvaluationConstraint(props: { constraint: Constraint; }) {
     let {
-        constraintKey,
         constraint
     } = props
 
@@ -27,7 +26,7 @@ export function ModelServerEvaluationConstraint(props: { constraintKey: string, 
 
     return (
         <>
-            <div key={constraintKey} className="ms-eval-constraint-wrapper">
+            <div className="ms-eval-constraint-wrapper">
                 <ModelServerEvaluationConstraintHeader constraintTitle={constraint.title}
                                                        constraintDescription={constraint.description}
                                                        constraintViolated={constraint.violated}
