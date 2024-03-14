@@ -10,7 +10,7 @@ export function ModelServerEvaluationConstraintList(props: { constraints?: Const
     } = props
 
     const constraintItems = constraints.map((x, idx) => <ModelServerEvaluationConstraint constraint={x}
-                                                                                         constraintKey={`constraint-${idx}`}/>);
+                                                                                         key={`constraint-${idx}`}/>);
 
     return (
         <>
