@@ -57,9 +57,10 @@ function ModelServerEvaluationConstraintHeader(props: {
         onToggleFoldButton
     } = props
 
+    const computedStyle: CSSStyleDeclaration = getComputedStyle(document.documentElement);
 
-    const iconColor: string = "white";
-    const iconBackgroundColor: string = constraintViolated ? "red" : "green";
+    const iconColor: string = computedStyle.getPropertyValue("--button-primary-foreground");
+    const iconBackgroundColor: string = constraintViolated ? computedStyle.getPropertyValue("--vscode-statusBarItem-errorBackground") : computedStyle.getPropertyValue("--vscode-editorGutter-addedBackground");
     const iconName: string = constraintViolated ? "close" : "check";
 
     return (
