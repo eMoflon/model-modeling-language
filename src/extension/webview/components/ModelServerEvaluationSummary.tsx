@@ -28,27 +28,29 @@ export function ModelServerEvaluationSummary(props: {
         vscode.postMessage({command: 'updateConstraints'});
     }
 
+    const computedStyle: CSSStyleDeclaration = getComputedStyle(document.documentElement);
+
     const fulfilledConstraints: number = totalConstraints - violatedConstraints;
     const loading: boolean = state == "loading";
     const loaded: boolean = state == "loaded";
     const progress: number = loading || totalConstraints == 0 ? 10 : Math.floor((fulfilledConstraints / totalConstraints) * 100);
     let summaryText: string = "";
-    let trackColor: string = "gray";
-    let indicatorColor: string = "gray";
+    let trackColor: string = computedStyle.getPropertyValue("--vscode-icon-foreground");
+    let indicatorColor: string = computedStyle.getPropertyValue("--vscode-icon-foreground");
     if (state == "notLoaded") {
         summaryText = "Constraints not yet evaluated!";
     } else if (state == "loading") {
         summaryText = "Loading...";
-        trackColor = "gray";
-        indicatorColor = "blue";
+        trackColor = computedStyle.getPropertyValue("--vscode-icon-foreground");
+        indicatorColor = computedStyle.getPropertyValue("--vscode-focusBorder");
     } else if (state == "loaded") {
         summaryText = `${fulfilledConstraints} of total ${totalConstraints} constraints fulfilled!`
-        trackColor = "red";
-        indicatorColor = "green";
+        trackColor = computedStyle.getPropertyValue("--vscode-statusBarItem-errorBackground");
+        indicatorColor = computedStyle.getPropertyValue("--vscode-editorGutter-addedBackground");
     } else if (state == "error") {
         summaryText = "Failed to evaluate constraints!"
-        trackColor = "orange";
-        indicatorColor = "orange";
+        trackColor = computedStyle.getPropertyValue("--vscode-testing-iconQueued");
+        indicatorColor = computedStyle.getPropertyValue("--vscode-testing-iconQueued");
     }
 
     return (
