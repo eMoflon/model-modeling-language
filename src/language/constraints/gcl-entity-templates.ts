@@ -415,7 +415,7 @@ export class FixDeleteNodeEntity implements FixStatementEntity {
     constructor(delNodeStmt: FixDeleteNodeStatement) {
         if (delNodeStmt.node.ref != undefined) {
             this.nodeAlias = delNodeStmt.node.ref.name;
-            this.type = "DELETE_EDGE";
+            this.type = "DELETE_NODE";
         } else {
             throw new Error("Unable to resolve FixDeleteEdgeStatement edge reference!");
         }
