@@ -31,12 +31,18 @@ message Constraint {
   string name = 3;
   bool violated = 4;
   repeated ConstraintAssertion assertions = 5;
-  repeated FixProposal proposals = 6;
 }
 
 message ConstraintAssertion {
   bool violated = 1;
   string expression = 2;
+  FixProposalContainer proposalContainer = 3;
+}
+
+message FixProposalContainer {
+  FixProposalContainerType type = 1;
+  repeated FixProposal proposals = 2;
+  repeated FixProposalContainer proposalContainers = 3;
 }
 
 message FixProposal {
@@ -65,7 +71,15 @@ message FixInfoStatement {
 }
 
 enum FixProposalType {
-  UNKNOWN = 0;
+  UNKNOWN_PROPOSAL_TYPE = 0;
   ENABLE_PATTERN = 1;
   DISABLE_PATTERN = 2;
+}
+
+enum FixProposalContainerType {
+  UNKNOWN_CONTAINER_TYPE = 0;
+  SINGLE_FIX = 1;
+  FIX_ONE = 2;
+  FIX_ALL = 3;
+  UNRESOLVABLE_CASE = 4;
 }
