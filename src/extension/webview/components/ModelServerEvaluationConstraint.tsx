@@ -76,7 +76,7 @@ function ModelServerEvaluationConstraintHeader(props: {
                 </div>
                 <div className="ms-eval-constraint-button-wrapper">
                     <VSCodeButton appearance="icon" onClick={onToggleFoldButton}>
-                        <i className={foldIcon} style={{color: "white"}}></i>
+                        <i className={foldIcon} style={{color: iconColor}}></i>
                     </VSCodeButton>
                 </div>
             </div>
