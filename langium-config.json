@@ -17,7 +17,7 @@
     },{
         "id": "graph-manipulation-language",
         "grammar": "src/language/definition/graph-manipulation-language.langium",
-        "fileExtensions": [".gm",".gmnb"],
+        "fileExtensions": [".gm"],
         "textMate": {
             "out": "syntaxes/graph-manipulation-language.tmLanguage.json"
         }

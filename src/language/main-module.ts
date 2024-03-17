@@ -27,6 +27,7 @@ import {
     GraphManipulationLanguageModule,
     GraphManipulationLanguageServices
 } from "./graph-manipulation-language-module.js";
+import {MainServiceRegistry} from "./main-service-registry.js";
 
 /**
  * Create the full set of services required by Langium.
@@ -53,6 +54,10 @@ export function createMmlAndGclServices(context: DefaultSharedModuleContext): {
         createDefaultSharedModule(context),
         ModelModelingLanguageGeneratedSharedModule
     );
+
+    // register custom ServiceRegistry to handle VSCode Notebooks
+    shared.ServiceRegistry = new MainServiceRegistry();
+
     const mmlServices = inject(
         createDefaultModule({shared}),
         ModelModelingLanguageGeneratedModule,
