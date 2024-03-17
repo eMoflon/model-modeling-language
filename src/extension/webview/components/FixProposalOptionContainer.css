@@ -26,8 +26,11 @@
 .ms-fix-proposal-opt-container-content-visualbox {
     display: flex;
     flex-direction: column;
-    width: 2em;
-    background-color: cornflowerblue;
+    width: 0.5em;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    /*noinspection CssUnresolvedCustomProperty*/
+    background-color: var(--vscode-focusBorder);
 }
 
 .ms-fix-proposal-opt-container-content {
