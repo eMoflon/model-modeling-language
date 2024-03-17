@@ -202,7 +202,7 @@ export class GMProtoMapper {
             if (editResponse.state == EditState.SUCCESS) {
                 context.log(`[SUCCESS] Updated Node ${editRequest.node?.nodeType.value}["${editRequest.attributeName}"] -> ${editRequest.attributeValue}`);
             } else if (editResponse.state == EditState.FAILURE) {
-                throw new Error(`${editResponse.message}`)
+                context.log(`[FAILED] ${editResponse.message}`);
             } else {
                 throw new Error("UNKNOWN ERROR!");
             }
@@ -212,7 +212,7 @@ export class GMProtoMapper {
             if (editResponse.state == EditState.SUCCESS) {
                 context.log(`[SUCCESS] Created ${editRequest.startNode?.nodeType.value} -${editRequest.referenceName}-> ${editRequest.targetNode?.nodeType.value}`);
             } else if (editResponse.state == EditState.FAILURE) {
-                throw new Error(`${editResponse.message}`)
+                context.log(`[FAILED] ${editResponse.message}`);
             } else {
                 throw new Error("UNKNOWN ERROR!");
             }
@@ -222,7 +222,7 @@ export class GMProtoMapper {
             if (editResponse.state == EditState.SUCCESS) {
                 context.log(`[SUCCESS] Created new ${editRequest.nodeType}(${editRequest.assignments.map(x => `${x.attributeName} = ${x.attributeValue}`).join(", ")}) -> NEW ID: ${editResponse.createdNodeId}`);
             } else if (editResponse.state == EditState.FAILURE) {
-                throw new Error(`${editResponse.message}`)
+                context.log(`[FAILED] ${editResponse.message}`);
             } else {
                 throw new Error("UNKNOWN ERROR!");
             }
@@ -232,7 +232,7 @@ export class GMProtoMapper {
             if (editResponse.state == EditState.SUCCESS) {
                 context.log(`[SUCCESS] Deleted ${editRequest.startNode?.nodeType.value} -${editRequest.referenceName}-> ${editRequest.targetNode?.nodeType.value}`);
             } else if (editResponse.state == EditState.FAILURE) {
-                throw new Error(`${editResponse.message}`)
+                context.log(`[FAILED] ${editResponse.message}`);
             } else {
                 throw new Error("UNKNOWN ERROR!");
             }
@@ -245,7 +245,7 @@ export class GMProtoMapper {
                     context.log(`[ImplicitlyRemovedEdge] (${removedEdge.fromNode?.nodeType.value ?? "UNKNOWN"})-${removedEdge.reference}->(${removedEdge.toNode?.nodeType.value ?? "UNKNOWN"})`);
                 }
             } else if (editResponse.state == EditState.FAILURE) {
-                throw new Error(`${editResponse.message}`)
+                context.log(`[FAILED] ${editResponse.message}`);
             } else {
                 throw new Error("UNKNOWN ERROR!");
             }
