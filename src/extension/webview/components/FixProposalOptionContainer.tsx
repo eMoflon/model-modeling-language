@@ -5,6 +5,7 @@ import {
     FixProposalContainerType
 } from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
 import "./FixProposalOptionContainer.css"
+import {FixProposalOption} from "./FixProposalOption.js";
 
 
 export function FixProposalOptionContainer(props: { fixProposalContainer: FixProposalContainer; }) {
@@ -44,6 +45,9 @@ export function FixProposalOptionContainer(props: { fixProposalContainer: FixPro
     const containerProposalContainers = fixProposalContainer.proposalContainers.map((propContainer, idx) =>
         <FixProposalOptionContainer fixProposalContainer={propContainer} key={`container-${idx}`}/>)
 
+    const containerProposals = fixProposalContainer.proposals.map((propsl, idx) => <FixProposalOption proposal={propsl}
+                                                                                                      key={`proposal-${idx}`}/>)
+
     return (
         <>
             <div className="ms-fix-proposal-opt-container-wrapper">
@@ -61,7 +65,7 @@ export function FixProposalOptionContainer(props: { fixProposalContainer: FixPro
                     <div className="ms-fix-proposal-opt-container-content-visualbox"/>
                     <div className="ms-fix-proposal-opt-container-content">
                         {containerProposalContainers}
-                        {JSON.stringify(fixProposalContainer.proposals)}
+                        {containerProposals}
                     </div>
                 </div>)}
             </div>

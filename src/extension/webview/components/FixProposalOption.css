@@ -1,0 +1,45 @@
+.ms-fix-proposal-opt-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.ms-fix-proposal-opt-header {
+    display: flex;
+    flex-direction: row;
+}
+
+.ms-fix-proposal-opt-header-button-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.ms-fix-proposal-opt-header-text-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.ms-fix-proposal-opt-header-text {
+    display: flex;
+    flex-direction: row;
+}
+
+.ms-fix-proposal-opt-content-wrapper {
+    display: flex;
+    flex-direction: row;
+}
+
+.ms-fix-proposal-opt-content-visualbox {
+    display: flex;
+    flex-direction: column;
+    width: 0.5em;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    /*noinspection CssUnresolvedCustomProperty*/
+    background-color: var(--vscode-focusBorder);
+}
+
+.ms-fix-proposal-opt-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
