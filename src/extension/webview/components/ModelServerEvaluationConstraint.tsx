@@ -5,6 +5,7 @@ import {Constraint} from "../../generated/de/nexus/modelserver/ModelServerConstr
 import {CircularCodiconIcon} from "./CircularCodiconIcon.js";
 import "./ModelServerEvaluationConstraint.css";
 import {VSCodeButton} from "@vscode/webview-ui-toolkit/react";
+import {AssertionContainer} from "./AssertionContainer.js";
 
 export function ModelServerEvaluationConstraint(props: { constraint: Constraint; }) {
     let {
@@ -24,6 +25,9 @@ export function ModelServerEvaluationConstraint(props: { constraint: Constraint;
         }
     }
 
+    const assertions = constraint.assertions.map((assertion, idx) => <AssertionContainer assertion={assertion}
+                                                                                         key={`assertion-${idx}`}/>);
+
     return (
         <>
             <div className="ms-eval-constraint-wrapper">
@@ -34,7 +38,7 @@ export function ModelServerEvaluationConstraint(props: { constraint: Constraint;
                                                        onToggleFoldButton={toggleExpand}/>
                 {constraintExpanded && (
                     <div className="ms-eval-constraint-content">
-                        Test Content (unwrapped)
+                        {assertions}
                     </div>
                 )}
             </div>

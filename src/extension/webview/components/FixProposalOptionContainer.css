@@ -1,0 +1,37 @@
+.ms-fix-proposal-opt-container-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.ms-fix-proposal-opt-container-header {
+    display: flex;
+    flex-direction: row;
+}
+
+.ms-fix-proposal-opt-container-header-button-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.ms-fix-proposal-opt-container-header-text-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.ms-fix-proposal-opt-container-content-wrapper {
+    display: flex;
+    flex-direction: row;
+}
+
+.ms-fix-proposal-opt-container-content-visualbox {
+    display: flex;
+    flex-direction: column;
+    width: 2em;
+    background-color: cornflowerblue;
+}
+
+.ms-fix-proposal-opt-container-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}

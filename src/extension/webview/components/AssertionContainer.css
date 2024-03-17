@@ -1,0 +1,63 @@
+.ms-assertion-container-wrapper {
+    height: fit-content;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ms-assertion-container-content {
+    width: 100%;
+    height: fit-content;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.ms-assertion-container-header-violated {
+    /*noinspection CssUnresolvedCustomProperty*/
+    background-color: var(--vscode-testing-iconFailed);
+}
+
+.ms-assertion-container-header-fulfilled {
+    /*noinspection CssUnresolvedCustomProperty*/
+    background-color: var(--vscode-testing-iconPassed);
+}
+
+.ms-assertion-container-header {
+    width: 100%;
+    height: fit-content;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.ms-assertion-container-title-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    margin-left: 2em;
+    height: fit-content;
+}
+
+.ms-assertion-container-title {
+    display: flex;
+    flex-direction: row;
+    height: fit-content;
+
+}
+
+.ms-assertion-container-term {
+    margin-left: 0.5em;
+}
+
+.ms-assertion-container-button-wrapper {
+    display: flex;
+    flex-direction: column;
+    margin-left: 0.5em;
+    margin-right: 1em;
+    height: fit-content;
+}
