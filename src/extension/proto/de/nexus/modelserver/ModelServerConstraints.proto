@@ -56,14 +56,8 @@ message FixMatch {
 }
 
 message FixVariant {
-  repeated FixStatement statements = 1;
-}
-
-message FixStatement {
-  oneof stmt {
-    FixInfoStatement infoStatement = 1;
-    EditRequest edit = 2;
-  }
+  repeated FixInfoStatement infoStatements = 1;
+  repeated EditRequest edits = 2;
 }
 
 message FixInfoStatement {
