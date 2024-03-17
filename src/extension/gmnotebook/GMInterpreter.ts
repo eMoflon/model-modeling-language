@@ -1,11 +1,5 @@
 import {EmptyFileSystem, interruptAndCheck, LangiumDocument, MaybePromise, URI} from "langium";
-import {
-    GMStatement,
-    GraphManipulationDocument,
-    isGMChainStatement,
-    isReferencedModelStatement,
-    TargetNode
-} from "../../language/generated/ast.js";
+import {GMStatement, GraphManipulationDocument, isGMChainStatement, TargetNode} from "../../language/generated/ast.js";
 import {v4} from "uuid";
 import {GraphManipulationLanguageServices} from "../../language/graph-manipulation-language-module.js";
 import {CancellationToken, CancellationTokenSource} from "vscode-languageserver";
@@ -62,13 +56,9 @@ export class GMInterpreter {
         for (const statement of program.statements) {
             await interruptAndCheck(context.cancellationToken);
 
-            if (isReferencedModelStatement(statement)) {
-                continue;
-            } else {
-                await this.runStatement(statement, context, () => {
-                    end = true
-                });
-            }
+            await this.runStatement(statement, context, () => {
+                end = true
+            });
             if (end) {
                 break;
             }
