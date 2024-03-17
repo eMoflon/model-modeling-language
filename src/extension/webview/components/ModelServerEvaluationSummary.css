@@ -21,6 +21,8 @@
     display: inline-block;
     height: 100%;
     float: right;
+    margin-top: 0.25em;
+    margin-right: 0.25em;
 }
 
 .ms-eval-summary-title {
