@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {ModelServerEvaluationSummary} from "./ModelServerEvaluationSummary.js";
 
-import {Constraint} from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
+import {Constraint, GetConstraintsResponse} from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
 import {ModelServerEvaluationConstraintList} from "./ModelServerEvaluationConstraintList.js";
 import {VSCodeDivider} from "@vscode/webview-ui-toolkit/react";
 
@@ -24,8 +24,10 @@ const ModelServerEvaluation = () => {
                     console.log("[ModelServerEvaluation] Received updateView");
                     if (message.success) {
                         console.log("[ModelServerEvaluation] Request was successful");
-                        setConstraints(message.data);
-                        const constraints: Constraint[] = message.data;
+                        const deserializedMessage: GetConstraintsResponse = GetConstraintsResponse.fromJsonString(message.data);
+
+                        setConstraints(deserializedMessage.constraints);
+                        const constraints: Constraint[] = deserializedMessage.constraints;
                         //setDebugText(JSON.stringify(constraints));
                         console.log(message.data);
 
