@@ -60,7 +60,7 @@ export class ModelServerEvaluationPanel {
                                 this._panel!.webview.postMessage({
                                     command: 'updateView',
                                     success: true,
-                                    data: res.constraints
+                                    data: res.toJsonString()
                                 });
                             })
                             .catch(reason => {
