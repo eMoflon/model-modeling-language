@@ -24,10 +24,9 @@ export function FixProposalOption(props: { proposal: FixProposal; }) {
     const iconColor: string = computedStyle.getPropertyValue("--button-primary-foreground");
 
     let proposalTypeTag: string;
-    const proposalType: string = proposal.type.toString();
-    if (proposalType == FixProposalType[FixProposalType.ENABLE_PATTERN]) {
+    if (proposal.type == FixProposalType.ENABLE_PATTERN) {
         proposalTypeTag = "Enable matches";
-    } else if (proposalType == FixProposalType[FixProposalType.DISABLE_PATTERN]) {
+    } else if (proposal.type == FixProposalType.DISABLE_PATTERN) {
         proposalTypeTag = "Disable matches";
     } else {
         proposalTypeTag = "Unknown proposal type";

@@ -29,14 +29,13 @@ export function FixProposalOptionContainer(props: { fixProposalContainer: FixPro
     const iconColor: string = computedStyle.getPropertyValue("--button-primary-foreground");
 
     let proposalContainerText: string;
-    const fixProposalContainerType: string = fixProposalContainer.type.toString();
-    if (fixProposalContainerType == FixProposalContainerType[FixProposalContainerType.SINGLE_FIX]) {
+    if (fixProposalContainer.type == FixProposalContainerType.SINGLE_FIX) {
         proposalContainerText = "One fix available";
-    } else if (fixProposalContainerType == FixProposalContainerType[FixProposalContainerType.FIX_ONE]) {
+    } else if (fixProposalContainer.type == FixProposalContainerType.FIX_ONE) {
         proposalContainerText = "Select one";
-    } else if (fixProposalContainerType == FixProposalContainerType[FixProposalContainerType.FIX_ALL]) {
+    } else if (fixProposalContainer.type == FixProposalContainerType.FIX_ALL) {
         proposalContainerText = "Select all";
-    } else if (fixProposalContainerType == FixProposalContainerType[FixProposalContainerType.UNRESOLVABLE_CASE]) {
+    } else if (fixProposalContainer.type == FixProposalContainerType.UNRESOLVABLE_CASE) {
         proposalContainerText = "Unresolvable";
     } else {
         proposalContainerText = "Unknown combination option";
