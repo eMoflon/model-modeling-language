@@ -15,12 +15,18 @@
 }
 
 .ms-match-instance-content {
+    flex: 1;
+}
 
+.ms-match-instance-content-visualbox {
+    width: 0.5em;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    background-color: goldenrod;
 }
 
 .ms-match-fix-variant-wrapper {
     width: 100%;
-    margin-right: 1.75em;
 }
 
 .ms-match-fix-variant-header-wrapper {
@@ -36,7 +42,7 @@
 }
 
 .ms-match-fix-variant-header-button-wrapper {
-
+    margin-right: 0.5em;
 }
 
 .ms-match-fix-variant-button-run {
