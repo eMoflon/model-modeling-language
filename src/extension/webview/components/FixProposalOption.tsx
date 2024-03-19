@@ -2,6 +2,7 @@ import "./FixProposalOption.css";
 import {FixProposal, FixProposalType} from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
 import React from "react";
 import {VSCodeButton, VSCodeTag} from "@vscode/webview-ui-toolkit/react";
+import {MatchInstance} from "./MatchInstance.js";
 
 export function FixProposalOption(props: { proposal: FixProposal; }) {
     let {proposal} = props;
@@ -19,6 +20,10 @@ export function FixProposalOption(props: { proposal: FixProposal; }) {
         }
     }
 
+    const executeFixVariantForAllMatches = (idx: number) => {
+        console.log(`Execute variant (${idx}) for all matches!`);
+    }
+
     const computedStyle: CSSStyleDeclaration = getComputedStyle(document.documentElement);
 
     const iconColor: string = computedStyle.getPropertyValue("--button-primary-foreground");
@@ -31,6 +36,10 @@ export function FixProposalOption(props: { proposal: FixProposal; }) {
     } else {
         proposalTypeTag = "Unknown proposal type";
     }
+
+    const matchInstances = proposal.matches.map((x, idx) => <MatchInstance match={x}
+                                                                           selectVariantForAllMatchesCb={executeFixVariantForAllMatches}
+                                                                           key={`match-${idx}`}/>);
 
     return (
         <>
@@ -51,7 +60,7 @@ export function FixProposalOption(props: { proposal: FixProposal; }) {
                 {proposalExpanded && (<div className="ms-fix-proposal-opt-content-wrapper">
                     <div className="ms-fix-proposal-opt-content-visualbox"/>
                     <div className="ms-fix-proposal-opt-content">
-                        {JSON.stringify(proposal.matches)}
+                        {matchInstances}
                     </div>
                 </div>)}
             </div>
