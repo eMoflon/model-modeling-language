@@ -109,7 +109,7 @@ function MatchFixVariant(props: {
                         <VSCodeTag>{variantTag}</VSCodeTag>
                     </div>
                     <div className="ms-match-fix-variant-header-title wrapper-column">
-                        Variant Title...
+                        {variant.variantTitle}
                     </div>
                     <div className="ms-match-fix-variant-header-button-wrapper wrapper-column">
                         <div className="wrapper-row">
