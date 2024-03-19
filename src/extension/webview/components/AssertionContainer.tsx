@@ -8,15 +8,15 @@ export function AssertionContainer(props: { assertion: ConstraintAssertion }) {
     let {assertion} = props
 
     const [assertionExpanded, setAssertionExpanded] = React.useState(false);
-    const [foldIcon, setFoldIcon] = React.useState("codicon codicon-chevron-down");
+    const [foldIcon, setFoldIcon] = React.useState("codicon codicon-chevron-right");
 
     const toggleExpand = () => {
         if (assertionExpanded) {
             setAssertionExpanded(false);
-            setFoldIcon("codicon codicon-chevron-down");
+            setFoldIcon("codicon codicon-chevron-right");
         } else {
             setAssertionExpanded(true);
-            setFoldIcon("codicon codicon-chevron-up");
+            setFoldIcon("codicon codicon-chevron-down");
         }
     }
 
@@ -61,7 +61,7 @@ function AssertionContainerHeader(props: {
                 <div className="ms-assertion-container-title-wrapper">
                     <div className="ms-assertion-container-title">
                         <VSCodeTag>Assertion</VSCodeTag>
-                        <span className="ms-assertion-container-term">{assertionTerm.substring(0, 20)}</span>
+                        <span className="ms-assertion-container-term">{assertionTerm}</span>
                     </div>
                 </div>
                 {assertionViolated && (<div className="ms-assertion-container-button-wrapper">

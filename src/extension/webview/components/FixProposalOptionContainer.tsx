@@ -12,15 +12,15 @@ export function FixProposalOptionContainer(props: { fixProposalContainer: FixPro
     let {fixProposalContainer} = props;
 
     const [proposalContainerExpanded, setProposalContainerExpanded] = React.useState(false);
-    const [foldIcon, setFoldIcon] = React.useState("codicon codicon-chevron-down");
+    const [foldIcon, setFoldIcon] = React.useState("codicon codicon-chevron-right");
 
     const toggleExpand = () => {
         if (proposalContainerExpanded) {
             setProposalContainerExpanded(false);
-            setFoldIcon("codicon codicon-chevron-down");
+            setFoldIcon("codicon codicon-chevron-right");
         } else {
             setProposalContainerExpanded(true);
-            setFoldIcon("codicon codicon-chevron-up");
+            setFoldIcon("codicon codicon-chevron-down");
         }
     }
 
