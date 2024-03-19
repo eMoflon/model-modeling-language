@@ -62,17 +62,17 @@ function AssertionContainerHeader(props: {
     return (
         <>
             <div className={`ms-assertion-container-header ${assertionClass}`}>
+                {assertionViolated && (<div className="ms-assertion-container-button-wrapper">
+                    <VSCodeButton appearance="icon" onClick={onToggleFoldButton}>
+                        <i className={foldIcon} style={{color: iconColor}}></i>
+                    </VSCodeButton>
+                </div>)}
                 <div className="ms-assertion-container-title-wrapper">
                     <div className="ms-assertion-container-title">
                         <VSCodeTag>Assertion</VSCodeTag>
                         <span className="ms-assertion-container-term">{assertionTerm}</span>
                     </div>
                 </div>
-                {assertionViolated && (<div className="ms-assertion-container-button-wrapper">
-                    <VSCodeButton appearance="icon" onClick={onToggleFoldButton}>
-                        <i className={foldIcon} style={{color: iconColor}}></i>
-                    </VSCodeButton>
-                </div>)}
             </div>
         </>
     )
