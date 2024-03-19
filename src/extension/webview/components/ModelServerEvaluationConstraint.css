@@ -16,7 +16,6 @@
     overflow: hidden;
     display: flex;
     flex-direction: row;
-    align-items: center;
 }
 
 .ms-eval-constraint-content {
@@ -24,8 +23,7 @@
     height: fit-content;
     overflow: hidden;
     display: flex;
-    flex-direction: row;
-    align-items: center;
+    flex-direction: column;
     margin-left: 2em;
     margin-top: 1em;
 }

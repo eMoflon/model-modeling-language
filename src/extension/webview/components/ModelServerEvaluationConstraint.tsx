@@ -37,8 +37,10 @@ export function ModelServerEvaluationConstraint(props: { constraint: Constraint;
                                                        foldIcon={foldIcon}
                                                        onToggleFoldButton={toggleExpand}/>
                 {constraintExpanded && (
-                    <div className="ms-eval-constraint-content">
-                        {assertions}
+                    <div className="wrapper-row">
+                        <div className="ms-eval-constraint-content">
+                            {assertions}
+                        </div>
                     </div>
                 )}
             </div>
