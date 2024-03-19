@@ -56,7 +56,8 @@ message FixMatch {
 }
 
 message FixVariant {
-  repeated FixStatement statements = 1;
+  string variantTitle = 1;
+  repeated FixStatement statements = 2;
 }
 
 message FixStatement {
