@@ -56,8 +56,11 @@ export function MatchInstance(props: { match: FixMatch; selectVariantForAllMatch
                         WIP - Match Beschreibung ???
                     </div>
                 </div>
-                {matchHasVariants && (<div className="ms-match-instance-content wrapper-row">
-                    {matchVariants}
+                {matchHasVariants && (<div className="wrapper-row">
+                    <div className="ms-match-instance-content-visualbox wrapper-column"/>
+                    <div className="ms-match-instance-content wrapper-column">
+                        {matchVariants}
+                    </div>
                 </div>)}
             </div>
         </>
