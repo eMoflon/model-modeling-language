@@ -29,7 +29,7 @@ export function AssertionContainer(props: { assertion: ConstraintAssertion }) {
                 <AssertionContainerHeader assertionTerm={assertion.expression} assertionViolated={assertion.violated}
                                           foldIcon={foldIcon} onToggleFoldButton={toggleExpand}/>
 
-                {assertionExpanded && (<div className="ms-assertion-container-content-wrapper">
+                {assertion.violated && assertionExpanded && (<div className="ms-assertion-container-content-wrapper">
                     <div className="ms-assertion-container-content-visualbox"/>
                     <div className="ms-assertion-container-content">
                         {proposalContainer}
