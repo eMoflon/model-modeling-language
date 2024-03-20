@@ -4,6 +4,11 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    margin-top: 1em;
+}
+
+.ms-assertion-container-wrapper:first-child {
+    margin-top: 2em;
 }
 
 .ms-assertion-container-content-wrapper {
@@ -14,11 +19,9 @@
 .ms-assertion-container-content-visualbox {
     display: flex;
     flex-direction: column;
-    width: 0.5em;
-    margin-left: 0.5em;
-    margin-right: 0.5em;
+    width: 2.5em;
     /*noinspection CssUnresolvedCustomProperty*/
-    background-color: var(--vscode-testing-iconFailed);
+    background-color: var(--vscode-terminal-ansiRed);
 }
 
 .ms-assertion-container-content {
@@ -29,28 +32,39 @@
 
 .ms-assertion-container-header-violated {
     /*noinspection CssUnresolvedCustomProperty*/
-    background-color: var(--vscode-testing-iconFailed);
+    background-color: var(--vscode-terminal-ansiRed);
+}
+
+.ms-assertion-container-header-violated .ms-assertion-container-title-wrapper {
+    margin-left: 0.5em;
 }
 
 .ms-assertion-container-header-fulfilled {
     /*noinspection CssUnresolvedCustomProperty*/
-    background-color: var(--vscode-testing-iconPassed);
+    background-color: var(--vscode-terminal-ansiGreen);
+}
+
+.ms-assertion-container-header-fulfilled .ms-assertion-container-title-wrapper {
+    margin-left: 2.5em;
 }
 
 .ms-assertion-container-header {
-    width: 100%;
     height: fit-content;
     overflow: hidden;
     display: flex;
     flex-direction: row;
     align-items: center;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    padding-left: 0.25em;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
 }
 
 .ms-assertion-container-title-wrapper {
     display: flex;
     flex-direction: column;
     flex: 1;
-    margin-left: 1em;
     height: fit-content;
 }
 
@@ -63,6 +77,13 @@
 
 .ms-assertion-container-term {
     margin-left: 0.5em;
+    font-family: Consolas, "Courier New", monospace;
+    font-weight: normal;
+    font-size: 14px;
+    font-feature-settings: "liga" 0, "calt" 0;
+    font-variation-settings: normal;
+    line-height: 19px;
+    letter-spacing: 0;
 }
 
 .ms-assertion-container-button-wrapper {

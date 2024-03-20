@@ -27,6 +27,7 @@
     flex-direction: column;
     margin-left: 2em;
     margin-top: 1em;
+    padding-right: 1em;
 }
 
 .ms-eval-constraint-icon-wrapper {

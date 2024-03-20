@@ -4,7 +4,7 @@ import {MouseEventHandler} from 'react';
 import {Constraint} from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
 import {CircularCodiconIcon} from "./CircularCodiconIcon.js";
 import "./ModelServerEvaluationConstraint.css";
-import {VSCodeButton} from "@vscode/webview-ui-toolkit/react";
+import {VSCodeButton, VSCodeDivider} from "@vscode/webview-ui-toolkit/react";
 import {AssertionContainer} from "./AssertionContainer.js";
 
 export function ModelServerEvaluationConstraint(props: { constraint: Constraint; }) {
@@ -39,6 +39,7 @@ export function ModelServerEvaluationConstraint(props: { constraint: Constraint;
                 {constraintExpanded && (
                     <div className="wrapper-row">
                         <div className="ms-eval-constraint-content">
+                            <VSCodeDivider/>
                             {assertions}
                         </div>
                     </div>
