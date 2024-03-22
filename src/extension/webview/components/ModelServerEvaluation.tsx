@@ -4,6 +4,7 @@ import {ModelServerEvaluationSummary} from "./ModelServerEvaluationSummary.js";
 import {Constraint, GetConstraintsResponse} from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
 import {ModelServerEvaluationConstraintList} from "./ModelServerEvaluationConstraintList.js";
 import {VSCodeDivider} from "@vscode/webview-ui-toolkit/react";
+import {ModelServerEvaluationContext, ModelServerEvaluationCtxt} from "./ModelServerEvaluationContext.js";
 
 const ModelServerEvaluation = () => {
     //const [debugText, setDebugText] = React.useState('');
@@ -15,6 +16,8 @@ const ModelServerEvaluation = () => {
     const setLoading = () => {
         setLoadState("loading");
     }
+
+    const context = new ModelServerEvaluationCtxt();
 
     React.useEffect(() => {
         window.addEventListener('message', event => {
@@ -30,6 +33,8 @@ const ModelServerEvaluation = () => {
                         const constraints: Constraint[] = deserializedMessage.constraints;
                         //setDebugText(JSON.stringify(constraints));
                         console.log(message.data);
+
+                        context.incrementEvaluationCount();
 
                         setTotalConstraints(constraints.length);
                         setViolatedConstraints(constraints.filter(x => x.violated).length);
@@ -52,13 +57,15 @@ const ModelServerEvaluation = () => {
     },);
 
     return (
-        <div>
-            <ModelServerEvaluationSummary state={loadState} violatedConstraints={violatedConstraints}
-                                          totalConstraints={totalConstraints} setLoading={setLoading}/>
-            <VSCodeDivider/>
-            {/*<p>{debugText}</p>*/}
-            <ModelServerEvaluationConstraintList constraints={constraints}/>
-        </div>
+        <ModelServerEvaluationContext.Provider value={context}>
+            <div>
+                <ModelServerEvaluationSummary state={loadState} violatedConstraints={violatedConstraints}
+                                              totalConstraints={totalConstraints} setLoading={setLoading}/>
+                <VSCodeDivider/>
+                {/*<p>{debugText}</p>*/}
+                <ModelServerEvaluationConstraintList constraints={constraints}/>
+            </div>
+        </ModelServerEvaluationContext.Provider>
     );
 };
 

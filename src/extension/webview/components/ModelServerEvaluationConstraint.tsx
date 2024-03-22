@@ -6,6 +6,7 @@ import {CircularCodiconIcon} from "./CircularCodiconIcon.js";
 import "./ModelServerEvaluationConstraint.css";
 import {VSCodeButton, VSCodeDivider} from "@vscode/webview-ui-toolkit/react";
 import {AssertionContainer} from "./AssertionContainer.js";
+import {ModelServerEvaluationCtxt, useModelServerEvaluationContext} from "./ModelServerEvaluationContext.js";
 
 export function ModelServerEvaluationConstraint(props: { constraint: Constraint; }) {
     let {
@@ -14,6 +15,8 @@ export function ModelServerEvaluationConstraint(props: { constraint: Constraint;
 
     const [constraintExpanded, setConstraintExpanded] = React.useState(false);
     const [foldIcon, setFoldIcon] = React.useState("codicon codicon-unfold");
+
+    const evalContext: ModelServerEvaluationCtxt = useModelServerEvaluationContext();
 
     const toggleExpand = () => {
         if (constraintExpanded) {
@@ -26,7 +29,7 @@ export function ModelServerEvaluationConstraint(props: { constraint: Constraint;
     }
 
     const assertions = constraint.assertions.map((assertion, idx) => <AssertionContainer assertion={assertion}
-                                                                                         key={`assertion-${idx}`}/>);
+                                                                                         key={`iteration-${evalContext.evaluationCount}-assertion-${idx}`}/>);
 
     return (
         <>
