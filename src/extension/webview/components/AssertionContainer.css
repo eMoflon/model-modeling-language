@@ -48,6 +48,15 @@
     margin-left: 2.5em;
 }
 
+.ms-assertion-container-header-await-reevaluation {
+    /*noinspection CssUnresolvedCustomProperty*/
+    background-color: var(--vscode-testing-iconQueued);
+}
+
+.ms-assertion-container-header-await-reevaluation .ms-assertion-container-title-wrapper {
+    margin-left: 0.5em;
+}
+
 .ms-assertion-container-header {
     height: fit-content;
     overflow: hidden;
