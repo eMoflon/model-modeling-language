@@ -185,6 +185,7 @@ function InfoStatementContainer(props: { infoStatements: FixInfoStatement[]; }) 
                 <div className="wrapper-column">
                     <div className="wrapper-row">
                         <div className="wrapper-column">
+                            <VSCodeTag>Info</VSCodeTag>
                         </div>
                         <div className="wrapper-column">
                             <ul>
