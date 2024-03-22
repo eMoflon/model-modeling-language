@@ -52,15 +52,10 @@ export function FixProposalOption(props: { proposal: FixProposal; notifyFixedPro
     const context = new FixProposalOptionCtxt(proposal.matches.length);
 
     useEffect(() => {
-        if (context.usedTotalVariantIdx >= 0) {
+        if (context.fixProposalFixed) {
             if (proposalExpanded) {
                 toggleExpand();
             }
-        }
-    }, [context.usedTotalVariantIdx])
-
-    useEffect(() => {
-        if (context.fixProposalFixed) {
             notifyFixedProposalOption();
         }
     }, [context.remainingMatches])
@@ -70,7 +65,7 @@ export function FixProposalOption(props: { proposal: FixProposal; notifyFixedPro
             <div className="ms-fix-proposal-opt-wrapper">
                 <div className="ms-fix-proposal-opt-header">
                     <div className="ms-fix-proposal-opt-header-button-wrapper">
-                        <VSCodeButton appearance="icon" onClick={toggleExpand}>
+                        <VSCodeButton appearance="icon" onClick={toggleExpand} disabled={context.fixProposalFixed}>
                             <i className={foldIcon} style={{color: iconColor}}></i>
                         </VSCodeButton>
                     </div>
