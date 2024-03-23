@@ -34,6 +34,7 @@ import {
 import {ExprUtils} from "../../language/expr-utils.js";
 import {GMInterpreter, RunnerContext} from "./GMInterpreter.js";
 import {PostEditRequest, PostEditResponse} from "../generated/de/nexus/modelserver/ModelServerEdits_pb.js";
+import {ExportModelRequest, ExportModelResponse} from "../generated/de/nexus/modelserver/ModelServerManagement_pb.js";
 
 export class GMProtoMapper {
 
@@ -172,6 +173,22 @@ export class GMProtoMapper {
                 }
             }
         );
+    }
+
+    public static processExportResponse(request: ExportModelRequest, response: ExportModelResponse, context: RunnerContext) {
+        if (response.success) {
+            if (request.exportWithIds) {
+                context.log(`[SUCCESS] Exported model with ids to: ${response.exportedPath}`);
+            } else {
+                context.log(`[SUCCESS] Exported model without ids to: ${response.exportedPath}`);
+            }
+        } else {
+            if (response.message.length == 0) {
+                context.log(`[FAILED] An unknown error has occurred while trying to save the model.`);
+            } else {
+                context.log(`[FAILED] ${response.message}`);
+            }
+        }
     }
 
     public static processResponse(request: PostEditRequest, response: PostEditResponse, context: RunnerContext) {

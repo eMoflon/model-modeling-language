@@ -1,5 +1,11 @@
 import {EmptyFileSystem, interruptAndCheck, LangiumDocument, MaybePromise, URI} from "langium";
-import {GMStatement, GraphManipulationDocument, isGMChainStatement, TargetNode} from "../../language/generated/ast.js";
+import {
+    GMStatement,
+    GraphManipulationDocument,
+    isExportStatement,
+    isGMChainStatement,
+    TargetNode
+} from "../../language/generated/ast.js";
 import {v4} from "uuid";
 import {GraphManipulationLanguageServices} from "../../language/graph-manipulation-language-module.js";
 import {CancellationToken, CancellationTokenSource} from "vscode-languageserver";
@@ -8,6 +14,7 @@ import {createMmlAndGclServices} from "../../language/main-module.js";
 import {PostEditRequest} from "../generated/de/nexus/modelserver/ModelServerEdits_pb.js";
 import {EditChainRequest, EditRequest, Node} from "../generated/de/nexus/modelserver/ModelServerEditStatements_pb.js";
 import {GMProtoMapper} from "./GMProtoMapper.js";
+import {ExportModelRequest} from "../generated/de/nexus/modelserver/ModelServerManagement_pb.js";
 
 
 export class GMInterpreter {
@@ -80,6 +87,23 @@ export class GMInterpreter {
                     }
                 )
                 return this._modelServerConnector.clients.editClient.requestEdit(fullReq).then(response => GMProtoMapper.processResponse(fullReq, response, context));
+            } else if (isExportStatement(element)) {
+                const keepIds = element.keepIds.value;
+                const fullReq: ExportModelRequest = new ExportModelRequest(
+                    {
+                        exportWithIds: keepIds
+                    }
+                )
+
+                if (element.exportPath != undefined) {
+                    fullReq.exportPath = element.exportPath;
+                }
+
+                if (element.exportName != undefined) {
+                    fullReq.exportName = element.exportName;
+                }
+
+                return this._modelServerConnector.clients.managementClient.exportModel(fullReq).then(response => GMProtoMapper.processExportResponse(fullReq, response, context));
             } else {
                 const req: EditRequest = GMProtoMapper.mapEditRequest(element) as EditRequest;
                 const fullReq: PostEditRequest = new PostEditRequest(
