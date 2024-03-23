@@ -8,7 +8,7 @@ TargetNode:
     nodeId=NUM | tempNodeVar=[UntypedVariable:ID];
 
 GMStatement:
-    SetAttributeStatement | CreateEdgeStatement | DeleteEdgeStatement | CreateNodeStatement | DeleteNodeStatement | GMChainStatement;
+    SetAttributeStatement | CreateEdgeStatement | DeleteEdgeStatement | CreateNodeStatement | DeleteNodeStatement | GMChainStatement | ExportStatement;
 
 GMChainStatement:
     'chain' '{' (chain+=GMStatement)* '}';
@@ -30,3 +30,6 @@ CreateEdgeStatement:
 
 DeleteEdgeStatement:
     'delete' 'edge' fromNode=TargetNode '-'reference=UntypedVariable'->' toNode=TargetNode ';';
+
+ExportStatement:
+    'export' '(' keepIds=BoolExpr (',' 'dir' '=' exportPath=STRING)? (',' 'name' '=' exportName=STRING)? ')' ';';

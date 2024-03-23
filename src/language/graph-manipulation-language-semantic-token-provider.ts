@@ -5,6 +5,7 @@ import {
     isCreateNodeStatement,
     isDeleteEdgeStatement,
     isDeleteNodeStatement,
+    isExportStatement,
     isGMChainStatement,
     isSetAttributeStatement,
     isTargetNode,
@@ -59,6 +60,16 @@ export class GraphManipulationLanguageSemanticTokenProvider extends AbstractSema
             acceptor({node, keyword: "->", type: SemanticTokenTypes.operator});
         } else if (isUntypedVariable(node)) {
             acceptor({node, property: "name", type: SemanticTokenTypes.operator});
+        } else if (isExportStatement(node)) {
+            acceptor({node, keyword: "export", type: SemanticTokenTypes.keyword});
+            if (node.exportPath != undefined) {
+                acceptor({node, keyword: "dir", type: SemanticTokenTypes.property});
+                acceptor({node, keyword: "=", type: SemanticTokenTypes.operator});
+            }
+            if (node.exportName != undefined) {
+                acceptor({node, keyword: "name", type: SemanticTokenTypes.property});
+                acceptor({node, keyword: "=", type: SemanticTokenTypes.operator});
+            }
         }
     }
 
