@@ -14,6 +14,13 @@
         "textMate": {
             "out": "syntaxes/graph-constraint-language.tmLanguage.json"
         }
+    },{
+        "id": "graph-manipulation-language",
+        "grammar": "src/language/definition/graph-manipulation-language.langium",
+        "fileExtensions": [".gm"],
+        "textMate": {
+            "out": "syntaxes/graph-manipulation-language.tmLanguage.json"
+        }
     }],
     "out": "src/language/generated"
 }

@@ -78,6 +78,17 @@
           ".gc"
         ],
         "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "graph-manipulation-language",
+        "aliases": [
+          "Graph Manipulation Language",
+          "graph-manipulation-language"
+        ],
+        "extensions": [
+          ".gm"
+        ],
+        "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
@@ -90,6 +101,22 @@
         "language": "graph-constraint-language",
         "scopeName": "source.graph-constraint-language",
         "path": "syntaxes/graph-constraint-language.tmLanguage.json"
+      },
+      {
+        "language": "graph-manipulation-language",
+        "scopeName": "source.graph-manipulation-language",
+        "path": "syntaxes/graph-manipulation-language.tmLanguage.json"
+      }
+    ],
+    "notebooks": [
+      {
+        "type": "gm-notebook",
+        "displayName": "Graph Manipulation Notebook",
+        "selector": [
+          {
+            "filenamePattern": "*.gmnb"
+          }
+        ]
       }
     ],
     "configuration": {
@@ -197,7 +224,8 @@
   "activationEvents": [
     "onLanguage:model-modeling-and-constraint-language",
     "onLanguage:model-modeling-language",
-    "onLanguage:graph-constraint-language"
+    "onLanguage:graph-constraint-language",
+    "onLanguage:graph-manipulation-language"
   ],
   "main": "./out/extension/main.cjs",
   "bin": {

@@ -1,6 +1,8 @@
 syntax = "proto3";
 package de.nexus.modelserver.proto;
 
+import "google/protobuf/wrappers.proto";
+
 message GetStateRequest{
 
 }
@@ -18,11 +20,13 @@ message TerminateServerResponse{
 }
 
 message ExportModelRequest {
-  string exportName = 2;
-  string exportPath = 3;
+  google.protobuf.StringValue exportName = 1;
+  google.protobuf.StringValue exportPath = 2;
+  bool exportWithIds = 3;
 }
 
 message ExportModelResponse {
   bool success = 1;
   string message = 2;
+  string exportedPath = 3;
 }
