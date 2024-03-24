@@ -109,7 +109,7 @@ function InfoStatementContainer(props: { infoStatements: FixInfoStatement[]; }) 
                         <div className="wrapper-column">
                             <VSCodeTag>Info</VSCodeTag>
                         </div>
-                        <div className="wrapper-column">
+                        <div className="ms-match-fix-variant-info-statement-content-wrapper wrapper-column">
                             {infoStatement.msg}
                         </div>
                     </div>
@@ -126,7 +126,7 @@ function InfoStatementContainer(props: { infoStatements: FixInfoStatement[]; }) 
                         <div className="wrapper-column">
                             <VSCodeTag>Info</VSCodeTag>
                         </div>
-                        <div className="wrapper-column">
+                        <div className="ms-match-fix-variant-info-statement-content-wrapper wrapper-column">
                             <ul>
                                 {entries}
                             </ul>

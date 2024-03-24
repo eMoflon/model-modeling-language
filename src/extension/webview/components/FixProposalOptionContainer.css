@@ -19,6 +19,7 @@
 .ms-fix-proposal-opt-container-header-text-wrapper {
     display: flex;
     flex-direction: column;
+    margin-left: 0.5em;
 }
 
 .ms-fix-proposal-opt-container-content-wrapper {

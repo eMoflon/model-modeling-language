@@ -2,7 +2,7 @@ import "./MatchInstance.css"
 import "./CommonWrappers.css"
 import {FixMatch, FixVariant, MatchNode} from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
 import React, {useEffect} from "react";
-import {VSCodeButton, VSCodeTag} from "@vscode/webview-ui-toolkit/react";
+import {VSCodeButton, VSCodeDivider, VSCodeTag} from "@vscode/webview-ui-toolkit/react";
 import {FixProposalOptionCtxt, useFixProposalOptionContext} from "./FixProposalOptionContext.js";
 import {MatchInstanceCntxt, useMatchInstanceContext} from "./MatchInstanceContext.js";
 import {MatchFixVariant} from "./MatchFixVariant.js";
@@ -53,9 +53,18 @@ export function MatchInstance(props: { match: FixMatch; }) {
         }
     }, [fixPropContext.usedTotalVariantIdx])
 
-    const matchVariants = match.variants.map((x, idx) => <MatchFixVariant idx={idx} key={`variant-${idx}`}
-                                                                          variant={x}
-                                                                          selectVariantCb={executeFixVariant}/>);
+    const variantProvider = (variant: FixVariant, idx: number, maxIdx: number) => {
+        return (
+            <>
+                <MatchFixVariant idx={idx} key={`variant-${idx}`}
+                                 variant={variant}
+                                 selectVariantCb={executeFixVariant}/>
+                {idx < maxIdx && (<VSCodeDivider className="ms-match-instance-variant-divider"/>)}
+            </>
+        )
+    }
+
+    const matchVariants = match.variants.map((x, idx) => variantProvider(x, idx, match.variants.length - 1));
     const matchHasVariants: boolean = matchVariants.length > 0;
 
     return (
@@ -66,7 +75,6 @@ export function MatchInstance(props: { match: FixMatch; }) {
                         <VSCodeTag>Match</VSCodeTag>
                     </div>
                     <div className="ms-match-instance-header-text-wrapper wrapper-column">
-                        WIP - Match Beschreibung ???
                     </div>
                     <div className="ms-match-instance-header-button-wrapper wrapper-column">
                         <VSCodeButton appearance="icon" onClick={toggleDetails}>

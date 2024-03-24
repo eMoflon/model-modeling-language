@@ -69,10 +69,14 @@ export function FixProposalOption(props: { proposal: FixProposal; notifyFixedPro
                             <i className={foldIcon} style={{color: iconColor}}></i>
                         </VSCodeButton>
                     </div>
-                    <div className="ms-fix-proposal-opt-header-text-wrapper">
-                        <div className="ms-fix-proposal-opt-header-text">
-                            <VSCodeTag>{proposalTypeTag}</VSCodeTag>
-                            <span>{proposal.patternName}</span>
+                    <div className="ms-fix-proposal-opt-header-text-wrapper wrapper-column">
+                        <div className="wrapper-row">
+                            <div className="wrapper-column">
+                                <VSCodeTag>{proposalTypeTag}</VSCodeTag>
+                            </div>
+                            <div className="ms-fix-proposal-opt-header-text wrapper-column">
+                                <span>{proposal.patternName}</span>
+                            </div>
                         </div>
                     </div>
                 </div>

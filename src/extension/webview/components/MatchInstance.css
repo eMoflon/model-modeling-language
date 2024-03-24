@@ -3,7 +3,13 @@
 }
 
 .ms-match-instance-header {
-
+    /*noinspection CssUnresolvedCustomProperty*/
+    background-color: var(--vscode-input-border);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    padding-left: 0.25em;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
 }
 
 .ms-match-instance-header-tag-wrapper {
@@ -20,11 +26,18 @@
 
 .ms-match-instance-content {
     flex: 1;
+    margin-top: 0.5em;
+    margin-left: 0.5em;
 }
 
 .ms-match-instance-content-visualbox {
-    width: 0.5em;
-    margin-left: 0.5em;
+    width: 1em;
     margin-right: 0.5em;
-    background-color: goldenrod;
+    /*noinspection CssUnresolvedCustomProperty*/
+    background-color: var(--vscode-input-border);
+}
+
+.ms-match-instance-variant-divider {
+    margin-top: 1em;
+    margin-bottom: 1em;
 }
