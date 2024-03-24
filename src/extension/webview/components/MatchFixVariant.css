@@ -3,7 +3,7 @@
 }
 
 .ms-match-fix-variant-header-wrapper {
-
+    align-items: center;
 }
 
 .ms-match-fix-variant-header-tag {
@@ -12,6 +12,7 @@
 
 .ms-match-fix-variant-header-title {
     flex: 1;
+    margin-left: 0.5em;
 }
 
 .ms-match-fix-variant-header-button-wrapper {
@@ -27,6 +28,17 @@
     border: 1px solid goldenrod;
     border-radius: 10px;
     margin-left: 1em;
+    margin-top: 1em;
+}
+
+.ms-match-fix-variant-info-statement-content-wrapper {
+    margin-left: 2em;
+}
+
+.ms-match-fix-variant-info-statement-content-wrapper ul {
+    padding: 0;
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 .ms-match-fix-variant-content-detail-wrapper {
