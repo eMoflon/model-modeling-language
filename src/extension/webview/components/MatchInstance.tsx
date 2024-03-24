@@ -82,17 +82,22 @@ export function MatchInstance(props: { match: FixMatch; }) {
                         </VSCodeButton>
                     </div>
                 </div>
-                {!matchContext.matchFixed && matchDetailsExpanded && (
-                    <div className="wrapper-row">
-                        <MatchDescription nodes={match.nodes}/>
-                    </div>
-                )}
-                {!matchContext.matchFixed && matchHasVariants && (<div className="wrapper-row">
+                <div className="wrapper-row">
                     <div className="ms-match-instance-content-visualbox wrapper-column"/>
-                    <div className="ms-match-instance-content wrapper-column">
-                        {matchVariants}
+                    <div className="ms-match-instance-content-wrapper wrapper-column">
+                        {!matchContext.matchFixed && matchDetailsExpanded && (
+                            <div className="ms-match-instance-content-match-desc-wrapper wrapper-row">
+                                <MatchDescription nodes={match.nodes}/>
+                            </div>
+                        )}
+                        {!matchContext.matchFixed && matchHasVariants && (
+                            <div className="ms-match-instance-content-row wrapper-row">
+                                <div className="ms-match-instance-content wrapper-column">
+                                    {matchVariants}
+                                </div>
+                            </div>)}
                     </div>
-                </div>)}
+                </div>
             </div>
         </>
     );
@@ -118,7 +123,8 @@ function MatchNodeDescription(props: { node: MatchNode; }) {
     return (
         <>
             <span
-                className="wrapper-row">{node.nodeName} -{">"} [{node.nodeId}:{node.nodeType}]({node.nodeAttributes.map(x => `${x.attributeName} = ${x.attributeValue}`).join(", ")})</span>
+                className="ms-match-instance-content-match-desc-node wrapper-row">{node.nodeName} <i
+                className={"codicon codicon-arrow-right ms-match-instance-content-match-desc-node-arrow"}></i> [{node.nodeId}:{node.nodeType}]({node.nodeAttributes.map(x => `${x.attributeName} = ${x.attributeValue}`).join(", ")})</span>
         </>
     );
 }

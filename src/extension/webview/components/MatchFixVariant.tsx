@@ -117,7 +117,7 @@ function InfoStatementContainer(props: { infoStatements: FixInfoStatement[]; }) 
             </>
         )
     } else {
-        const entries = infoStatements.map(x => <li>{x.msg}</li>)
+        const entries = infoStatements.map((x, idx) => <li key={`info-${idx}`}>{x.msg}</li>)
 
         return (
             <>
