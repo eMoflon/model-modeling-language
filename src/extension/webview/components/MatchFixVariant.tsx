@@ -104,7 +104,7 @@ function InfoStatementContainer(props: { infoStatements: FixInfoStatement[]; }) 
 
         return (
             <>
-                <div className="wrapper-column">
+                <div className="ms-match-fix-variant-info-statement-wrapper wrapper-column">
                     <div className="wrapper-row">
                         <div className="wrapper-column">
                             <VSCodeTag>Info</VSCodeTag>

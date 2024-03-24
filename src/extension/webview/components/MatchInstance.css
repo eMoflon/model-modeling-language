@@ -11,7 +11,11 @@
 }
 
 .ms-match-instance-header-text-wrapper {
+    flex: 1;
+}
 
+.ms-match-instance-header-button-wrapper {
+    margin-right: 0.5em;
 }
 
 .ms-match-instance-content {
