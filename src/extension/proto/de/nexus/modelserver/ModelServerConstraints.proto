@@ -53,6 +53,19 @@ message FixProposal {
 
 message FixMatch {
   repeated FixVariant variants = 1;
+  repeated MatchNode nodes = 2;
+}
+
+message MatchNode {
+  uint32 nodeId = 1;
+  string nodeName = 2;
+  string nodeType = 3;
+  repeated MatchNodeAttribute nodeAttributes = 4;
+}
+
+message MatchNodeAttribute {
+  string attributeName = 1;
+  string attributeValue = 2;
 }
 
 message FixVariant {
