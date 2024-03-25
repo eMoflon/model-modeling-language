@@ -146,13 +146,20 @@ function FixVariantDetails(props: { statements: EditRequest[]; }) {
 
     return (
         <>
-            <div>
-                <ul>
-                    {entries}
-                </ul>
+            <div className="wrapper-column">
+                <div className="wrapper-row">
+                    <div className="wrapper-column">
+                        <VSCodeTag>Repair</VSCodeTag>
+                    </div>
+                    <div className="ms-match-fix-variant-details-content-wrapper wrapper-column">
+                        <ul>
+                            {entries}
+                        </ul>
+                    </div>
+                </div>
             </div>
         </>
-    );
+    )
 }
 
 function getEditRequestAsString(request: EditRequest, registry: TemporaryIdRegistry): string {
