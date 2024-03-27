@@ -1,20 +1,15 @@
 import "./MatchInstance.css"
 import "./CommonWrappers.css"
 import {FixMatch, FixVariant, MatchNode} from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
-import React, {useEffect} from "react";
+import React from "react";
 import {VSCodeButton, VSCodeDivider, VSCodeTag} from "@vscode/webview-ui-toolkit/react";
-import {FixProposalOptionCtxt, useFixProposalOptionContext} from "./FixProposalOptionContext.js";
-import {MatchInstanceCntxt, useMatchInstanceContext} from "./MatchInstanceContext.js";
 import {MatchFixVariant} from "./MatchFixVariant.js";
-import {ModelServerEvaluationCtxt, useModelServerEvaluationContext} from "./ModelServerEvaluationContext.js";
-import {EditChainRequest, EditRequest} from "../../generated/de/nexus/modelserver/ModelServerEditStatements_pb.js";
 
-export function MatchInstance(props: { match: FixMatch; }) {
-    let {match} = props;
-
-    const fixPropContext: FixProposalOptionCtxt = useFixProposalOptionContext();
-    const matchContext: MatchInstanceCntxt = useMatchInstanceContext();
-    const evalContext: ModelServerEvaluationCtxt = useModelServerEvaluationContext();
+export function MatchInstance(props: {
+    match: FixMatch; matchIdx: number; selectVariantCb: Function;
+    selectVariantForAllCb: Function;
+}) {
+    let {match, matchIdx, selectVariantCb, selectVariantForAllCb} = props;
 
     const [matchDetailsExpanded, setMatchDetailsExpanded] = React.useState(false);
     const [detailsIcon, setDetailsIcon] = React.useState("codicon codicon-diff-added");
@@ -33,38 +28,16 @@ export function MatchInstance(props: { match: FixMatch; }) {
         }
     }
 
-    const executeFixVariant = (idx: number) => {
-        if (!matchContext.matchFixed) {
-            matchContext.setMatchFixed(true);
-            matchContext.setSelectedFixVariant(idx);
-
-            const selectedVariant: FixVariant | undefined = match.variants.at(idx);
-
-
-            if (selectedVariant == undefined) {
-                console.error(`Selected FixVariant out of range! Selected ${idx} out of range (0,${match.variants.length - 1})`)
-            } else {
-                console.log(JSON.stringify(selectedVariant))
-                const repairStatements: EditRequest[] = selectedVariant.statements.filter(x => x.stmt.case == "edit").map(x => x.stmt.value as EditRequest);
-                const chainRequest: EditChainRequest = new EditChainRequest({edits: repairStatements});
-                evalContext.requestModelEdit(chainRequest);
-                fixPropContext.decrementRemainingMatches();
-            }
-        }
+    const innerSelectVariantCb = (variantIdx: number) => {
+        return selectVariantCb(matchIdx, variantIdx);
     }
-
-    useEffect(() => {
-        if (fixPropContext.usedTotalVariantIdx >= 0 && !matchContext.matchFixed) {
-            executeFixVariant(fixPropContext.usedTotalVariantIdx)
-        }
-    }, [fixPropContext.usedTotalVariantIdx])
 
     const variantProvider = (variant: FixVariant, idx: number, maxIdx: number) => {
         return (
             <>
                 <MatchFixVariant idx={idx} key={`variant-${idx}`}
                                  variant={variant}
-                                 selectVariantCb={executeFixVariant}/>
+                                 selectVariantCb={innerSelectVariantCb} selectVariantForAllCb={selectVariantForAllCb}/>
                 {idx < maxIdx && (<VSCodeDivider className="ms-match-instance-variant-divider"/>)}
             </>
         )
@@ -91,12 +64,12 @@ export function MatchInstance(props: { match: FixMatch; }) {
                 <div className="wrapper-row">
                     <div className="ms-match-instance-content-visualbox wrapper-column"/>
                     <div className="ms-match-instance-content-wrapper wrapper-column">
-                        {!matchContext.matchFixed && matchDetailsExpanded && (
+                        {matchDetailsExpanded && (
                             <div className="ms-match-instance-content-match-desc-wrapper wrapper-row">
                                 <MatchDescription nodes={match.nodes}/>
                             </div>
                         )}
-                        {!matchContext.matchFixed && matchHasVariants && (
+                        {matchHasVariants && (
                             <div className="ms-match-instance-content-row wrapper-row">
                                 <div className="ms-match-instance-content wrapper-column">
                                     {matchVariants}

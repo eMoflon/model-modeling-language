@@ -9,7 +9,6 @@ export function AssertionContainer(props: { assertion: ConstraintAssertion }) {
 
     const [assertionExpanded, setAssertionExpanded] = React.useState(false);
     const [foldIcon, setFoldIcon] = React.useState("codicon codicon-chevron-right");
-    const [awaitReevaluation, setAwaitReevaluation] = React.useState(false);
 
     const toggleExpand = () => {
         if (assertionExpanded) {
@@ -21,22 +20,13 @@ export function AssertionContainer(props: { assertion: ConstraintAssertion }) {
         }
     }
 
-    const handleFixedAssertion = () => {
-        if (assertionExpanded) {
-            toggleExpand();
-        }
-        setAwaitReevaluation(true);
-    }
-
     const proposalContainer = assertion.proposalContainer == undefined ? <span>No proposal container!</span> :
-        <FixProposalOptionContainer fixProposalContainer={assertion.proposalContainer}
-                                    notifyFixedContainerOption={handleFixedAssertion}/>;
+        <FixProposalOptionContainer fixProposalContainer={assertion.proposalContainer}/>;
 
     return (
         <>
             <div className="ms-assertion-container-wrapper">
                 <AssertionContainerHeader assertionTerm={assertion.expression} assertionViolated={assertion.violated}
-                                          awaitingReevaluation={awaitReevaluation}
                                           foldIcon={foldIcon} onToggleFoldButton={toggleExpand}/>
 
                 {assertion.violated && assertionExpanded && (<div className="ms-assertion-container-content-wrapper">
@@ -54,14 +44,12 @@ export function AssertionContainer(props: { assertion: ConstraintAssertion }) {
 function AssertionContainerHeader(props: {
     assertionTerm: string;
     assertionViolated: boolean;
-    awaitingReevaluation: boolean;
     foldIcon: string;
     onToggleFoldButton: MouseEventHandler;
 }) {
     let {
         assertionTerm,
         assertionViolated,
-        awaitingReevaluation,
         foldIcon,
         onToggleFoldButton
     } = props;
@@ -69,13 +57,13 @@ function AssertionContainerHeader(props: {
     const computedStyle: CSSStyleDeclaration = getComputedStyle(document.documentElement);
 
     const iconColor: string = computedStyle.getPropertyValue("--button-primary-foreground");
-    const assertionClass = assertionViolated ? awaitingReevaluation ? "ms-assertion-container-header-await-reevaluation" : "ms-assertion-container-header-violated" : "ms-assertion-container-header-fulfilled"
+    const assertionClass = assertionViolated ? "ms-assertion-container-header-violated" : "ms-assertion-container-header-fulfilled"
 
     return (
         <>
             <div className={`ms-assertion-container-header ${assertionClass}`}>
                 {assertionViolated && (<div className="ms-assertion-container-button-wrapper">
-                    <VSCodeButton appearance="icon" onClick={onToggleFoldButton} disabled={awaitingReevaluation}>
+                    <VSCodeButton appearance="icon" onClick={onToggleFoldButton}>
                         <i className={foldIcon} style={{color: iconColor}}></i>
                     </VSCodeButton>
                 </div>)}

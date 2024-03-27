@@ -2,16 +2,19 @@ import "./FixProposalOption.css";
 import {
     FixMatch,
     FixProposal,
-    FixProposalType
+    FixProposalType,
+    FixVariant
 } from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
-import React, {useEffect} from "react";
+import React from "react";
 import {VSCodeButton, VSCodeTag} from "@vscode/webview-ui-toolkit/react";
 import {MatchInstance} from "./MatchInstance.js";
-import {FixProposalOptionContext, FixProposalOptionCtxt} from "./FixProposalOptionContext.js";
-import {MatchInstanceCntxt, MatchInstanceContext} from "./MatchInstanceContext.js";
+import {EditChainRequest, EditRequest} from "../../generated/de/nexus/modelserver/ModelServerEditStatements_pb.js";
+import {useModelServerEvaluationContext} from "./ModelServerEvaluationContext.js";
 
-export function FixProposalOption(props: { proposal: FixProposal; notifyFixedProposalOption: Function; }) {
-    let {proposal, notifyFixedProposalOption} = props;
+export function FixProposalOption(props: { proposal: FixProposal; }) {
+    let {proposal} = props;
+
+    const evalContext = useModelServerEvaluationContext();
 
     const [proposalExpanded, setProposalExpanded] = React.useState(false);
     const [foldIcon, setFoldIcon] = React.useState("codicon codicon-chevron-right");
@@ -39,33 +42,57 @@ export function FixProposalOption(props: { proposal: FixProposal; notifyFixedPro
         proposalTypeTag = "Unknown proposal type";
     }
 
+    const executeFixVariant = (matchIdx: number, variantIdx: number) => {
+        const selectedVariant: FixVariant | undefined = proposal.matches.at(matchIdx)?.variants.at(variantIdx);
+
+        if (selectedVariant == undefined) {
+            console.error(`Selected FixVariant out of range! Trying to select Variant ${variantIdx} for Match ${matchIdx}`);
+        } else {
+            console.log(JSON.stringify(selectedVariant))
+            const repairStatements: EditRequest[] = selectedVariant.statements.filter(x => x.stmt.case == "edit").map(x => x.stmt.value as EditRequest);
+            const chainRequest: EditChainRequest = new EditChainRequest({edits: repairStatements});
+            evalContext.requestModelEdit(chainRequest);
+        }
+    }
+
+    const executeFixVariantForAllMatches = (idx: number) => {
+        let repairStatements: EditRequest[] = [];
+
+        const matches: FixMatch[] = proposal.matches;
+
+        for (const match of matches) {
+            const selectedVariant: FixVariant | undefined = match.variants.at(idx);
+
+            if (selectedVariant == undefined) {
+                console.error(`Selected FixVariant out of range! Trying to select Variant ${idx}...`);
+            } else {
+                console.log(JSON.stringify(selectedVariant))
+                repairStatements.push(...selectedVariant.statements
+                    .filter(x => x.stmt.case == "edit")
+                    .map(x => x.stmt.value as EditRequest));
+
+
+            }
+        }
+        const chainRequest: EditChainRequest = new EditChainRequest({edits: repairStatements});
+        evalContext.requestModelEdit(chainRequest);
+    }
+
     const matchInstanceProvider = (match: FixMatch, idx: number) => {
 
-        return <MatchInstanceContext.Provider value={new MatchInstanceCntxt()}>
-            <MatchInstance match={match}
-                           key={`match-${idx}`}/>
-        </MatchInstanceContext.Provider>
+        return <MatchInstance match={match}
+                              key={`match-${idx}`} matchIdx={idx} selectVariantCb={executeFixVariant}
+                              selectVariantForAllCb={executeFixVariantForAllMatches}/>
     }
 
     const matchInstances = proposal.matches.map((x, idx) => matchInstanceProvider(x, idx));
-
-    const context = new FixProposalOptionCtxt(proposal.matches.length);
-
-    useEffect(() => {
-        if (context.fixProposalFixed) {
-            if (proposalExpanded) {
-                toggleExpand();
-            }
-            notifyFixedProposalOption();
-        }
-    }, [context.remainingMatches])
 
     return (
         <>
             <div className="ms-fix-proposal-opt-wrapper">
                 <div className="ms-fix-proposal-opt-header">
                     <div className="ms-fix-proposal-opt-header-button-wrapper">
-                        <VSCodeButton appearance="icon" onClick={toggleExpand} disabled={context.fixProposalFixed}>
+                        <VSCodeButton appearance="icon" onClick={toggleExpand}>
                             <i className={foldIcon} style={{color: iconColor}}></i>
                         </VSCodeButton>
                     </div>
@@ -83,9 +110,7 @@ export function FixProposalOption(props: { proposal: FixProposal; notifyFixedPro
                 {proposalExpanded && (<div className="ms-fix-proposal-opt-content-wrapper">
                     <div className="ms-fix-proposal-opt-content-visualbox"/>
                     <div className="ms-fix-proposal-opt-content">
-                        <FixProposalOptionContext.Provider value={context}>
-                            {matchInstances}
-                        </FixProposalOptionContext.Provider>
+                        {matchInstances}
                     </div>
                 </div>)}
             </div>

@@ -1,6 +1,4 @@
 import {FixInfoStatement, FixVariant} from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
-import {FixProposalOptionCtxt, useFixProposalOptionContext} from "./FixProposalOptionContext.js";
-import {MatchInstanceCntxt, useMatchInstanceContext} from "./MatchInstanceContext.js";
 import React from "react";
 import {
     EditCreateEdgeRequest,
@@ -18,12 +16,10 @@ import "./MatchFixVariant.css"
 export function MatchFixVariant(props: {
     idx: number;
     variant: FixVariant;
-    selectVariantCb: Function
+    selectVariantCb: Function;
+    selectVariantForAllCb: Function;
 }) {
-    let {idx, variant, selectVariantCb} = props;
-
-    const fixPropContext: FixProposalOptionCtxt = useFixProposalOptionContext();
-    const matchContext: MatchInstanceCntxt = useMatchInstanceContext();
+    let {idx, variant, selectVariantCb, selectVariantForAllCb} = props;
 
     const [fixVariantDetailsExpanded, setFixVariantDetailsExpanded] = React.useState(false);
     const [detailsIcon, setDetailsIcon] = React.useState("codicon codicon-diff-added");
@@ -47,7 +43,7 @@ export function MatchFixVariant(props: {
 
     const editStatements: EditRequest[] = variant.statements.filter(x => x.stmt.case == "edit").map(x => x.stmt.value as EditRequest);
 
-    const variantTag: string = matchContext.matchFixed && idx == matchContext.selectedFixVariant ? "Selected Variant" : "Variant";
+    const variantTag: string = "Variant";
 
     return (
         <>
@@ -62,17 +58,15 @@ export function MatchFixVariant(props: {
                     <div className="ms-match-fix-variant-header-button-wrapper wrapper-column">
                         <div className="wrapper-row">
                             {
-                                !matchContext.matchFixed && (
-                                    <div className="ms-match-fix-variant-button-run">
-                                        <VSCodeButton appearance="icon" onClick={() => selectVariantCb(idx)}>
-                                            <i className="codicon codicon-run" style={{color: iconColor}}></i>
-                                        </VSCodeButton>
-                                        <VSCodeButton appearance="icon"
-                                                      onClick={() => fixPropContext.setUsedTotalVariantIdx(idx)}>
-                                            <i className="codicon codicon-run-all" style={{color: iconColor}}></i>
-                                        </VSCodeButton>
-                                    </div>
-                                )
+                                <div className="ms-match-fix-variant-button-run">
+                                    <VSCodeButton appearance="icon" onClick={() => selectVariantCb(idx)}>
+                                        <i className="codicon codicon-run" style={{color: iconColor}}></i>
+                                    </VSCodeButton>
+                                    <VSCodeButton appearance="icon"
+                                                  onClick={() => selectVariantForAllCb(idx)}>
+                                        <i className="codicon codicon-run-all" style={{color: iconColor}}></i>
+                                    </VSCodeButton>
+                                </div>
                             }
                             <VSCodeButton appearance="icon" onClick={toggleDetails}>
                                 <i className={detailsIcon} style={{color: iconColor}}></i>
