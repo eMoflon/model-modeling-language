@@ -6,12 +6,15 @@ import {VSCodeButton, VSCodeDivider, VSCodeTag} from "@vscode/webview-ui-toolkit
 import {FixProposalOptionCtxt, useFixProposalOptionContext} from "./FixProposalOptionContext.js";
 import {MatchInstanceCntxt, useMatchInstanceContext} from "./MatchInstanceContext.js";
 import {MatchFixVariant} from "./MatchFixVariant.js";
+import {ModelServerEvaluationCtxt, useModelServerEvaluationContext} from "./ModelServerEvaluationContext.js";
+import {EditChainRequest, EditRequest} from "../../generated/de/nexus/modelserver/ModelServerEditStatements_pb.js";
 
 export function MatchInstance(props: { match: FixMatch; }) {
     let {match} = props;
 
     const fixPropContext: FixProposalOptionCtxt = useFixProposalOptionContext();
     const matchContext: MatchInstanceCntxt = useMatchInstanceContext();
+    const evalContext: ModelServerEvaluationCtxt = useModelServerEvaluationContext();
 
     const [matchDetailsExpanded, setMatchDetailsExpanded] = React.useState(false);
     const [detailsIcon, setDetailsIcon] = React.useState("codicon codicon-diff-added");
@@ -42,6 +45,9 @@ export function MatchInstance(props: { match: FixMatch; }) {
                 console.error(`Selected FixVariant out of range! Selected ${idx} out of range (0,${match.variants.length - 1})`)
             } else {
                 console.log(JSON.stringify(selectedVariant))
+                const repairStatements: EditRequest[] = selectedVariant.statements.filter(x => x.stmt.case == "edit").map(x => x.stmt.value as EditRequest);
+                const chainRequest: EditChainRequest = new EditChainRequest({edits: repairStatements});
+                evalContext.requestModelEdit(chainRequest);
                 fixPropContext.decrementRemainingMatches();
             }
         }

@@ -20,6 +20,7 @@ import {ShowModelServerEvaluationViewCommand} from "./commands/show-model-server
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
 let modelServerLogger: vscode.OutputChannel;
+let modelEvaluationLogger: vscode.OutputChannel;
 let modelServerConnector: ModelServerConnector;
 let modelServerGeneratorViewContainer: ModelServerGeneratorViewContainer;
 let modelServerStarter: ModelServerStarter;
@@ -30,6 +31,7 @@ export function activate(context: vscode.ExtensionContext): void {
     client = startLanguageClient(context);
     logger = vscode.window.createOutputChannel("Model Modeling Language CLI")
     modelServerLogger = vscode.window.createOutputChannel("MML Model Server")
+    modelEvaluationLogger = vscode.window.createOutputChannel("MML Constraint Evaluation")
     modelServerConnector = new ModelServerConnector(modelServerLogger);
     modelServerStarter = new ModelServerStarter(modelServerLogger, client, modelServerConnector);
     modelServerGeneratorViewContainer = new ModelServerGeneratorViewContainer();
@@ -106,5 +108,5 @@ function registerCommands(context: vscode.ExtensionContext) {
     new ForceStopModelServerCommand(client, logger, modelServerStarter).register(context);
     new RefreshProjectResourcesCommand(client, logger, modelServerGeneratorViewContainer).register(context);
     new RemoveSelectedResourceCommand(client, logger, modelServerGeneratorViewContainer).register(context);
-    new ShowModelServerEvaluationViewCommand(client, logger, context, modelServerConnector).register(context);
+    new ShowModelServerEvaluationViewCommand(client, logger, context, modelServerConnector, modelEvaluationLogger).register(context);
 }
