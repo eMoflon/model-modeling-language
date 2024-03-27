@@ -2,12 +2,7 @@ import {CircularSuccessIndicator} from "./CircularProgressIndicator.js";
 import * as React from "react";
 import "./ModelServerEvaluationSummary.css";
 import {VSCodeButton} from "@vscode/webview-ui-toolkit/react";
-
-interface vscode {
-    postMessage(message: any): void;
-}
-
-declare const vscode: vscode;
+import {ModelServerEvaluationCtxt, useModelServerEvaluationContext} from "./ModelServerEvaluationContext.js";
 
 export function ModelServerEvaluationSummary(props: {
     totalConstraints?: number | undefined;
@@ -22,10 +17,12 @@ export function ModelServerEvaluationSummary(props: {
         setLoading = () => undefined
     } = props;
 
+    const evalContext: ModelServerEvaluationCtxt = useModelServerEvaluationContext();
+
     const requestConstraints = () => {
         console.log('button clicked')
         setLoading();
-        vscode.postMessage({command: 'updateConstraints'});
+        evalContext.requestConstraintEvaluation();
     }
 
     const computedStyle: CSSStyleDeclaration = getComputedStyle(document.documentElement);

@@ -1,4 +1,11 @@
 import React, {createContext} from "react";
+import {EditChainRequest} from "../../generated/de/nexus/modelserver/ModelServerEditStatements_pb.js";
+
+interface vscode {
+    postMessage(message: any): void;
+}
+
+declare const vscode: vscode;
 
 export class ModelServerEvaluationCtxt {
     private _evaluationCount: number;
@@ -14,6 +21,14 @@ export class ModelServerEvaluationCtxt {
 
     incrementEvaluationCount(): void {
         this._setEvaluationCount(this._evaluationCount + 1);
+    }
+
+    requestConstraintEvaluation(): void {
+        vscode.postMessage({command: 'updateConstraints'});
+    }
+
+    requestModelEdit(edit: EditChainRequest): void {
+        vscode.postMessage({command: 'performModelRepair', data: edit.toJsonString()});
     }
 }
 
