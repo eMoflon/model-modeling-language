@@ -38,7 +38,8 @@ export function MatchInstance(props: {
                 <MatchFixVariant idx={idx} key={`variant-${idx}`}
                                  variant={variant}
                                  selectVariantCb={innerSelectVariantCb} selectVariantForAllCb={selectVariantForAllCb}/>
-                {idx < maxIdx && (<VSCodeDivider className="ms-match-instance-variant-divider"/>)}
+                {idx < maxIdx && (
+                    <VSCodeDivider className="ms-match-instance-variant-divider" key={`variant-divider-${idx}`}/>)}
             </>
         )
     }
@@ -85,7 +86,7 @@ export function MatchInstance(props: {
 export function MatchDescription(props: { nodes: MatchNode[]; }) {
     let {nodes} = props;
 
-    const rows = nodes.map((x, idx) => <MatchNodeDescription node={x} key={`row-${idx}`}/>);
+    const rows = nodes.map((x, idx) => <MatchNodeDescription node={x} key={`row-${idx}`} idx={idx}/>);
 
     return (
         <>
@@ -96,13 +97,13 @@ export function MatchDescription(props: { nodes: MatchNode[]; }) {
     );
 }
 
-function MatchNodeDescription(props: { node: MatchNode; }) {
-    let {node} = props;
+function MatchNodeDescription(props: { node: MatchNode; idx: number }) {
+    let {node, idx} = props;
 
     return (
         <>
-            <span
-                className="ms-match-instance-content-match-desc-node wrapper-row">{node.nodeName} <i
+            <span key={`desc-${idx}`}
+                  className="ms-match-instance-content-match-desc-node wrapper-row">{node.nodeName} <i
                 className={"codicon codicon-arrow-right ms-match-instance-content-match-desc-node-arrow"}></i> [{node.nodeId}:{node.nodeType}]({node.nodeAttributes.map(x => `${x.attributeName} = ${x.attributeValue}`).join(", ")})</span>
         </>
     );
