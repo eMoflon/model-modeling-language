@@ -1,8 +1,26 @@
 import * as vscode from 'vscode';
 import {getNonce} from "./panel-utils.js";
 import {ModelServerConnector} from "../model-server-connector.js";
-import {EditChainRequest} from "../generated/de/nexus/modelserver/ModelServerEditStatements_pb.js";
+import {
+    EditChainRequest,
+    EditChainResponse,
+    EditCreateEdgeRequest,
+    EditCreateEdgeResponse,
+    EditCreateNodeRequest,
+    EditCreateNodeResponse,
+    EditDeleteEdgeRequest,
+    EditDeleteEdgeResponse,
+    EditDeleteNodeRequest,
+    EditDeleteNodeResponse,
+    EditRequest,
+    EditResponse,
+    EditSetAttributeRequest,
+    EditSetAttributeResponse,
+    EditState
+} from "../generated/de/nexus/modelserver/ModelServerEditStatements_pb.js";
 import {PostEditRequest} from "../generated/de/nexus/modelserver/ModelServerEdits_pb.js";
+import {showUIMessage} from "../../shared/NotificationUtil.js";
+import {MessageType} from "../../shared/MmlNotificationTypes.js";
 
 export class ModelServerEvaluationPanel {
 
@@ -85,7 +103,11 @@ export class ModelServerEvaluationPanel {
                         });
                         this._modelServerConnector.clients.editClient.requestEdit(postRequest)
                             .then(res => {
-                                this._modelEvaluationLogger.appendLine(`Received response: ${JSON.stringify(res)}`)
+                                if (res.response.case == 'editChain') {
+                                    this.logModelRepair(repairRequest, res.response.value);
+                                } else {
+                                    throw new Error('Expected EditChainResponse but received EditResponse!');
+                                }
                             }).catch(reason => {
                             this._modelEvaluationLogger.appendLine(`[ERROR] Failed to perform ModelRepair due to: ${reason}`)
                         });
@@ -94,6 +116,80 @@ export class ModelServerEvaluationPanel {
             null,
             this._disposables
         );
+    }
+
+    private logModelRepair(req: EditChainRequest, res: EditChainResponse) {
+        if (req.edits.length != res.edits.length) {
+            throw new Error("Requested edits do not match response!");
+        }
+        for (let i = 0; i < res.edits.length; i++) {
+            const editReq: EditRequest = req.edits.at(i) as EditRequest;
+            const editRes: EditResponse = res.edits.at(i) as EditResponse;
+
+            this._processResponse(editReq, editRes);
+        }
+    }
+
+    private _processResponse(request: EditRequest, response: EditResponse) {
+        if (request.request.case == "setAttributeRequest" && response.response.case == "setAttributeResponse") {
+            const editRequest: EditSetAttributeRequest = request.request.value;
+            const editResponse: EditSetAttributeResponse = response.response.value;
+            if (editResponse.state == EditState.SUCCESS) {
+                this._modelEvaluationLogger.appendLine(`[SUCCESS] Updated Node ${editRequest.node?.nodeType.value}["${editRequest.attributeName}"] -> ${editRequest.attributeValue}`);
+            } else if (editResponse.state == EditState.FAILURE) {
+                this._modelEvaluationLogger.appendLine(`[FAILED] ${editResponse.message}`);
+                showUIMessage(MessageType.ERROR, `[FAILED] ${editResponse.message}`);
+            } else {
+                throw new Error("UNKNOWN ERROR!");
+            }
+        } else if (request.request.case == "createEdgeRequest" && response.response.case == "createEdgeResponse") {
+            const editRequest: EditCreateEdgeRequest = request.request.value;
+            const editResponse: EditCreateEdgeResponse = response.response.value;
+            if (editResponse.state == EditState.SUCCESS) {
+                this._modelEvaluationLogger.appendLine(`[SUCCESS] Created ${editRequest.startNode?.nodeType.value} -${editRequest.referenceName}-> ${editRequest.targetNode?.nodeType.value}`);
+            } else if (editResponse.state == EditState.FAILURE) {
+                this._modelEvaluationLogger.appendLine(`[FAILED] ${editResponse.message}`);
+                showUIMessage(MessageType.ERROR, `[FAILED] ${editResponse.message}`);
+            } else {
+                throw new Error("UNKNOWN ERROR!");
+            }
+        } else if (request.request.case == "createNodeRequest" && response.response.case == "createNodeResponse") {
+            const editRequest: EditCreateNodeRequest = request.request.value;
+            const editResponse: EditCreateNodeResponse = response.response.value;
+            if (editResponse.state == EditState.SUCCESS) {
+                this._modelEvaluationLogger.appendLine(`[SUCCESS] Created new ${editRequest.nodeType}(${editRequest.assignments.map(x => `${x.attributeName} = ${x.attributeValue}`).join(", ")}) -> NEW ID: ${editResponse.createdNodeId}`);
+            } else if (editResponse.state == EditState.FAILURE) {
+                this._modelEvaluationLogger.appendLine(`[FAILED] ${editResponse.message}`);
+                showUIMessage(MessageType.ERROR, `[FAILED] ${editResponse.message}`);
+            } else {
+                throw new Error("UNKNOWN ERROR!");
+            }
+        } else if (request.request.case == "deleteEdgeRequest" && response.response.case == "deleteEdgeResponse") {
+            const editRequest: EditDeleteEdgeRequest = request.request.value;
+            const editResponse: EditDeleteEdgeResponse = response.response.value;
+            if (editResponse.state == EditState.SUCCESS) {
+                this._modelEvaluationLogger.appendLine(`[SUCCESS] Deleted ${editRequest.startNode?.nodeType.value} -${editRequest.referenceName}-> ${editRequest.targetNode?.nodeType.value}`);
+            } else if (editResponse.state == EditState.FAILURE) {
+                this._modelEvaluationLogger.appendLine(`[FAILED] ${editResponse.message}`);
+                showUIMessage(MessageType.ERROR, `[FAILED] ${editResponse.message}`);
+            } else {
+                throw new Error("UNKNOWN ERROR!");
+            }
+        } else if (request.request.case == "deleteNodeRequest" && response.response.case == "deleteNodeResponse") {
+            const editRequest: EditDeleteNodeRequest = request.request.value;
+            const editResponse: EditDeleteNodeResponse = response.response.value;
+            if (editResponse.state == EditState.SUCCESS) {
+                this._modelEvaluationLogger.appendLine(`[SUCCESS] Deleted Node (${editRequest.node?.nodeType.value})`);
+                for (const removedEdge of editResponse.removedEdges) {
+                    this._modelEvaluationLogger.appendLine(`[ImplicitlyRemovedEdge] (${removedEdge.fromNode?.nodeType.value ?? "UNKNOWN"})-${removedEdge.reference}->(${removedEdge.toNode?.nodeType.value ?? "UNKNOWN"})`);
+                }
+            } else if (editResponse.state == EditState.FAILURE) {
+                this._modelEvaluationLogger.appendLine(`[FAILED] ${editResponse.message}`);
+                showUIMessage(MessageType.ERROR, `[FAILED] ${editResponse.message}`);
+            } else {
+                throw new Error("UNKNOWN ERROR!");
+            }
+        }
     }
 
     public dispose() {
