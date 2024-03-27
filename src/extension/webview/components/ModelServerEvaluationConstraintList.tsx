@@ -1,16 +1,12 @@
 import * as React from 'react';
-
-import {Constraint} from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
 import {ModelServerEvaluationConstraint} from "./ModelServerEvaluationConstraint.js";
 import "./ModelServerEvaluationConstraintList.css";
+import {ModelServerEvaluationCtxt, useModelServerEvaluationContext} from "./ModelServerEvaluationContext.js";
 
-export function ModelServerEvaluationConstraintList(props: { constraints?: Constraint[] | undefined; }) {
-    let {
-        constraints = []
-    } = props
-
-    const constraintItems = constraints.map((x, idx) => <ModelServerEvaluationConstraint constraint={x}
-                                                                                         key={`constraint-${idx}`}/>);
+export function ModelServerEvaluationConstraintList() {
+    const evalContext: ModelServerEvaluationCtxt = useModelServerEvaluationContext();
+    const constraintItems = evalContext.constraints.map((x, idx) => <ModelServerEvaluationConstraint constraint={x}
+                                                                                                     key={`constraint-${idx}`}/>);
 
     return (
         <>

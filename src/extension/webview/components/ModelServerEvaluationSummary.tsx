@@ -4,47 +4,36 @@ import "./ModelServerEvaluationSummary.css";
 import {VSCodeButton} from "@vscode/webview-ui-toolkit/react";
 import {ModelServerEvaluationCtxt, useModelServerEvaluationContext} from "./ModelServerEvaluationContext.js";
 
-export function ModelServerEvaluationSummary(props: {
-    totalConstraints?: number | undefined;
-    violatedConstraints?: number | undefined;
-    state?: "loaded" | "loading" | "notLoaded" | "error" | undefined;
-    setLoading?: Function;
-}) {
-    let {
-        totalConstraints = 0,
-        violatedConstraints = 0,
-        state = "noLoaded",
-        setLoading = () => undefined
-    } = props;
+export function ModelServerEvaluationSummary() {
 
     const evalContext: ModelServerEvaluationCtxt = useModelServerEvaluationContext();
 
     const requestConstraints = () => {
         console.log('button clicked')
-        setLoading();
+        evalContext.setLoadState('loading')
         evalContext.requestConstraintEvaluation();
     }
 
     const computedStyle: CSSStyleDeclaration = getComputedStyle(document.documentElement);
 
-    const fulfilledConstraints: number = totalConstraints - violatedConstraints;
-    const loading: boolean = state == "loading";
-    const loaded: boolean = state == "loaded";
-    const progress: number = loading || totalConstraints == 0 ? 10 : Math.floor((fulfilledConstraints / totalConstraints) * 100);
+    const fulfilledConstraints: number = evalContext.totalConstraints - evalContext.violatedConstraints;
+    const loading: boolean = evalContext.loadState == "loading";
+    const loaded: boolean = evalContext.loadState == "loaded";
+    const progress: number = loading || evalContext.totalConstraints == 0 ? 10 : Math.floor((fulfilledConstraints / evalContext.totalConstraints) * 100);
     let summaryText: string = "";
     let trackColor: string = computedStyle.getPropertyValue("--vscode-icon-foreground");
     let indicatorColor: string = computedStyle.getPropertyValue("--vscode-icon-foreground");
-    if (state == "notLoaded") {
+    if (evalContext.loadState == "notLoaded") {
         summaryText = "Constraints not yet evaluated!";
-    } else if (state == "loading") {
+    } else if (evalContext.loadState == "loading") {
         summaryText = "Loading...";
         trackColor = computedStyle.getPropertyValue("--vscode-icon-foreground");
         indicatorColor = computedStyle.getPropertyValue("--vscode-focusBorder");
-    } else if (state == "loaded") {
-        summaryText = `${fulfilledConstraints} of total ${totalConstraints} constraints fulfilled!`
+    } else if (evalContext.loadState == "loaded") {
+        summaryText = `${fulfilledConstraints} of total ${evalContext.totalConstraints} constraints fulfilled!`
         trackColor = computedStyle.getPropertyValue("--vscode-statusBarItem-errorBackground");
         indicatorColor = computedStyle.getPropertyValue("--vscode-editorGutter-addedBackground");
-    } else if (state == "error") {
+    } else if (evalContext.loadState == "error") {
         summaryText = "Failed to evaluate constraints!"
         trackColor = computedStyle.getPropertyValue("--vscode-testing-iconQueued");
         indicatorColor = computedStyle.getPropertyValue("--vscode-testing-iconQueued");

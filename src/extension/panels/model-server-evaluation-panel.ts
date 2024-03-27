@@ -105,11 +105,21 @@ export class ModelServerEvaluationPanel {
                             .then(res => {
                                 if (res.response.case == 'editChain') {
                                     this.logModelRepair(repairRequest, res.response.value);
+                                    this._panel!.webview.postMessage({
+                                        command: 'modelRepairPerformed',
+                                        success: true,
+                                        data: res.toJsonString()
+                                    });
                                 } else {
                                     throw new Error('Expected EditChainResponse but received EditResponse!');
                                 }
                             }).catch(reason => {
                             this._modelEvaluationLogger.appendLine(`[ERROR] Failed to perform ModelRepair due to: ${reason}`)
+                            this._panel!.webview.postMessage({
+                                command: 'modelRepairPerformed',
+                                success: false,
+                                data: reason
+                            });
                         });
                 }
             },
