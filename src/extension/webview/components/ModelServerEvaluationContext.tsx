@@ -9,9 +9,6 @@ interface vscode {
 declare const vscode: vscode;
 
 export class ModelServerEvaluationCtxt {
-    private _evaluationCount: number;
-    private _setEvaluationCount: React.Dispatch<React.SetStateAction<number>>;
-
     private _constraints: Constraint[];
     private _setConstraints: React.Dispatch<React.SetStateAction<Constraint[]>>;
     private _loadState: "notLoaded" | "loaded" | "loading" | "error";
@@ -23,15 +20,10 @@ export class ModelServerEvaluationCtxt {
 
 
     constructor() {
-        [this._evaluationCount, this._setEvaluationCount] = React.useState(0);
         [this._constraints, this._setConstraints] = React.useState([] as Constraint[]);
         [this._loadState, this._setLoadState] = React.useState("notLoaded" as "notLoaded" | "loaded" | "loading" | "error");
         [this._totalConstraints, this._setTotalConstraints] = React.useState(0);
         [this._violatedConstraints, this._setViolatedConstraints] = React.useState(0);
-    }
-
-    get evaluationCount(): number {
-        return this._evaluationCount;
     }
 
 
@@ -67,16 +59,14 @@ export class ModelServerEvaluationCtxt {
         return this._setViolatedConstraints;
     }
 
-    incrementEvaluationCount(): void {
-        this._setEvaluationCount(this._evaluationCount + 1);
-    }
-
     requestConstraintEvaluation(): void {
+        console.log("POST MESSAGE: updateConstraints")
         vscode.postMessage({command: 'updateConstraints'});
     }
 
     requestModelEdit(edit: EditChainRequest): void {
         this.setLoadState('loading');
+        console.log("POST MESSAGE: performModelRepair")
         vscode.postMessage({command: 'performModelRepair', data: edit.toJsonString()});
     }
 }
