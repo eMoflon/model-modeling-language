@@ -11,8 +11,8 @@ declare const vscode: vscode;
 export class ModelServerEvaluationCtxt {
     private _constraints: Constraint[];
     private _setConstraints: React.Dispatch<React.SetStateAction<Constraint[]>>;
-    private _loadState: "notLoaded" | "loaded" | "loading" | "error";
-    private _setLoadState: React.Dispatch<React.SetStateAction<"notLoaded" | "loaded" | "loading" | "error">>;
+    private _loadState: "notLoaded" | "loaded" | "loading" | "error" | "notConnected";
+    private _setLoadState: React.Dispatch<React.SetStateAction<"notLoaded" | "loaded" | "loading" | "error" | "notConnected">>;
     private _totalConstraints: number;
     private _setTotalConstraints: React.Dispatch<React.SetStateAction<number>>;
     private _violatedConstraints: number;
@@ -21,7 +21,7 @@ export class ModelServerEvaluationCtxt {
 
     constructor() {
         [this._constraints, this._setConstraints] = React.useState([] as Constraint[]);
-        [this._loadState, this._setLoadState] = React.useState("notLoaded" as "notLoaded" | "loaded" | "loading" | "error");
+        [this._loadState, this._setLoadState] = React.useState("notLoaded" as "notLoaded" | "loaded" | "loading" | "error" | "notConnected");
         [this._totalConstraints, this._setTotalConstraints] = React.useState(0);
         [this._violatedConstraints, this._setViolatedConstraints] = React.useState(0);
     }
@@ -35,11 +35,11 @@ export class ModelServerEvaluationCtxt {
         return this._setConstraints;
     }
 
-    get loadState(): "notLoaded" | "loaded" | "loading" | "error" {
+    get loadState(): "notLoaded" | "loaded" | "loading" | "error" | "notConnected" {
         return this._loadState;
     }
 
-    get setLoadState(): React.Dispatch<React.SetStateAction<"notLoaded" | "loaded" | "loading" | "error">> {
+    get setLoadState(): React.Dispatch<React.SetStateAction<"notLoaded" | "loaded" | "loading" | "error" | "notConnected">> {
         return this._setLoadState;
     }
 

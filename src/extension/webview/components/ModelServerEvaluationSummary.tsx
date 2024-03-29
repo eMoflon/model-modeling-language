@@ -37,6 +37,10 @@ export function ModelServerEvaluationSummary() {
         summaryText = "Failed to evaluate constraints!"
         trackColor = computedStyle.getPropertyValue("--vscode-testing-iconQueued");
         indicatorColor = computedStyle.getPropertyValue("--vscode-testing-iconQueued");
+    } else if (evalContext.loadState == "notConnected") {
+        summaryText = "Could not connect to ModelServer! Is it running?";
+        trackColor = computedStyle.getPropertyValue("--vscode-testing-iconQueued");
+        indicatorColor = computedStyle.getPropertyValue("--vscode-testing-iconQueued");
     }
 
     return (

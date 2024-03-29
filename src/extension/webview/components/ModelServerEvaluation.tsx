@@ -48,7 +48,13 @@ function ModelServerEvaluation() {
                     evalContext.setTotalConstraints(0);
                     evalContext.setViolatedConstraints(0);
 
-                    evalContext.setLoadState("error");
+                    const data: { cause: { code: string } } = JSON.parse(message.data);
+
+                    if (data.cause && data.cause.code == "ECONNREFUSED") {
+                        evalContext.setLoadState("notConnected");
+                    } else {
+                        evalContext.setLoadState("error");
+                    }
                 }
                 break;
             case 'modelRepairPerformed':
