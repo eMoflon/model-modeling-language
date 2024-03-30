@@ -22,7 +22,6 @@
 .ms-eval-constraint-content {
     width: 100%;
     height: fit-content;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
     margin-left: 2em;
