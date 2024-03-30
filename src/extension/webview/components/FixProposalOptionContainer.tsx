@@ -4,7 +4,8 @@ import {
     FixProposalContainer,
     FixProposalContainerType
 } from "../../generated/de/nexus/modelserver/ModelServerConstraints_pb.js";
-import "./FixProposalOptionContainer.css"
+import "./FixProposalOptionContainer.css";
+import "./Tooltips.css";
 import {FixProposalOption} from "./FixProposalOption.js";
 
 
@@ -31,16 +32,22 @@ export function FixProposalOptionContainer(props: {
     const iconColor: string = computedStyle.getPropertyValue("--button-primary-foreground");
 
     let proposalContainerText: string;
+    let proposalContainerTooltipText: string;
     if (fixProposalContainer.type == FixProposalContainerType.SINGLE_FIX) {
         proposalContainerText = "One fix available";
+        proposalContainerTooltipText = "There is only one proposal that needs to be activated!";
     } else if (fixProposalContainer.type == FixProposalContainerType.FIX_ONE) {
         proposalContainerText = "Select one";
+        proposalContainerTooltipText = "At least one element of this proposal must be activated!";
     } else if (fixProposalContainer.type == FixProposalContainerType.FIX_ALL) {
         proposalContainerText = "Select all";
+        proposalContainerTooltipText = "All elements of this proposal must be activated!";
     } else if (fixProposalContainer.type == FixProposalContainerType.UNRESOLVABLE_CASE) {
         proposalContainerText = "Unresolvable";
+        proposalContainerTooltipText = "It is not possible to solve this case!";
     } else {
         proposalContainerText = "Unknown combination option";
+        proposalContainerTooltipText = "This fix combination is currently not supported!";
     }
 
     const containerProposalContainers = fixProposalContainer.proposalContainers.map((propContainer, idx) =>
@@ -58,8 +65,9 @@ export function FixProposalOptionContainer(props: {
                             <i className={foldIcon} style={{color: iconColor}}></i>
                         </VSCodeButton>
                     </div>
-                    <div className="ms-fix-proposal-opt-container-header-text-wrapper">
+                    <div className="ms-fix-proposal-opt-container-header-text-wrapper tooltip">
                         <VSCodeTag>{proposalContainerText}</VSCodeTag>
+                        <span className="tooltiptext">{proposalContainerTooltipText}</span>
                     </div>
                 </div>
                 {proposalContainerExpanded && (<div className="ms-fix-proposal-opt-container-content-wrapper">
