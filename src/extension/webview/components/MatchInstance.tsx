@@ -36,7 +36,7 @@ export function MatchInstance(props: {
         return (
             <>
                 <MatchFixVariant idx={idx} key={`variant-${idx}`}
-                                 variant={variant}
+                                 variant={variant} variantForEmptyMatch={match.emptyMatch}
                                  selectVariantCb={innerSelectVariantCb} selectVariantForAllCb={selectVariantForAllCb}/>
                 {idx < maxIdx && (
                     <VSCodeDivider className="ms-match-instance-variant-divider" key={`variant-divider-${idx}`}/>)}

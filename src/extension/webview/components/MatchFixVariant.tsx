@@ -16,10 +16,11 @@ import "./MatchFixVariant.css"
 export function MatchFixVariant(props: {
     idx: number;
     variant: FixVariant;
+    variantForEmptyMatch: boolean;
     selectVariantCb: Function;
     selectVariantForAllCb: Function;
 }) {
-    let {idx, variant, selectVariantCb, selectVariantForAllCb} = props;
+    let {idx, variant, variantForEmptyMatch, selectVariantCb, selectVariantForAllCb} = props;
 
     const [fixVariantDetailsExpanded, setFixVariantDetailsExpanded] = React.useState(false);
     const [detailsIcon, setDetailsIcon] = React.useState("codicon codicon-diff-added");
@@ -57,17 +58,15 @@ export function MatchFixVariant(props: {
                     </div>
                     <div className="ms-match-fix-variant-header-button-wrapper wrapper-column">
                         <div className="wrapper-row">
-                            {
-                                <div className="ms-match-fix-variant-button-run">
-                                    <VSCodeButton appearance="icon" onClick={() => selectVariantCb(idx)}>
-                                        <i className="codicon codicon-run" style={{color: iconColor}}></i>
-                                    </VSCodeButton>
-                                    <VSCodeButton appearance="icon"
-                                                  onClick={() => selectVariantForAllCb(idx)}>
-                                        <i className="codicon codicon-run-all" style={{color: iconColor}}></i>
-                                    </VSCodeButton>
-                                </div>
-                            }
+                            <VSCodeButton appearance="icon" onClick={() => selectVariantCb(idx)}>
+                                <i className="codicon codicon-run" style={{color: iconColor}}></i>
+                            </VSCodeButton>
+                            {!variantForEmptyMatch && (
+                                <VSCodeButton appearance="icon"
+                                              onClick={() => selectVariantForAllCb(idx)}>
+                                    <i className="codicon codicon-run-all" style={{color: iconColor}}></i>
+                                </VSCodeButton>
+                            )}
                             <VSCodeButton appearance="icon" onClick={toggleDetails}>
                                 <i className={detailsIcon} style={{color: iconColor}}></i>
                             </VSCodeButton>
