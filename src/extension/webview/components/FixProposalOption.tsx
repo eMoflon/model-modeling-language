@@ -61,6 +61,10 @@ export function FixProposalOption(props: { proposal: FixProposal; }) {
         const matches: FixMatch[] = proposal.matches;
 
         for (const match of matches) {
+            if (match.emptyMatch) {
+                continue;
+            }
+
             const selectedVariant: FixVariant | undefined = match.variants.at(idx);
 
             if (selectedVariant == undefined) {
