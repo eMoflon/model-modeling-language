@@ -46,9 +46,30 @@ const ctx = await esbuild.context({
     plugins
 });
 
+const webViewCtx = await esbuild.context({
+    entryPoints: ['./src/extension/webview/index.tsx'],
+    outfile: 'out/extension/webview/index.wv.js',
+    platform: 'browser',
+    bundle: true,
+    format: 'cjs',
+    target: 'ES2017',
+    minify: minify,
+    sourcemap: !minify,
+    plugins: plugins,
+    loader: {
+        '.ts': 'ts',
+        '.tsx': 'tsx',
+        '.css': 'css',
+    },
+    resolveExtensions: ['.ts', '.js', '.tsx']
+});
+
 if (watch) {
     await ctx.watch();
+    await webViewCtx.watch();
 } else {
     await ctx.rebuild();
+    await webViewCtx.rebuild();
     ctx.dispose();
+    webViewCtx.dispose();
 }

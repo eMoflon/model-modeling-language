@@ -10,29 +10,47 @@ import {TestModelServerCommand} from "./commands/test-model-server-command.js";
 import {ModelServerConnector} from "./model-server-connector.js";
 import {GMNotebookSerializer} from "./gmnotebook/GMNotebookSerializer.js";
 import {GMNotebookKernel} from "./gmnotebook/GMNotebookKernel.js";
+import {ModelServerGeneratorViewContainer} from "./views/model-server-generator-view-container.js";
+import {StartModelServerCommand} from "./commands/start-model-server-command.js";
+import {RefreshProjectResourcesCommand} from "./commands/refresh-project-resources-command.js";
+import {RemoveSelectedResourceCommand} from "./commands/remove-selected-resource-command.js";
+import {ModelServerStarter} from "./model-server-starter.js";
+import {StopModelServerCommand} from "./commands/stop-model-server-command.js";
+import {ForceStopModelServerCommand} from "./commands/force-stop-model-server-command.js";
+import {ShowModelServerEvaluationViewCommand} from "./commands/show-model-server-evaluation-view-command.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
 let modelServerLogger: vscode.OutputChannel;
+let modelEvaluationLogger: vscode.OutputChannel;
 let modelServerConnector: ModelServerConnector;
+let modelServerGeneratorViewContainer: ModelServerGeneratorViewContainer;
+let modelServerStarter: ModelServerStarter;
 
 
 // This function is called when the extension is activated.
 export function activate(context: vscode.ExtensionContext): void {
     client = startLanguageClient(context);
     logger = vscode.window.createOutputChannel("Model Modeling Language CLI")
-    modelServerLogger = vscode.window.createOutputChannel("Model Modeling Language Model Server")
+    modelServerLogger = vscode.window.createOutputChannel("MML Model Server")
+    modelEvaluationLogger = vscode.window.createOutputChannel("MML Constraint Evaluation")
     modelServerConnector = new ModelServerConnector(modelServerLogger);
+    modelServerStarter = new ModelServerStarter(modelServerLogger, client, modelServerConnector);
+    modelServerGeneratorViewContainer = new ModelServerGeneratorViewContainer();
     registerCommands(context);
     registerGMNotebook(context);
 }
 
 // This function is called when the extension is deactivated.
-export function deactivate(): Thenable<void> | undefined {
+export async function deactivate(): Promise<void> {
+    const promises: Promise<void>[] = []
     if (client) {
-        return client.stop();
+        promises.push(client.stop());
     }
-    return undefined;
+    if (modelServerStarter) {
+        promises.push(modelServerStarter.terminate(true).then(() => undefined));
+    }
+    return Promise.all(promises).then(() => undefined);
 }
 
 function startLanguageClient(context: vscode.ExtensionContext): LanguageClient {
@@ -96,6 +114,12 @@ function registerCommands(context: vscode.ExtensionContext) {
     new DeserializeEcoreToMmlCommand(client, logger).register(context);
     new SerializeConstraintFileToFileCommand(client, logger).register(context);
     new TestModelServerCommand(client, logger, modelServerConnector).register(context);
+    new StartModelServerCommand(client, logger, modelServerGeneratorViewContainer, modelServerStarter).register(context);
+    new StopModelServerCommand(client, logger, modelServerStarter).register(context);
+    new ForceStopModelServerCommand(client, logger, modelServerStarter).register(context);
+    new RefreshProjectResourcesCommand(client, logger, modelServerGeneratorViewContainer).register(context);
+    new RemoveSelectedResourceCommand(client, logger, modelServerGeneratorViewContainer).register(context);
+    new ShowModelServerEvaluationViewCommand(client, logger, context, modelServerConnector, modelEvaluationLogger).register(context);
 }
 
 function registerGMNotebook(context: vscode.ExtensionContext) {

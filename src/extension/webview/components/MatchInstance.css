@@ -1,0 +1,68 @@
+.ms-match-instance-wrapper {
+
+}
+
+.ms-match-instance-header {
+    /*noinspection CssUnresolvedCustomProperty*/
+    background-color: var(--vscode-input-border);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    padding-left: 0.25em;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+}
+
+.ms-match-instance-header-tag-wrapper {
+
+}
+
+.ms-match-instance-header-text-wrapper {
+    flex: 1;
+}
+
+.ms-match-instance-header-button-wrapper {
+    margin-right: 0.5em;
+}
+
+.ms-match-instance-content {
+    flex: 1;
+    margin-top: 0.5em;
+    margin-left: 0.5em;
+}
+
+.ms-match-instance-content-visualbox {
+    width: 1em;
+    /*noinspection CssUnresolvedCustomProperty*/
+    background-color: var(--vscode-input-border);
+}
+
+.ms-match-instance-content-wrapper {
+    flex: 1;
+    margin-bottom: 0.75em;
+}
+
+.ms-match-instance-content-row {
+    margin-left: 0.5em;
+}
+
+.ms-match-instance-variant-divider {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.ms-match-instance-content-match-desc-wrapper {
+    /*noinspection CssUnresolvedCustomProperty*/
+    background-color: var(--vscode-input-border);
+    padding: 0.5em;
+}
+
+.ms-match-instance-content-match-desc-node {
+    /*noinspection CssUnresolvedCustomProperty*/
+    color: var(--vscode-input-foreground);
+    align-items: center;
+}
+
+.ms-match-instance-content-match-desc-node-arrow {
+    margin-left: 0.125em;
+    margin-right: 0.125em;
+}

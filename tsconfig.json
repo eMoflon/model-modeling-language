@@ -2,9 +2,13 @@
   "compilerOptions": {
     "target": "ES2017",
     "module": "Node16",
-    "lib": ["ESNext"],
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
     "sourceMap": true,
     "outDir": "out",
+    "jsx": "react",
     "strict": true,
     "noUnusedLocals": true,
     "noImplicitReturns": true,
@@ -15,10 +19,11 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-     "src/**/*.ts"
+    "src/**/*.ts",
+    "src/**/*.tsx"
   ],
   "exclude": [
-     "out",
-     "node_modules"
+    "out",
+    "node_modules"
   ]
 }
