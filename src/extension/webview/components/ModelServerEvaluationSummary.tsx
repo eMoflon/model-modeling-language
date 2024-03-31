@@ -58,7 +58,8 @@ export function ModelServerEvaluationSummary() {
                     <span className="ms-eval-summary-subtitle">{summaryText}</span>
                 </div>
                 <div className="ms-eval-summary-button-wrapper">
-                    <VSCodeButton onClick={requestConstraints}>Evaluate Constraints</VSCodeButton>
+                    <VSCodeButton onClick={requestConstraints} disabled={evalContext.loadState == "loading"}>Evaluate
+                        Constraints</VSCodeButton>
                 </div>
             </div>
         </>
