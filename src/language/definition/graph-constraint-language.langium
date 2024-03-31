@@ -68,10 +68,10 @@ FixContainer:
     EnableFixContainer | DisableFixContainer;
 
 EnableFixContainer:
-    'enable' ('(' fixTitle=STRING ')')? '{' (fixStatements+=FixStatement)* '}';
+    (emptyFix?='empty')? 'enable' ('(' fixTitle=STRING ')')? '{' (fixStatements+=FixStatement)* '}';
 
 DisableFixContainer:
-    'disable' ('(' fixTitle=STRING ')')? '{' (fixStatements+=FixStatement)* '}';
+    (emptyFix?='empty')? 'disable' ('(' fixTitle=STRING ')')? '{' (fixStatements+=FixStatement)* '}';
 
 FixStatement:
     FixInfoStatement | FixSetStatement | FixDeleteNodeStatement | FixDeleteEdgeStatement | FixCreateNodeStatement | FixCreateEdgeStatement;

@@ -108,8 +108,14 @@ export class GraphConstraintLanguageSemanticTokenProvider extends AbstractSemant
             acceptor({node, keyword: "assert", type: SemanticTokenTypes.keyword});
         } else if (isEnableFixContainer(node)) {
             acceptor({node, keyword: "enable", type: SemanticTokenTypes.keyword});
+            if (node.emptyFix) {
+                acceptor({node, keyword: "empty", type: SemanticTokenTypes.keyword});
+            }
         } else if (isDisableFixContainer(node)) {
             acceptor({node, keyword: "disable", type: SemanticTokenTypes.keyword});
+            if (node.emptyFix) {
+                acceptor({node, keyword: "empty", type: SemanticTokenTypes.keyword});
+            }
         } else if (isFixInfoStatement(node)) {
             acceptor({node, keyword: "info", type: SemanticTokenTypes.keyword});
         } else if (isFixSetStatement(node)) {

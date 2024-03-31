@@ -14,6 +14,8 @@ import {
     CReference,
     DescriptionAnnotation,
     DisableDefaultNodeConstraintsAnnotation,
+    DisableFixContainer,
+    EnableFixContainer,
     FixCreateEdgeStatement,
     FixSetStatement,
     isClass,
@@ -21,6 +23,11 @@ import {
     isDescriptionAnnotation,
     isDisableDefaultNodeConstraintsAnnotation,
     isEnforceAnnotation,
+    isFixCreateEdgeStatement,
+    isFixCreateNodeStatement,
+    isFixDeleteEdgeStatement,
+    isFixDeleteNodeStatement,
+    isFixSetStatement,
     isForbidAnnotation,
     isIInstance,
     isNodeConstraintAnnotation,
@@ -97,6 +104,13 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
         ],
         CreateNodeAttributeAssignment: [
             validator.checkFixCreateNodeAttributeTypes
+        ],
+        DisableFixContainer: [
+            validator.checkDisableFixContainerNotEmpty
+        ],
+        EnableFixContainer: [
+            validator.checkEnableFixContainerEmptyOrBound,
+            validator.checkEmptyEnableFixContainerStatements
         ]
     };
     registry.register(checks, validator);
@@ -134,6 +148,9 @@ export namespace IssueCodes {
     export const FixSetStatementTypeDoesNotMatch = "fix-set-statement-type-does-not-match";
     export const FixCreateEdgeStatementReferenceTypeDoesNotMatch = "fix-create-edge-statement-reference-type-does-not-match";
     export const FixCreateNodeStatementAttributeTypeDoesNotMatch = "fix-create-node-statement-attribute-type-does-not-match";
+    export const DisableFixContainerHasEmptyModifier = "disable-fix-container-has-empty-modifier";
+    export const EnableFixContainerIsUnboundAndNotEmpty = "enable-fix-container-is-unbound-and-not-empty";
+    export const InvalidFixStatementInEmptyFixContainer = "invalid-fix-statement-in-empty-fix-container";
 }
 
 /**
@@ -693,6 +710,64 @@ export class GraphConstraintLanguageValidator {
                     code: IssueCodes.FixCreateNodeStatementAttributeTypeDoesNotMatch
                 })
             }
+        }
+    }
+
+    checkDisableFixContainerNotEmpty(fxContainer: DisableFixContainer, accept: ValidationAcceptor) {
+        if (fxContainer.emptyFix) {
+            accept('error', `You may not use the Empty Keyword for Disable fixes!`, {
+                node: fxContainer,
+                property: 'emptyFix',
+                code: IssueCodes.DisableFixContainerHasEmptyModifier
+            })
+        }
+    }
+
+    checkEnableFixContainerEmptyOrBound(fxContainer: EnableFixContainer, accept: ValidationAcceptor) {
+        if (!fxContainer.emptyFix && fxContainer.fixStatements.length > 0) {
+            accept('error', `Enable fixes can only be defined for bound patterns or empty matches!`, {
+                node: fxContainer,
+                keyword: 'enable',
+                code: IssueCodes.EnableFixContainerIsUnboundAndNotEmpty
+            })
+        }
+    }
+
+    checkEmptyEnableFixContainerStatements(fxContainer: EnableFixContainer, accept: ValidationAcceptor) {
+        if (fxContainer.emptyFix) {
+            fxContainer.fixStatements.forEach((stmt, idx) => {
+                if (isFixSetStatement(stmt)) {
+                    accept('error', `The attributes of a node cannot be updated in empty enable fixes!`, {
+                        node: stmt,
+                        code: IssueCodes.InvalidFixStatementInEmptyFixContainer
+                    })
+                } else if (isFixDeleteEdgeStatement(stmt)) {
+                    accept('error', `Edges cannot be deleted in empty enable fixes!`, {
+                        node: stmt,
+                        code: IssueCodes.InvalidFixStatementInEmptyFixContainer
+                    })
+                } else if (isFixDeleteNodeStatement(stmt)) {
+                    accept('error', `Nodes cannot be deleted in empty enable fixes!`, {
+                        node: stmt,
+                        code: IssueCodes.InvalidFixStatementInEmptyFixContainer
+                    })
+                } else if (isFixCreateEdgeStatement(stmt)) {
+                    if (stmt.fromNode != undefined && stmt.fromNode.ref != undefined && !isFixCreateNodeStatement(stmt.fromNode.ref.$container)) {
+                        accept('error', `You cannot create edges between or to existing nodes in empty enable fixes!`, {
+                            node: stmt,
+                            property: 'fromNode',
+                            code: IssueCodes.InvalidFixStatementInEmptyFixContainer
+                        })
+                    }
+                    if (stmt.toNode != undefined && stmt.toNode.ref != undefined && !isFixCreateNodeStatement(stmt.toNode.ref.$container)) {
+                        accept('error', `You cannot create edges between or to existing nodes in empty enable fixes!`, {
+                            node: stmt,
+                            property: 'toNode',
+                            code: IssueCodes.InvalidFixStatementInEmptyFixContainer
+                        })
+                    }
+                }
+            })
         }
     }
 }

@@ -2,6 +2,14 @@
 
 }
 
+.ms-match-instance-wrapper:first-child {
+    margin-top: 0.25em;
+}
+
+.ms-match-instance-wrapper:not(:first-child) {
+    margin-top: 1em;
+}
+
 .ms-match-instance-header {
     /*noinspection CssUnresolvedCustomProperty*/
     background-color: var(--vscode-input-border);

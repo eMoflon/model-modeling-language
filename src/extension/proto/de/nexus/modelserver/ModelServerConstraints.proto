@@ -54,6 +54,7 @@ message FixProposal {
 message FixMatch {
   repeated FixVariant variants = 1;
   repeated MatchNode nodes = 2;
+  bool emptyMatch = 3;
 }
 
 message MatchNode {

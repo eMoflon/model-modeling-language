@@ -36,7 +36,7 @@ export function MatchInstance(props: {
         return (
             <>
                 <MatchFixVariant idx={idx} key={`variant-${idx}`}
-                                 variant={variant}
+                                 variant={variant} variantForEmptyMatch={match.emptyMatch}
                                  selectVariantCb={innerSelectVariantCb} selectVariantForAllCb={selectVariantForAllCb}/>
                 {idx < maxIdx && (
                     <VSCodeDivider className="ms-match-instance-variant-divider" key={`variant-divider-${idx}`}/>)}
@@ -47,19 +47,23 @@ export function MatchInstance(props: {
     const matchVariants = match.variants.map((x, idx) => variantProvider(x, idx, match.variants.length - 1));
     const matchHasVariants: boolean = matchVariants.length > 0;
 
+    const matchTagText: string = match.emptyMatch ? "Empty Match" : "Match";
+
     return (
         <>
             <div className="ms-match-instance-wrapper wrapper-column">
                 <div className="ms-match-instance-header wrapper-row">
                     <div className="ms-match-instance-header-tag-wrapper wrapper-column">
-                        <VSCodeTag>Match</VSCodeTag>
+                        <VSCodeTag>{matchTagText}</VSCodeTag>
                     </div>
                     <div className="ms-match-instance-header-text-wrapper wrapper-column">
                     </div>
                     <div className="ms-match-instance-header-button-wrapper wrapper-column">
-                        <VSCodeButton appearance="icon" onClick={toggleDetails}>
-                            <i className={detailsIcon} style={{color: iconColor}}></i>
-                        </VSCodeButton>
+                        {!match.emptyMatch && (
+                            <VSCodeButton appearance="icon" onClick={toggleDetails}>
+                                <i className={detailsIcon} style={{color: iconColor}}></i>
+                            </VSCodeButton>
+                        )}
                     </div>
                 </div>
                 <div className="wrapper-row">
