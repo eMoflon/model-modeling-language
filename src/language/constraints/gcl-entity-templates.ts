@@ -381,7 +381,7 @@ export class FixSetStatementEntity implements FixStatementEntity {
 
         if (setStmt.val != undefined) {
             if (ExprUtils.isEnumValueExpression(setStmt.val) && setStmt.val.val.ref != undefined) {
-                this.attributeValue = new PrimaryExpressionEntity(setStmt.val.val.ref.name, resolver);
+                this.attributeValue = new PrimaryExpressionEntity(setStmt.val.val.ref.name, resolver, "", "", "", false, true);
             } else if (isValueExpr(setStmt.val)) {
                 this.attributeValue = new PrimaryExpressionEntity(setStmt.val.value, resolver);
             } else {
@@ -493,7 +493,7 @@ export class CreateNodeAttributeAssignmentEntity {
         if (assignment.attr.ref != undefined) {
             this.attributeName = assignment.attr.ref.name;
             if (ExprUtils.isEnumValueExpression(assignment.val) && assignment.val.val.ref != undefined) {
-                this.attributeValue = new PrimaryExpressionEntity(assignment.val.val.ref.name, resolver);
+                this.attributeValue = new PrimaryExpressionEntity(assignment.val.val.ref.name, resolver, "", "", "", false, true);
             } else if (isValueExpr(assignment.val)) {
                 this.attributeValue = new PrimaryExpressionEntity(assignment.val.value, resolver);
             } else {
