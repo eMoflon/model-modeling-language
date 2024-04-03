@@ -101,6 +101,7 @@ message EditSetAttributeRequest {
   Node node = 1;
   string attributeName = 2;
   string attributeValue = 3;
+  bool unsetAttributeValue = 4;
 }
 
 message EditSetAttributeResponse {
