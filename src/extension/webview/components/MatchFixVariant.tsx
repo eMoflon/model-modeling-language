@@ -44,6 +44,8 @@ export function MatchFixVariant(props: {
 
     const editStatements: EditRequest[] = variant.statements.filter(x => x.stmt.case == "edit").map(x => x.stmt.value as EditRequest);
 
+    const allowExecution: boolean = isVariantExecutable(editStatements);
+
     const variantTag: string = "Variant";
 
     return (
@@ -58,10 +60,12 @@ export function MatchFixVariant(props: {
                     </div>
                     <div className="ms-match-fix-variant-header-button-wrapper wrapper-column">
                         <div className="wrapper-row">
-                            <VSCodeButton appearance="icon" onClick={() => selectVariantCb(idx)}>
-                                <i className="codicon codicon-run" style={{color: iconColor}}></i>
-                            </VSCodeButton>
-                            {!variantForEmptyMatch && (
+                            {allowExecution && (
+                                <VSCodeButton appearance="icon" onClick={() => selectVariantCb(idx)}>
+                                    <i className="codicon codicon-run" style={{color: iconColor}}></i>
+                                </VSCodeButton>
+                            )}
+                            {!variantForEmptyMatch && allowExecution && (
                                 <VSCodeButton appearance="icon"
                                               onClick={() => selectVariantForAllCb(idx)}>
                                     <i className="codicon codicon-run-all" style={{color: iconColor}}></i>
@@ -170,7 +174,11 @@ function getEditRequestAsString(request: EditRequest, registry: TemporaryIdRegis
         return `Delete node [${getNodeAsString(req.node, registry)}]`;
     } else if (request.request.case == "setAttributeRequest") {
         const req: EditSetAttributeRequest = request.request.value;
-        return `Update node [${getNodeAsString(req.node, registry)}]:  ${req.attributeName} = ${req.attributeValue}`;
+        if (req.unsetAttributeValue) {
+            return `Update node [${getNodeAsString(req.node, registry)}]:  ${req.attributeName}`;
+        } else {
+            return `Update node [${getNodeAsString(req.node, registry)}]:  ${req.attributeName} = ${req.attributeValue}`;
+        }
     }
     throw new Error(`Unsupported EditRequest case: ${request.request.case}`);
 }
@@ -184,4 +192,19 @@ function getNodeAsString(node: Node | undefined, registry: TemporaryIdRegistry):
         return registry.getTemporaryName(node.nodeType.value);
     }
     throw new Error(`Unsupported nodeType: ${node.nodeType.case}`);
+}
+
+function isVariantExecutable(requests: EditRequest[]) {
+    let containsManualSetStatement: boolean = false;
+
+    for (const req of requests) {
+        if (req.request.case == "setAttributeRequest") {
+            if (req.request.value.unsetAttributeValue) {
+                containsManualSetStatement = true;
+                break;
+            }
+        }
+    }
+
+    return requests.length > 0 && !containsManualSetStatement;
 }
