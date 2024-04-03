@@ -19,7 +19,7 @@ export function ModelServerEvaluationSummary() {
     const fulfilledConstraints: number = evalContext.totalConstraints - evalContext.violatedConstraints;
     const loading: boolean = evalContext.loadState == "loading";
     const loaded: boolean = evalContext.loadState == "loaded";
-    const progress: number = loading || evalContext.totalConstraints == 0 ? 10 : Math.floor((fulfilledConstraints / evalContext.totalConstraints) * 100);
+    const progress: number = loading || evalContext.totalConstraints == 0 ? 0 : Math.floor((fulfilledConstraints / evalContext.totalConstraints) * 100);
     let summaryText: string = "";
     let trackColor: string = computedStyle.getPropertyValue("--vscode-icon-foreground");
     let indicatorColor: string = computedStyle.getPropertyValue("--vscode-icon-foreground");
