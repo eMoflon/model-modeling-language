@@ -27,6 +27,7 @@ import {
     isDisableFixContainer,
     isEnableFixContainer,
     isEnforceAnnotation,
+    isExpression,
     isFixCreateEdgeStatement,
     isFixCreateNodeStatement,
     isFixDeleteEdgeStatement,
@@ -45,6 +46,7 @@ import {
     PatternAttributeConstraint,
     PatternObject,
     PatternObjectReference,
+    TemplateLiteral,
     TitleAnnotation,
     TypedVariable,
     UnaryExpression
@@ -329,7 +331,7 @@ export class FixContainerEntity {
         this.isEmptyMatchFix = fixContainer.emptyFix;
         this.statements = fixContainer.fixStatements.map(x => {
             if (isFixInfoStatement(x)) {
-                return new FixInfoStatementEntity(x);
+                return new FixInfoStatementEntity(x, resolver);
             } else if (isFixCreateNodeStatement(x)) {
                 return new FixCreateNodeEntity(x, resolver);
             } else if (isFixCreateEdgeStatement(x)) {
@@ -352,12 +354,44 @@ interface FixStatementEntity {
 }
 
 export class FixInfoStatementEntity implements FixStatementEntity {
-    readonly msg: string;
+    readonly msg: TemplatedStringEntity;
     readonly type: string;
 
-    constructor(infoStmt: FixInfoStatement) {
-        this.msg = infoStmt.msg;
+    constructor(infoStmt: FixInfoStatement, resolver: GclReferenceStorage) {
+        if (infoStmt.msg != undefined && infoStmt.templateMsg == undefined) {
+            this.msg = {elements: [new TemplatedStringElement(infoStmt.msg, resolver)]} as TemplatedStringEntity;
+        } else if (infoStmt.msg == undefined && infoStmt.templateMsg != undefined) {
+            this.msg = new TemplatedStringEntity(infoStmt.templateMsg, resolver);
+        } else {
+            this.msg = {elements: []} as TemplatedStringEntity;
+        }
         this.type = "INFO";
+    }
+}
+
+export class TemplatedStringEntity {
+    readonly elements: TemplatedStringElement[];
+
+    constructor(templatedString: TemplateLiteral, resolver: GclReferenceStorage) {
+        this.elements = templatedString.content.map(x => new TemplatedStringElement(x, resolver));
+    }
+}
+
+export class TemplatedStringElement {
+    readonly isString: boolean;
+    readonly msg: string | undefined;
+    readonly data: ExpressionEntity | undefined;
+
+    constructor(element: string | Expression, resolver: GclReferenceStorage) {
+        if (isExpression(element)) {
+            this.isString = false;
+            this.msg = undefined;
+            this.data = new ExpressionEntity(BinaryExpressionEntity.generateChild(element, resolver));
+        } else {
+            this.isString = true;
+            this.msg = element;
+            this.data = undefined;
+        }
     }
 }
 
