@@ -11,6 +11,7 @@ import {
     isDisableFixContainer,
     isEnableFixContainer,
     isEnforceAnnotation,
+    isExpression,
     isFixCreateEdgeStatement,
     isFixCreateNodeStatement,
     isFixDeleteEdgeStatement,
@@ -24,6 +25,7 @@ import {
     isPatternObject,
     isPatternObjectReference,
     isQualifiedValueExpr,
+    isTemplateLiteral,
     isTitleAnnotation,
     isTypedVariable,
     isUnaryExpression,
@@ -147,6 +149,14 @@ export class GraphConstraintLanguageSemanticTokenProvider extends AbstractSemant
         } else if (isCreateNodeAttributeAssignment(node)) {
             acceptor({node, property: "attr", type: SemanticTokenTypes.property});
             acceptor({node, keyword: "=", type: SemanticTokenTypes.operator});
+        } else if (isTemplateLiteral(node)) {
+            acceptor({node, keyword: "'", type: SemanticTokenTypes.string});
+
+            for (let i = 0; i < node.content.length; i++) {
+                if (!isExpression(node.content[i])) {
+                    acceptor({node, property: "content", index: i, type: SemanticTokenTypes.string});
+                }
+            }
         }
     }
 
