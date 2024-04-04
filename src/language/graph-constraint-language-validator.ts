@@ -33,6 +33,7 @@ import {
     isNodeConstraintAnnotation,
     isPattern,
     isPatternObject,
+    isTemplateLiteral,
     isTitleAnnotation,
     Model,
     ModelModelingLanguageAstType,
@@ -85,7 +86,8 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
             //validator.checkPatternAttributeConstraintBinaryOperation
         ],
         BinaryExpression: [
-            validator.checkBinaryExpressionValidity
+            validator.checkBinaryExpressionValidity,
+            validator.checkBinaryExpressionOperatorPermitted
         ],
         Annotation: [
             validator.checkAnnotationContextValidity
@@ -151,6 +153,7 @@ export namespace IssueCodes {
     export const DisableFixContainerHasEmptyModifier = "disable-fix-container-has-empty-modifier";
     export const EnableFixContainerIsUnboundAndNotEmpty = "enable-fix-container-is-unbound-and-not-empty";
     export const InvalidFixStatementInEmptyFixContainer = "invalid-fix-statement-in-empty-fix-container";
+    export const BinaryOperatorNotPermittedInContainer = "binary-operator-not-permitted-in-container";
 }
 
 /**
@@ -315,6 +318,18 @@ export class GraphConstraintLanguageValidator {
             }
         }
     }*/
+
+    checkBinaryExpressionOperatorPermitted(bexpr: BinaryExpression, accept: ValidationAcceptor) {
+        const container = ExprUtils.getExprContainer(bexpr);
+        if (isTemplateLiteral(container)) {
+            if (bexpr.operator == '&&' || bexpr.operator == '||') {
+                accept('error', `Boolean operator "${bexpr.operator}" cannot be used inside ${container.$type}`, {
+                    node: bexpr,
+                    code: IssueCodes.BinaryOperatorNotPermittedInContainer
+                })
+            }
+        }
+    }
 
     checkBinaryExpressionValidity(bexpr: BinaryExpression, accept: ValidationAcceptor) {
         if (bexpr.operator == '&&' || bexpr.operator == '||') {
