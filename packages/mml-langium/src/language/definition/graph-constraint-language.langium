@@ -15,13 +15,17 @@ Annotation:
     DisableDefaultNodeConstraintsAnnotation |
     NodeConstraintAnnotation |
     TitleAnnotation |
-    DescriptionAnnotation;
+    DescriptionAnnotation |
+    PatternBindAnnotation;
 
 CompactBindingStatement:
     otherVar=[TypedVariable:ID] '=' selfVar=[TypedVariable:ID];
 
 fragment SupportPatternAnnotationBody:
     pattern=[Pattern:ID] (',' '[' binding+=CompactBindingStatement (',' binding+=CompactBindingStatement)* ']')?;
+
+fragment PatternBindAnnotationBody:
+    pattern=[Pattern:ID] ',' '[' binding+=CompactBindingStatement (',' binding+=CompactBindingStatement)* ']';
 
 EnforceAnnotation:
     '@Enforce' '(' SupportPatternAnnotationBody ')';
@@ -41,6 +45,9 @@ TitleAnnotation:
 DescriptionAnnotation:
     '@description' '(' value=STRING ')';
 
+PatternBindAnnotation:
+    '@Bind' '(' PatternBindAnnotationBody ')';
+
 Pattern:
     (annotations+=Annotation)*
     'pattern' name=ID '{' (objs += PatternObject | constraints+=PatternAttributeConstraint)* '}';
@@ -59,6 +66,7 @@ Constraint:
     'constraint' name=ID '{' (patternDeclarations+=ConstraintPatternDeclaration | assertions+=ConstraintAssertion)* '}';
 
 ConstraintPatternDeclaration:
+    (annotations+=Annotation)*
     'specification' pattern=[Pattern:ID] var=UntypedVariable '{' (fixContainers+=FixContainer)* '}';
 
 ConstraintAssertion:
