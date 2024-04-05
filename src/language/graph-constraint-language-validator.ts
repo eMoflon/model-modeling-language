@@ -16,6 +16,7 @@ import {
     DisableDefaultNodeConstraintsAnnotation,
     DisableFixContainer,
     EnableFixContainer,
+    EnumValueExpr,
     FixCreateEdgeStatement,
     FixSetStatement,
     isClass,
@@ -87,7 +88,9 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
         ],
         BinaryExpression: [
             validator.checkBinaryExpressionValidity,
-            validator.checkBinaryExpressionOperatorPermitted
+        ],
+        EnumValueExpr: [
+            validator.checkEnumValueExpressionPermitted
         ],
         Annotation: [
             validator.checkAnnotationContextValidity
@@ -153,7 +156,7 @@ export namespace IssueCodes {
     export const DisableFixContainerHasEmptyModifier = "disable-fix-container-has-empty-modifier";
     export const EnableFixContainerIsUnboundAndNotEmpty = "enable-fix-container-is-unbound-and-not-empty";
     export const InvalidFixStatementInEmptyFixContainer = "invalid-fix-statement-in-empty-fix-container";
-    export const BinaryOperatorNotPermittedInContainer = "binary-operator-not-permitted-in-container";
+    export const EnumValueExprNotPermittedInContainer = "enum-value-expr-not-permitted-in-container";
 }
 
 /**
@@ -319,15 +322,13 @@ export class GraphConstraintLanguageValidator {
         }
     }*/
 
-    checkBinaryExpressionOperatorPermitted(bexpr: BinaryExpression, accept: ValidationAcceptor) {
-        const container = ExprUtils.getExprContainer(bexpr);
+    checkEnumValueExpressionPermitted(expr: EnumValueExpr, accept: ValidationAcceptor) {
+        const container = ExprUtils.getExprContainer(expr);
         if (isTemplateLiteral(container)) {
-            if (bexpr.operator == '&&' || bexpr.operator == '||') {
-                accept('error', `Boolean operator "${bexpr.operator}" cannot be used inside ${container.$type}`, {
-                    node: bexpr,
-                    code: IssueCodes.BinaryOperatorNotPermittedInContainer
-                })
-            }
+            accept('error', `EnumValues are not permitted inside ${container.$type}`, {
+                node: expr,
+                code: IssueCodes.EnumValueExprNotPermittedInContainer
+            })
         }
     }
 
