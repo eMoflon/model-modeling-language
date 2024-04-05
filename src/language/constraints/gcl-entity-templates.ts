@@ -38,6 +38,8 @@ import {
     isNodeConstraintAnnotation,
     isPattern,
     isPatternObject,
+    isQualifiedValueExpr,
+    isTemplateLiteral,
     isTitleAnnotation,
     isUnaryExpression,
     isValueExpr,
@@ -232,6 +234,18 @@ export class BinaryExpressionEntity {
                 throw new Error(`Unknown pattern node "${patternObjName}"`);
             }
             return new PrimaryExpressionEntity("", resolver, ModelModelingLanguageUtils.getQualifiedClassName(attr.$container, attr.$container.name), attr.name, resolver.getNodeReferenceId(node), true, false);
+        }
+        if (isQualifiedValueExpr(expr) && expr.val.ref != undefined) {
+            const qValueContainer = ExprUtils.getExprContainer(expr);
+            if (isTemplateLiteral(qValueContainer) && isFixInfoStatement(qValueContainer.$container)) {
+                const attr: Attribute = expr.val.ref as Attribute;
+                const separatedAttributeAccess: string[] = expr.val.$refText.split(".");
+                if (separatedAttributeAccess.length != 2) {
+                    throw new Error(`Broke AttributeInvocation "${expr.val.$refText}" but received ${separatedAttributeAccess.length} parts!`)
+                }
+                const patternObjName: string = separatedAttributeAccess.at(0) as string;
+                return new PrimaryExpressionEntity("", resolver, ModelModelingLanguageUtils.getQualifiedClassName(attr.$container, attr.$container.name), attr.name, patternObjName, true, false);
+            }
         }
         throw new Error(`Missing serializer in BinaryExpressionEntity.generateChild() -> ${expr.$type}`);
     }
