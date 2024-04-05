@@ -77,7 +77,7 @@ FixStatement:
     FixInfoStatement | FixSetStatement | FixDeleteNodeStatement | FixDeleteEdgeStatement | FixCreateNodeStatement | FixCreateEdgeStatement;
 
 FixInfoStatement:
-    'info' msg=STRING ';';
+    'info' (msg=STRING | templateMsg=TemplateLiteral) ';';
 
 FixSetStatement:
     'set' attr=[Attribute:QNAME] ('=' val=(ValueExpr | EnumValueExpr))? ';';

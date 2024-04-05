@@ -16,6 +16,7 @@ import {
     DisableDefaultNodeConstraintsAnnotation,
     DisableFixContainer,
     EnableFixContainer,
+    EnumValueExpr,
     FixCreateEdgeStatement,
     FixSetStatement,
     isClass,
@@ -33,6 +34,7 @@ import {
     isNodeConstraintAnnotation,
     isPattern,
     isPatternObject,
+    isTemplateLiteral,
     isTitleAnnotation,
     Model,
     ModelModelingLanguageAstType,
@@ -85,7 +87,10 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
             //validator.checkPatternAttributeConstraintBinaryOperation
         ],
         BinaryExpression: [
-            validator.checkBinaryExpressionValidity
+            validator.checkBinaryExpressionValidity,
+        ],
+        EnumValueExpr: [
+            validator.checkEnumValueExpressionPermitted
         ],
         Annotation: [
             validator.checkAnnotationContextValidity
@@ -151,6 +156,7 @@ export namespace IssueCodes {
     export const DisableFixContainerHasEmptyModifier = "disable-fix-container-has-empty-modifier";
     export const EnableFixContainerIsUnboundAndNotEmpty = "enable-fix-container-is-unbound-and-not-empty";
     export const InvalidFixStatementInEmptyFixContainer = "invalid-fix-statement-in-empty-fix-container";
+    export const EnumValueExprNotPermittedInContainer = "enum-value-expr-not-permitted-in-container";
 }
 
 /**
@@ -315,6 +321,16 @@ export class GraphConstraintLanguageValidator {
             }
         }
     }*/
+
+    checkEnumValueExpressionPermitted(expr: EnumValueExpr, accept: ValidationAcceptor) {
+        const container = ExprUtils.getExprContainer(expr);
+        if (isTemplateLiteral(container)) {
+            accept('error', `EnumValues are not permitted inside ${container.$type}`, {
+                node: expr,
+                code: IssueCodes.EnumValueExprNotPermittedInContainer
+            })
+        }
+    }
 
     checkBinaryExpressionValidity(bexpr: BinaryExpression, accept: ValidationAcceptor) {
         if (bexpr.operator == '&&' || bexpr.operator == '||') {

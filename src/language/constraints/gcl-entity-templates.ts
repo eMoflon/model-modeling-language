@@ -27,6 +27,7 @@ import {
     isDisableFixContainer,
     isEnableFixContainer,
     isEnforceAnnotation,
+    isExpression,
     isFixCreateEdgeStatement,
     isFixCreateNodeStatement,
     isFixDeleteEdgeStatement,
@@ -37,6 +38,8 @@ import {
     isNodeConstraintAnnotation,
     isPattern,
     isPatternObject,
+    isQualifiedValueExpr,
+    isTemplateLiteral,
     isTitleAnnotation,
     isUnaryExpression,
     isValueExpr,
@@ -45,6 +48,7 @@ import {
     PatternAttributeConstraint,
     PatternObject,
     PatternObjectReference,
+    TemplateLiteral,
     TitleAnnotation,
     TypedVariable,
     UnaryExpression
@@ -231,6 +235,18 @@ export class BinaryExpressionEntity {
             }
             return new PrimaryExpressionEntity("", resolver, ModelModelingLanguageUtils.getQualifiedClassName(attr.$container, attr.$container.name), attr.name, resolver.getNodeReferenceId(node), true, false);
         }
+        if (isQualifiedValueExpr(expr) && expr.val.ref != undefined) {
+            const qValueContainer = ExprUtils.getExprContainer(expr);
+            if (isTemplateLiteral(qValueContainer) && isFixInfoStatement(qValueContainer.$container)) {
+                const attr: Attribute = expr.val.ref as Attribute;
+                const separatedAttributeAccess: string[] = expr.val.$refText.split(".");
+                if (separatedAttributeAccess.length != 2) {
+                    throw new Error(`Broke AttributeInvocation "${expr.val.$refText}" but received ${separatedAttributeAccess.length} parts!`)
+                }
+                const patternObjName: string = separatedAttributeAccess.at(0) as string;
+                return new PrimaryExpressionEntity("", resolver, ModelModelingLanguageUtils.getQualifiedClassName(attr.$container, attr.$container.name), attr.name, patternObjName, true, false);
+            }
+        }
         throw new Error(`Missing serializer in BinaryExpressionEntity.generateChild() -> ${expr.$type}`);
     }
 }
@@ -329,7 +345,7 @@ export class FixContainerEntity {
         this.isEmptyMatchFix = fixContainer.emptyFix;
         this.statements = fixContainer.fixStatements.map(x => {
             if (isFixInfoStatement(x)) {
-                return new FixInfoStatementEntity(x);
+                return new FixInfoStatementEntity(x, resolver);
             } else if (isFixCreateNodeStatement(x)) {
                 return new FixCreateNodeEntity(x, resolver);
             } else if (isFixCreateEdgeStatement(x)) {
@@ -352,12 +368,44 @@ interface FixStatementEntity {
 }
 
 export class FixInfoStatementEntity implements FixStatementEntity {
-    readonly msg: string;
+    readonly msg: TemplatedStringEntity;
     readonly type: string;
 
-    constructor(infoStmt: FixInfoStatement) {
-        this.msg = infoStmt.msg;
+    constructor(infoStmt: FixInfoStatement, resolver: GclReferenceStorage) {
+        if (infoStmt.msg != undefined && infoStmt.templateMsg == undefined) {
+            this.msg = {elements: [new TemplatedStringElement(infoStmt.msg, resolver)]} as TemplatedStringEntity;
+        } else if (infoStmt.msg == undefined && infoStmt.templateMsg != undefined) {
+            this.msg = new TemplatedStringEntity(infoStmt.templateMsg, resolver);
+        } else {
+            this.msg = {elements: []} as TemplatedStringEntity;
+        }
         this.type = "INFO";
+    }
+}
+
+export class TemplatedStringEntity {
+    readonly elements: TemplatedStringElement[];
+
+    constructor(templatedString: TemplateLiteral, resolver: GclReferenceStorage) {
+        this.elements = templatedString.content.map(x => new TemplatedStringElement(x, resolver));
+    }
+}
+
+export class TemplatedStringElement {
+    readonly isString: boolean;
+    readonly msg: string | undefined;
+    readonly data: ExpressionEntity | undefined;
+
+    constructor(element: string | Expression, resolver: GclReferenceStorage) {
+        if (isExpression(element)) {
+            this.isString = false;
+            this.msg = undefined;
+            this.data = new ExpressionEntity(BinaryExpressionEntity.generateChild(element, resolver));
+        } else {
+            this.isString = true;
+            this.msg = element;
+            this.data = undefined;
+        }
     }
 }
 

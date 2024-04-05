@@ -14,6 +14,7 @@ import {
     AbstractElement,
     Attribute,
     Class,
+    ConstraintPatternDeclaration,
     CReference,
     EnforceAnnotation,
     FixCreateNodeStatement,
@@ -32,6 +33,7 @@ import {
     isFixCreateNodeStatement,
     isFixDeleteEdgeStatement,
     isFixDeleteNodeStatement,
+    isFixInfoStatement,
     isFixSetStatement,
     isInterface,
     isNodeConstraintAnnotation,
@@ -39,6 +41,7 @@ import {
     isPatternAttributeConstraint,
     isPatternObjectReference,
     isQualifiedValueExpr,
+    isTemplateLiteral,
     isVariableValueExpr,
     Pattern,
     PatternObject,
@@ -104,6 +107,18 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
                             scopes.push(ScopingUtils.createScopeElementStream(ScopingUtils.getAllInheritedAttributes(abstractEl), this.descriptions, x => `${patternObject.var.name}.${x.name}`, x => x));
                         }
                     });
+                }
+            } else if (isTemplateLiteral(exprContainer) && isFixInfoStatement(exprContainer.$container)) {
+                const patternDeclaration: ConstraintPatternDeclaration = exprContainer.$container.$container.$container;
+                const pattern = patternDeclaration.pattern.ref;
+                if (pattern != undefined) {
+                    pattern.objs.forEach(obj => {
+                        const refClass: AbstractElement | undefined = obj.var.typing.type?.ref;
+                        if (refClass != undefined && (isClass(refClass) || isInterface(refClass))) {
+                            const attrs: Attribute[] = refClass.body.filter(x => isAttribute(x)).map(x => x as Attribute);
+                            scopes.push(ScopingUtils.createScopeElementStream(attrs, this.descriptions, x => obj.var.name + "." + x.name, x => x));
+                        }
+                    })
                 }
             }
             return ScopingUtils.buildScopeFromAstNodeDesc(scopes, this.createScope);
