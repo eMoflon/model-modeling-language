@@ -23,6 +23,7 @@ import {
     isAttribute,
     isClass,
     isConstraint,
+    isConstraintPatternDeclaration,
     isDescriptionAnnotation,
     isDisableDefaultNodeConstraintsAnnotation,
     isEnforceAnnotation,
@@ -35,6 +36,7 @@ import {
     isIInstance,
     isNodeConstraintAnnotation,
     isPattern,
+    isPatternBindAnnotation,
     isPatternObject,
     isTemplateLiteral,
     isTitleAnnotation,
@@ -545,6 +547,13 @@ export class GraphConstraintLanguageValidator {
         } else if (isDescriptionAnnotation(annotation)) {
             if (!isConstraint(annotation.$container)) {
                 accept('error', `This annotation can only be used for structures of type constraint.`, {
+                    node: annotation,
+                    code: IssueCodes.InvalidAnnotationContext
+                })
+            }
+        } else if (isPatternBindAnnotation(annotation)) {
+            if (!isConstraintPatternDeclaration(annotation.$container)) {
+                accept('error', `This annotation can only be used for structures of type pattern declaration.`, {
                     node: annotation,
                     code: IssueCodes.InvalidAnnotationContext
                 })
