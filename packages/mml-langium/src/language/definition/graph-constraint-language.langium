@@ -24,9 +24,6 @@ CompactBindingStatement:
 fragment SupportPatternAnnotationBody:
     pattern=[Pattern:ID] (',' '[' binding+=CompactBindingStatement (',' binding+=CompactBindingStatement)* ']')?;
 
-fragment PatternBindAnnotationBody:
-    pattern=[Pattern:ID] ',' '[' binding+=CompactBindingStatement (',' binding+=CompactBindingStatement)* ']';
-
 EnforceAnnotation:
     '@Enforce' '(' SupportPatternAnnotationBody ')';
 
@@ -46,7 +43,7 @@ DescriptionAnnotation:
     '@description' '(' value=STRING ')';
 
 PatternBindAnnotation:
-    '@Bind' '(' PatternBindAnnotationBody ')';
+    '@Bind' '(' selfVar=[TypedVariable:ID] '=' otherVar=[TypedVariable:QNAME] ')';
 
 Pattern:
     (annotations+=Annotation)*

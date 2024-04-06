@@ -19,7 +19,8 @@ import {
     isForbidAnnotation,
     isNodeConstraintAnnotation,
     isPattern,
-    isPatternAttributeConstraint, isPatternBindAnnotation,
+    isPatternAttributeConstraint,
+    isPatternBindAnnotation,
     isPatternObject,
     isPatternObjectReference,
     isTitleAnnotation,
@@ -72,16 +73,12 @@ export class GraphConstraintLanguageFormatter extends AbstractFormatter {
             const formatter = this.getNodeFormatter(node);
             formatter.keyword('(').prepend(Formatting.noSpace()).append(Formatting.noSpace());
             formatter.keyword(')').append(Formatting.newLine());
-        } else if(isPatternBindAnnotation(node)){
+        } else if (isPatternBindAnnotation(node)) {
             const formatter = this.getNodeFormatter(node);
-            formatter.keyword('(').prepend(Formatting.noSpace());
-            formatter.property('pattern').surround(Formatting.noSpace());
-            if (node.binding.length > 0) {
-                formatter.keywords(',').prepend(Formatting.noSpace()).append(Formatting.oneSpace());
-                formatter.keywords('=').surround(Formatting.noSpace());
-            }
-            formatter.keyword(')').append(Formatting.newLine());
-        }else if (isPattern(node)) {
+            formatter.keyword('(').prepend(Formatting.noSpace()).append(Formatting.noSpace());
+            formatter.keyword('=').surround(Formatting.oneSpace());
+            formatter.keyword(')').prepend(Formatting.noSpace()).append(Formatting.newLine());
+        } else if (isPattern(node)) {
             const formatter = this.getNodeFormatter(node);
             const bracesOpen = formatter.keyword('{');
             const bracesClose = formatter.keyword('}');
