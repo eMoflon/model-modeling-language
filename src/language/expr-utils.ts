@@ -227,18 +227,7 @@ export class ExprUtils {
      * @param expr Expression to be checked
      */
     public static isIntExpression(expr: Expression): expr is NumberExpr {
-        if (expr.$type === "BinaryExpression") {
-            return this.isIntExpression(expr.left) && this.isIntExpression(expr.right);
-        } else if (isVariableValueExpr(expr)) {
-            if (expr.val.ref != undefined) {
-                const varTyping = this.getVariableTyping(expr.val.ref);
-                if (varTyping.isValidPrimitive && varTyping.type == ExprType.INTEGER) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        return isNumberExpr(expr) && expr.value % 1 === 0;
+        return this.evaluateExpressionType(expr) == ExprType.INTEGER;
     }
 
     /**
