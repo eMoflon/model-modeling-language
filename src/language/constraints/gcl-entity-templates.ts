@@ -237,7 +237,7 @@ export class BinaryExpressionEntity {
         }
         if (isQualifiedValueExpr(expr) && expr.val.ref != undefined) {
             const qValueContainer = ExprUtils.getExprContainer(expr);
-            if (isTemplateLiteral(qValueContainer) && isFixInfoStatement(qValueContainer.$container)) {
+            if (isFixSetStatement(qValueContainer) || (isTemplateLiteral(qValueContainer) && isFixInfoStatement(qValueContainer.$container))) {
                 const attr: Attribute = expr.val.ref as Attribute;
                 const separatedAttributeAccess: string[] = expr.val.$refText.split(".");
                 if (separatedAttributeAccess.length != 2) {
@@ -414,7 +414,7 @@ export class FixSetStatementEntity implements FixStatementEntity {
     readonly patternNodeName: string;
     readonly attributeName: string;
     readonly customizationRequired: boolean;
-    readonly attributeValue: PrimaryExpressionEntity | undefined;
+    readonly attributeValue: ExpressionEntity | undefined;
 
     constructor(setStmt: FixSetStatement, resolver: GclReferenceStorage) {
         this.type = "SET";
@@ -428,13 +428,7 @@ export class FixSetStatementEntity implements FixStatementEntity {
         this.customizationRequired = setStmt.val == undefined;
 
         if (setStmt.val != undefined) {
-            if (ExprUtils.isEnumValueExpression(setStmt.val) && setStmt.val.val.ref != undefined) {
-                this.attributeValue = new PrimaryExpressionEntity(setStmt.val.val.ref.name, resolver, ModelModelingLanguageUtils.getQualifiedClassName(setStmt.val.val.ref.$container, setStmt.val.val.ref.$container.name), "", "", false, true);
-            } else if (isValueExpr(setStmt.val)) {
-                this.attributeValue = new PrimaryExpressionEntity(setStmt.val.value, resolver);
-            } else {
-                throw new Error(`Unable to assign attribute value: ${setStmt.attr.$refText}`);
-            }
+            this.attributeValue = new ExpressionEntity(BinaryExpressionEntity.generateChild(setStmt.val, resolver));
         }
     }
 }
