@@ -73,7 +73,8 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
             validator.checkUniquePatternObjectNames,
             validator.checkUniqueAllowDuplicatesAnnotation,
             validator.checkNodeConstraintAnnotationValidity,
-            validator.checkUniquePatternAlias
+            validator.checkUniquePatternAlias,
+            validator.checkPatternNameValidity
         ],
         CompactBindingStatement: [
             validator.checkCompactBindingTypeValidity,
@@ -140,6 +141,7 @@ export namespace IssueCodes {
     export const PatternObjectVariableHasPrimitiveType = "pattern-object-variable-has-primitive-type";
     export const PatternObjectVariableIsInterface = "pattern-object-variable-is-interface";
     export const PatternNameNotUnique = "pattern-name-not-unique";
+    export const PatternNameNotAllowed = "pattern-name-not-allowed";
     export const PatternObjectNameNotUnique = "pattern-object-name-not-unique";
     export const PatternObjectReferenceTypeDoesNotMatch = "pattern-object-reference-type-does-not-match";
     export const UnknownDocument = "unknown-document";
@@ -232,6 +234,16 @@ export class GraphConstraintLanguageValidator {
             }
             reportedElements.add(pattern.name);
         });
+    }
+
+    checkPatternNameValidity(pattern: Pattern, accept: ValidationAcceptor) {
+        if (pattern.name.startsWith("GCLInternal_")) {
+            accept('error', `The prefix GCLInternal is reserved exclusively for internally generated patterns and must not be used!`, {
+                node: pattern,
+                property: 'name',
+                code: IssueCodes.PatternNameNotAllowed
+            })
+        }
     }
 
     checkUniquePatternObjectNames(pattern: Pattern, accept: ValidationAcceptor): void {
