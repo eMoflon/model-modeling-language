@@ -80,7 +80,7 @@ FixInfoStatement:
     'info' (msg=STRING | templateMsg=TemplateLiteral) ';';
 
 FixSetStatement:
-    'set' attr=[Attribute:QNAME] ('=' val=(ValueExpr | EnumValueExpr))? ';';
+    'set' attr=[Attribute:QNAME] ('=' val=Expression)? ';';
 
 FixDeleteNodeStatement:
     'delete' 'node' node=[TypedVariable:ID] ';';
