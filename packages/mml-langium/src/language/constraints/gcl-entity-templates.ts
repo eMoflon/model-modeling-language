@@ -37,7 +37,6 @@ import {
     isForbidAnnotation,
     isNodeConstraintAnnotation,
     isPattern,
-    isPatternExtensionAnnotation,
     isPatternObject,
     isQualifiedValueExpr,
     isTemplateLiteral,
@@ -47,7 +46,6 @@ import {
     NodeConstraintAnnotation,
     Pattern,
     PatternAttributeConstraint,
-    PatternExtensionAnnotation,
     PatternObject,
     PatternObjectReference,
     TemplateLiteral,
@@ -327,20 +325,23 @@ export class ConstraintPatternDeclarationEntity {
     readonly name: string;
     readonly isInternal: boolean;
     readonly basePatternId: string;
+    readonly extendedDeclarationId: string;
     readonly fixContainer: FixContainerEntity[];
 
 
     constructor(pDeclaration: ConstraintPatternDeclaration, resolver: GclReferenceStorage, patternCollector: GclPatternCollector) {
         if (pDeclaration.annotations.length > 0) {
-            const bindAnnotations: PatternExtensionAnnotation[] = pDeclaration.annotations.filter(x => isPatternExtensionAnnotation(x)).map(x => x as PatternExtensionAnnotation);
-            if (bindAnnotations.length > 0) {
+            const extendedDec: ConstraintPatternDeclaration | undefined = GclInternalPatternBuilder.getExtendedPatternDeclaration(pDeclaration);
+            if (extendedDec != undefined) {
                 this.patternId = GclInternalPatternBuilder.buildInternalBindPattern(pDeclaration, patternCollector);
+                this.extendedDeclarationId = resolver.getNodeReferenceId(extendedDec);
                 this.isInternal = true;
             } else {
                 throw new Error(`Unexpected ConstraintPatternDeclaration annotation encountered!`);
             }
         } else {
             this.patternId = resolver.resolve(pDeclaration.pattern);
+            this.extendedDeclarationId = "";
             this.isInternal = false;
         }
 

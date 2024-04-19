@@ -179,4 +179,25 @@ export class GclInternalPatternBuilder {
             throw new Error("Unable to resolve ConstraintPatternDeclaration base pattern!");
         }
     }
+
+    public static getExtendedPatternDeclaration(varDec: ConstraintPatternDeclaration) {
+        if (varDec.annotations == undefined || varDec.annotations.length == 0) {
+            return undefined;
+        }
+        const pExtendingAnnotations: PatternExtensionAnnotation[] = varDec.annotations.filter(x => isPatternExtensionAnnotation(x)).map(x => x as PatternExtensionAnnotation);
+
+        if (pExtendingAnnotations.length == 0) {
+            return undefined;
+        }
+
+        const pExtension: PatternExtensionAnnotation = pExtendingAnnotations[0];
+
+
+        if (pExtension.basePattern != undefined && pExtension.basePattern.ref != undefined && isConstraintPatternDeclaration(pExtension.basePattern.ref.$container)) {
+            return pExtension.basePattern.ref.$container;
+        }
+
+        return undefined;
+
+    }
 }
