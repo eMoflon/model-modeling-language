@@ -42,14 +42,14 @@ import {
     isNodeConstraintAnnotation,
     isPattern,
     isPatternAttributeConstraint,
-    isPatternBindAnnotation,
+    isPatternExtensionAnnotation,
     isPatternObject,
     isPatternObjectReference,
     isQualifiedValueExpr,
     isTemplateLiteral,
     isVariableValueExpr,
     Pattern,
-    PatternBindAnnotation,
+    PatternExtensionAnnotation,
     PatternObject,
     TypedVariable,
     UntypedVariable
@@ -86,36 +86,33 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
                         validPatternObjects = referencesPattern.objs;
                     }
                 }
+            } else if (isPatternExtensionAnnotation(context.container.$container)) {
+                const annotation: PatternExtensionAnnotation = context.container.$container;
+                if (context.property === "selfVar" && isConstraintPatternDeclaration(annotation.$container) && annotation.$container.pattern != undefined && annotation.$container.pattern.ref != undefined) {
+                    const annotatedPattern: Pattern = annotation.$container.pattern.ref;
+                    validPatternObjects = annotatedPattern.objs;
+                } else if (context.property === "otherVar") {
+                    if (annotation.basePattern != undefined && annotation.basePattern.ref != undefined && isConstraintPatternDeclaration(annotation.basePattern.ref.$container)) {
+                        const referencedPatternDec: ConstraintPatternDeclaration = annotation.basePattern.ref.$container;
+                        if (referencedPatternDec.pattern != undefined && referencedPatternDec.pattern.ref != undefined) {
+                            const referencesPattern: Pattern = referencedPatternDec.pattern.ref;
+                            validPatternObjects = referencesPattern.objs;
+                        }
+                    }
+                }
             }
             return ScopingUtils.computeCustomScope(validPatternObjects, this.descriptions, x => x.var.name, x => x.var, this.createScope);
-        } else if (isPatternBindAnnotation(context.container)) {
-            const scopes: Array<Stream<AstNodeDescription>> = [];
-            const annotation: PatternBindAnnotation = context.container;
+        } else if (isPatternExtensionAnnotation(context.container)) {
+            const annotation: PatternExtensionAnnotation = context.container;
             if (isConstraintPatternDeclaration(annotation.$container)) {
                 const patternDeclaration: ConstraintPatternDeclaration = annotation.$container;
                 const constraint: Constraint = patternDeclaration.$container;
-                if (patternDeclaration.pattern != undefined && patternDeclaration.pattern.ref != undefined) {
-                    if (context.property === "selfVar") {
-                        const annotatedPattern: Pattern = patternDeclaration.pattern.ref;
-                        scopes.push(ScopingUtils.createScopeElementStream(annotatedPattern.objs, this.descriptions, x => x.var.name, x => x.var));
-                    } else if (context.property === "otherVar") {
-                        for (const declaration of constraint.patternDeclarations) {
-                            if (declaration == patternDeclaration) {
-                                continue;
-                            }
-                            if (declaration.pattern != undefined && declaration.pattern.ref != undefined) {
-                                const referencesPattern: Pattern = declaration.pattern.ref;
-                                scopes.push(ScopingUtils.createScopeElementStream(referencesPattern.objs, this.descriptions, x => declaration.var.name + '.' + x.var.name, x => x.var));
-                            }
-                        }
-                    }
-                } else {
-                    throw new Error("Could not access declared pattern");
+                if (context.property === "basePattern") {
+                    return ScopingUtils.computeCustomScope(constraint.patternDeclarations, this.descriptions, x => x.var.name, x => x.var, this.createScope);
                 }
             } else {
                 throw new Error(`ConstraintPatternDeclaration with unexpected container: ${annotation.$container.$type}`);
             }
-            return ScopingUtils.buildScopeFromAstNodeDesc(scopes, this.createScope);
         } else if (isPatternObjectReference(context.container)) {
             const scopes: Array<Stream<AstNodeDescription>> = [];
             const patternObj: PatternObject = context.container.$container;

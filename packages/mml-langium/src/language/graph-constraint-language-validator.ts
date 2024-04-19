@@ -10,6 +10,7 @@ import {
     Constraint,
     ConstraintAssertion,
     ConstraintDocument,
+    ConstraintPatternDeclaration,
     CreateNodeAttributeAssignment,
     CReference,
     DescriptionAnnotation,
@@ -36,7 +37,7 @@ import {
     isIInstance,
     isNodeConstraintAnnotation,
     isPattern,
-    isPatternBindAnnotation,
+    isPatternExtensionAnnotation,
     isPatternObject,
     isTemplateLiteral,
     isTitleAnnotation,
@@ -45,6 +46,7 @@ import {
     NodeConstraintAnnotation,
     Pattern,
     PatternAttributeConstraint,
+    PatternExtensionAnnotation,
     PatternObject,
     PatternObjectReference,
     ReferencedModelStatement,
@@ -86,6 +88,9 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
         ReferencedModelStatement: [
             validator.checkReferenceModelIsKnown,
             validator.checkReferenceModelIsSupported
+        ],
+        ConstraintPatternDeclaration: [
+            validator.checkPatternDeclarationAnnotationValidity
         ],
         PatternAttributeConstraint: [
             validator.checkPatternAttributeConstraintType,
@@ -164,6 +169,7 @@ export namespace IssueCodes {
     export const EnableFixContainerIsUnboundAndNotEmpty = "enable-fix-container-is-unbound-and-not-empty";
     export const InvalidFixStatementInEmptyFixContainer = "invalid-fix-statement-in-empty-fix-container";
     export const EnumValueExprNotPermittedInContainer = "enum-value-expr-not-permitted-in-container";
+    export const MultiplePatternExtensionsDefined = "multiple-pattern-extensions-defined";
 }
 
 /**
@@ -551,7 +557,7 @@ export class GraphConstraintLanguageValidator {
                     code: IssueCodes.InvalidAnnotationContext
                 })
             }
-        } else if (isPatternBindAnnotation(annotation)) {
+        } else if (isPatternExtensionAnnotation(annotation)) {
             if (!isConstraintPatternDeclaration(annotation.$container)) {
                 accept('error', `This annotation can only be used for structures of type pattern declaration.`, {
                     node: annotation,
@@ -636,6 +642,18 @@ export class GraphConstraintLanguageValidator {
                     node: anno,
                     code: IssueCodes.MultipleConstraintDescriptionsDefined
                 }))
+        }
+    }
+
+    checkPatternDeclarationAnnotationValidity(pVarDeclaration: ConstraintPatternDeclaration, accept: ValidationAcceptor) {
+        const extendingAnnotations: PatternExtensionAnnotation[] = pVarDeclaration.annotations.filter(x => isPatternExtensionAnnotation(x)).map(x => x as PatternExtensionAnnotation);
+        if (extendingAnnotations.length > 1) {
+            extendingAnnotations.forEach(anno => {
+                accept('error', `There can only be a single extending annotation!`, {
+                    node: anno,
+                    code: IssueCodes.MultiplePatternExtensionsDefined
+                })
+            })
         }
     }
 

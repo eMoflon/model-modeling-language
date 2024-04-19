@@ -22,7 +22,7 @@ import {
     isNodeConstraintAnnotation,
     isPattern,
     isPatternAttributeConstraint,
-    isPatternBindAnnotation,
+    isPatternExtensionAnnotation,
     isPatternObject,
     isPatternObjectReference,
     isQualifiedValueExpr,
@@ -84,11 +84,9 @@ export class GraphConstraintLanguageSemanticTokenProvider extends AbstractSemant
             acceptor({node, keyword: "@title", type: SemanticTokenTypes.decorator});
         } else if (isDescriptionAnnotation(node)) {
             acceptor({node, keyword: "@description", type: SemanticTokenTypes.decorator});
-        } else if (isPatternBindAnnotation(node)) {
-            acceptor({node, keyword: "@Bind", type: SemanticTokenTypes.decorator});
-            acceptor({node, property: "selfVar", type: SemanticTokenTypes.property});
-            acceptor({node, keyword: "=", type: SemanticTokenTypes.operator});
-            acceptor({node, property: "otherVar", type: SemanticTokenTypes.property});
+        } else if (isPatternExtensionAnnotation(node)) {
+            acceptor({node, keyword: "@ExtendPattern", type: SemanticTokenTypes.decorator});
+            acceptor({node, property: "basePattern", type: SemanticTokenTypes.class});
         } else if (isTypedVariable(node)) {
             acceptor({node, property: "typing", type: SemanticTokenTypes.type});
             acceptor({node, property: "name", type: SemanticTokenTypes.property});

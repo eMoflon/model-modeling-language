@@ -16,7 +16,7 @@ Annotation:
     NodeConstraintAnnotation |
     TitleAnnotation |
     DescriptionAnnotation |
-    PatternBindAnnotation;
+    PatternExtensionAnnotation;
 
 CompactBindingStatement:
     otherVar=[TypedVariable:ID] '=' selfVar=[TypedVariable:ID];
@@ -42,8 +42,8 @@ TitleAnnotation:
 DescriptionAnnotation:
     '@description' '(' value=STRING ')';
 
-PatternBindAnnotation:
-    '@Bind' '(' selfVar=[TypedVariable:ID] '=' otherVar=[TypedVariable:QNAME] ')';
+PatternExtensionAnnotation:
+    '@ExtendPattern' '(' basePattern=[UntypedVariable:ID] ',' '[' binding+=CompactBindingStatement (',' binding+=CompactBindingStatement)*  ']' ')';
 
 Pattern:
     (annotations+=Annotation)*
