@@ -52,6 +52,7 @@ import {
     ReferencedModelStatement,
     TitleAnnotation,
     TypedVariable,
+    UntypedVariable,
     VariableType
 } from "./generated/ast.js";
 import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
@@ -92,6 +93,9 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
         ],
         ConstraintPatternDeclaration: [
             validator.checkPatternDeclarationAnnotationValidity
+        ],
+        PatternExtensionAnnotation: [
+            validator.checkPatternDeclarationSelfExtension
         ],
         PatternAttributeConstraint: [
             validator.checkPatternAttributeConstraintType,
@@ -172,6 +176,7 @@ export namespace IssueCodes {
     export const InvalidFixStatementInEmptyFixContainer = "invalid-fix-statement-in-empty-fix-container";
     export const EnumValueExprNotPermittedInContainer = "enum-value-expr-not-permitted-in-container";
     export const MultiplePatternExtensionsDefined = "multiple-pattern-extensions-defined";
+    export const PatternDeclarationSelfExtension = "pattern-declaration-self-extension";
 }
 
 /**
@@ -355,6 +360,20 @@ export class GraphConstraintLanguageValidator {
                 node: expr,
                 code: IssueCodes.EnumValueExprNotPermittedInContainer
             })
+        }
+    }
+
+    checkPatternDeclarationSelfExtension(pExtAnnotation: PatternExtensionAnnotation, accept: ValidationAcceptor) {
+        if (pExtAnnotation.basePattern != undefined && pExtAnnotation.basePattern.ref != undefined) {
+            const basePatternVar: UntypedVariable = pExtAnnotation.basePattern.ref;
+
+            if (isConstraintPatternDeclaration(basePatternVar.$container) && isConstraintPatternDeclaration(pExtAnnotation.$container) && pExtAnnotation.$container == basePatternVar.$container) {
+                accept('error', `A pattern cannot extend itself!`, {
+                    node: pExtAnnotation,
+                    property: 'basePattern',
+                    code: IssueCodes.PatternDeclarationSelfExtension
+                })
+            }
         }
     }
 
