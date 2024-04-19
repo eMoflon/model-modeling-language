@@ -37,6 +37,7 @@ import {
     isForbidAnnotation,
     isNodeConstraintAnnotation,
     isPattern,
+    isPatternExtensionAnnotation,
     isPatternObject,
     isQualifiedValueExpr,
     isTemplateLiteral,
@@ -46,6 +47,7 @@ import {
     NodeConstraintAnnotation,
     Pattern,
     PatternAttributeConstraint,
+    PatternExtensionAnnotation,
     PatternObject,
     PatternObjectReference,
     TemplateLiteral,
@@ -57,6 +59,7 @@ import {GclReferenceStorage} from "./gcl-reference-storage.js";
 import {ModelModelingLanguageUtils} from "../model-modeling-language-utils.js";
 import {ExprUtils} from "../expr-utils.js";
 import {GclPatternCollector} from "./gcl-pattern-collector.js";
+import {GclInternalPatternBuilder} from "./gcl-internal-pattern-builder.js";
 
 export class PatternEntity {
     readonly name: string;
@@ -304,7 +307,7 @@ export class ConstraintEntity {
     readonly assertions: ConstraintAssertionEntity[];
 
 
-    constructor(constraint: Constraint, resolver: GclReferenceStorage) {
+    constructor(constraint: Constraint, resolver: GclReferenceStorage, patternCollector: GclPatternCollector) {
         this.name = constraint.name;
 
         const titleAnnotations: TitleAnnotation[] = constraint.annotations.filter(x => isTitleAnnotation(x)).map(x => x as TitleAnnotation);
@@ -313,7 +316,7 @@ export class ConstraintEntity {
         this.title = titleAnnotations.at(0)?.value ?? constraint.name;
         this.description = descriptionAnnotations.map(x => x.value).join("\n");
 
-        this.patternDeclarations = constraint.patternDeclarations.map(x => new ConstraintPatternDeclarationEntity(x, resolver));
+        this.patternDeclarations = constraint.patternDeclarations.map(x => new ConstraintPatternDeclarationEntity(x, resolver, patternCollector));
         this.assertions = constraint.assertions.map(x => new ConstraintAssertionEntity(x, resolver));
     }
 }
@@ -322,12 +325,27 @@ export class ConstraintPatternDeclarationEntity {
     readonly patternId: string;
     readonly declarationId: string;
     readonly name: string;
+    readonly isInternal: boolean;
+    readonly basePatternId: string;
     readonly fixContainer: FixContainerEntity[];
 
 
-    constructor(pDeclaration: ConstraintPatternDeclaration, resolver: GclReferenceStorage) {
+    constructor(pDeclaration: ConstraintPatternDeclaration, resolver: GclReferenceStorage, patternCollector: GclPatternCollector) {
+        if (pDeclaration.annotations.length > 0) {
+            const bindAnnotations: PatternExtensionAnnotation[] = pDeclaration.annotations.filter(x => isPatternExtensionAnnotation(x)).map(x => x as PatternExtensionAnnotation);
+            if (bindAnnotations.length > 0) {
+                this.patternId = GclInternalPatternBuilder.buildInternalBindPattern(pDeclaration, patternCollector);
+                this.isInternal = true;
+            } else {
+                throw new Error(`Unexpected ConstraintPatternDeclaration annotation encountered!`);
+            }
+        } else {
+            this.patternId = resolver.resolve(pDeclaration.pattern);
+            this.isInternal = false;
+        }
+
+        this.basePatternId = resolver.resolve(pDeclaration.pattern);
         this.name = pDeclaration.var.name;
-        this.patternId = resolver.resolve(pDeclaration.pattern);
         this.declarationId = resolver.getNodeReferenceId(pDeclaration);
         this.fixContainer = pDeclaration.fixContainers.map(x => new FixContainerEntity(x, resolver));
     }
@@ -565,6 +583,7 @@ export class ConstraintDocumentEntity {
         const patternCollector: GclPatternCollector = new GclPatternCollector(resolver);
         patternCollector.pushAll(constraintDoc.patterns);
         this.packageName = packageName;
+        this.constraints = constraintDoc.constraints.map(x => new ConstraintEntity(x, resolver, patternCollector))
 
         GclInternalPatternBuilder.finalizeInternalBindPattern(resolver, patternCollector);
         this.patterns = patternCollector.patternCollection;
