@@ -5,7 +5,7 @@ import {ConstraintDocumentEntity} from "./gcl-entity-templates.js";
 import {jsonReplacer} from "../serializer/utils.js";
 
 export function serializeConstraintDocument(constraintDoc: ConstraintDocument, packageName: string, services: GraphConstraintLanguageServices): string {
-    const referenceStorage = new GclReferenceStorage(services.workspace.AstNodeLocator);
+    const referenceStorage: GclReferenceStorage = new GclReferenceStorage(services.workspace.AstNodeLocator);
     const serializedConstraintDoc = new ConstraintDocumentEntity(constraintDoc, packageName, referenceStorage);
     return JSON.stringify(serializedConstraintDoc, jsonReplacer);
 }

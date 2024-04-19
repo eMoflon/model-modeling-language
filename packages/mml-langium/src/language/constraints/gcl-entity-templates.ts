@@ -56,6 +56,7 @@ import {
 import {GclReferenceStorage} from "./gcl-reference-storage.js";
 import {ModelModelingLanguageUtils} from "../model-modeling-language-utils.js";
 import {ExprUtils} from "../expr-utils.js";
+import {GclPatternCollector} from "./gcl-pattern-collector.js";
 
 export class PatternEntity {
     readonly name: string;
@@ -561,8 +562,11 @@ export class ConstraintDocumentEntity {
     readonly packageName: string;
 
     constructor(constraintDoc: ConstraintDocument, packageName: string, resolver: GclReferenceStorage) {
-        this.patterns = constraintDoc.patterns.map(x => new PatternEntity(x, resolver));
-        this.constraints = constraintDoc.constraints.map(x => new ConstraintEntity(x, resolver))
+        const patternCollector: GclPatternCollector = new GclPatternCollector(resolver);
+        patternCollector.pushAll(constraintDoc.patterns);
         this.packageName = packageName;
+
+        GclInternalPatternBuilder.finalizeInternalBindPattern(resolver, patternCollector);
+        this.patterns = patternCollector.patternCollection;
     }
 }
