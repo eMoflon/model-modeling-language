@@ -126,7 +126,7 @@ export class InternalPatternBlueprint {
         return {
             patternId: this.patternId,
             name: this.name,
-            disableDefaultNodeConstraints: false,
+            disableDefaultNodeConstraints: true,
             nodeConstraints: [],
             nodes: this.nodes,
             edges: this.edges,
