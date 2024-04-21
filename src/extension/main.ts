@@ -21,8 +21,13 @@ import {ForceStopModelServerCommand} from "./commands/force-stop-model-server-co
 import {ShowModelServerEvaluationViewCommand} from "./commands/show-model-server-evaluation-view-command.js";
 import {WebviewPanelManager} from "sprotty-vscode/lib";
 import {Messenger} from "vscode-messenger";
+import {ModelServerVisualizationOpenCommand} from "./commands/model-server-visualization-open-command.js";
+import {ModelServerVisualizationFitCommand} from "./commands/model-server-visualization-fit-command.js";
+import {ModelServerVisualizationCenterCommand} from "./commands/model-server-visualization-center-command.js";
+import {ModelServerVisualizationExportCommand} from "./commands/model-server-visualization-export-command.js";
 import {ActionNotification} from "sprotty-vscode";
 import {ModelServerVisualServer} from "./model-server-visual-server.js";
+import {ModelServerVisualizationUpdateCommand} from "./commands/model-server-visualization-update-command.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
@@ -31,6 +36,8 @@ let modelEvaluationLogger: vscode.OutputChannel;
 let modelServerConnector: ModelServerConnector;
 let modelServerGeneratorViewContainer: ModelServerGeneratorViewContainer;
 let modelServerStarter: ModelServerStarter;
+let webviewPanelManager: WebviewPanelManager;
+let modelServerVisualServer: ModelServerVisualServer;
 
 
 // This function is called when the extension is activated.
@@ -151,4 +158,9 @@ function prepareModelServerVisualization(context: vscode.ExtensionContext) {
 
     msg.onNotification(ActionNotification, (params, sender) => logger.appendLine(`[ReceivedNotification] ${params.action.kind}`));
 
+    new ModelServerVisualizationOpenCommand(client, logger, webviewPanelManager).register(context);
+    new ModelServerVisualizationFitCommand(client, logger, webviewPanelManager).register(context);
+    new ModelServerVisualizationCenterCommand(client, logger, webviewPanelManager).register(context);
+    new ModelServerVisualizationExportCommand(client, logger, webviewPanelManager).register(context);
+    new ModelServerVisualizationUpdateCommand(client, logger, modelServerVisualServer).register(context);
 }

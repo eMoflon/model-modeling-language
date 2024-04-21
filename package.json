@@ -197,6 +197,31 @@
         "command": "model-modeling-language.showModelServerEvaluationView",
         "title": "Open ModelServer evaluation",
         "category": "Model Modeling Language"
+      },
+      {
+        "command": "model-modeling-language.msvis.diagram.open",
+        "title": "Open Model Visualization",
+        "category": "Model Server Visualization"
+      },
+      {
+        "command": "model-modeling-language.msvis.diagram.fit",
+        "title": "Fit Model Visualization",
+        "category": "Model Server Visualization"
+      },
+      {
+        "command": "model-modeling-language.msvis.diagram.center",
+        "title": "Center Model Visualization",
+        "category": "Model Server Visualization"
+      },
+      {
+        "command": "model-modeling-language.msvis.diagram.export",
+        "title": "Export Model Visualization",
+        "category": "Model Server Visualization"
+      },
+      {
+        "command": "model-modeling-language.msvis.diagram.update",
+        "title": "Update Model Visualization",
+        "category": "Model Server Visualization"
       }
     ],
     "menus": {
