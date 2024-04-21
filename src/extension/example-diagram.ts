@@ -193,7 +193,13 @@ function createEdge(edgeId: string, edgeLabel: string, fromId: string, toId: str
             <SLabel & EdgeLayoutable>{
                 type: 'label:xref',
                 id: `${edgeId}.label`,
-                text: `${edgeLabel}`
+                text: `${edgeLabel}`,
+                edgePlacement: {
+                    side: "on",
+                    offset: -2,
+                    position: 0,
+                    rotate: false
+                }
             }
         ]
     }
