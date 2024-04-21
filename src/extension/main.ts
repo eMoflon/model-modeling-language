@@ -1,6 +1,7 @@
 import type {LanguageClientOptions, ServerOptions} from 'vscode-languageclient/node.js';
 import {LanguageClient, TransportKind} from 'vscode-languageclient/node.js';
 import * as vscode from 'vscode';
+import {Uri} from 'vscode';
 import * as path from 'node:path';
 import {SerializeToFileCommand} from "./commands/serialize-to-file-command.js";
 import {SerializeToEmfCommand} from "./commands/serialize-to-emf-command.js";
@@ -18,6 +19,10 @@ import {ModelServerStarter} from "./model-server-starter.js";
 import {StopModelServerCommand} from "./commands/stop-model-server-command.js";
 import {ForceStopModelServerCommand} from "./commands/force-stop-model-server-command.js";
 import {ShowModelServerEvaluationViewCommand} from "./commands/show-model-server-evaluation-view-command.js";
+import {WebviewPanelManager} from "sprotty-vscode/lib";
+import {Messenger} from "vscode-messenger";
+import {ActionNotification} from "sprotty-vscode";
+import {ModelServerVisualServer} from "./model-server-visual-server.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
@@ -37,6 +42,7 @@ export function activate(context: vscode.ExtensionContext): void {
     modelServerConnector = new ModelServerConnector(modelServerLogger);
     modelServerStarter = new ModelServerStarter(modelServerLogger, client, modelServerConnector);
     modelServerGeneratorViewContainer = new ModelServerGeneratorViewContainer();
+    prepareModelServerVisualization(context);
     registerCommands(context);
     registerGMNotebook(context);
 }
@@ -129,4 +135,20 @@ function registerGMNotebook(context: vscode.ExtensionContext) {
         ),
         new GMNotebookKernel(modelServerConnector)
     );
+}
+
+function prepareModelServerVisualization(context: vscode.ExtensionContext) {
+    const msg: Messenger = new Messenger();
+
+    webviewPanelManager = new WebviewPanelManager({
+        extensionUri: Uri.joinPath(context.extensionUri, "out", "extension"),
+        defaultDiagramType: 'modelServerVisualizationView',
+        messenger: msg,
+        singleton: true
+    });
+
+    modelServerVisualServer = new ModelServerVisualServer(webviewPanelManager, logger);
+
+    msg.onNotification(ActionNotification, (params, sender) => logger.appendLine(`[ReceivedNotification] ${params.action.kind}`));
+
 }
