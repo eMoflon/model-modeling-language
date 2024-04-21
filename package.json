@@ -206,12 +206,14 @@
       {
         "command": "model-modeling-language.msvis.diagram.fit",
         "title": "Fit Model Visualization",
-        "category": "Model Server Visualization"
+        "category": "Model Server Visualization",
+        "icon": "$(screen-full)"
       },
       {
         "command": "model-modeling-language.msvis.diagram.center",
         "title": "Center Model Visualization",
-        "category": "Model Server Visualization"
+        "category": "Model Server Visualization",
+        "icon": "$(type-hierarchy)"
       },
       {
         "command": "model-modeling-language.msvis.diagram.export",
@@ -221,7 +223,8 @@
       {
         "command": "model-modeling-language.msvis.diagram.update",
         "title": "Update Model Visualization",
-        "category": "Model Server Visualization"
+        "category": "Model Server Visualization",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
@@ -278,6 +281,23 @@
         {
           "when": "resourceExtname == .gc",
           "command": "model-modeling-language.serializeConstraintFileToFile",
+          "group": "navigation"
+        }
+      ],
+      "editor/title": [
+        {
+          "when": "activeWebviewPanelId == 'modelServerVisualizationView'",
+          "command": "model-modeling-language.msvis.diagram.update",
+          "group": "navigation"
+        },
+        {
+          "when": "activeWebviewPanelId == 'modelServerVisualizationView'",
+          "command": "model-modeling-language.msvis.diagram.fit",
+          "group": "navigation"
+        },
+        {
+          "when": "activeWebviewPanelId == 'modelServerVisualizationView'",
+          "command": "model-modeling-language.msvis.diagram.center",
           "group": "navigation"
         }
       ],
