@@ -131,6 +131,8 @@ export function getTestClass2(): SModelRoot {
                 name: "attribute 2",
                 value: "\"Test Value\""
             }]),
+            createClass("TestClass 5", "cls59999999999999", []),
+            createClass("TestClass 6 XXXXXXXXXXXXXXXXX", "cls6", []),
             createEdge("edg1", "Edge1", "cls1", "cls2"),
             createEdge("edg2", "Edge2", "cls1", "cls3"),
             createEdge("edg3", "Edge3", "cls1", "cls4"),
@@ -161,7 +163,17 @@ function createClass(title: string, id: string, attributes: NodeAttribute[]) {
                 type: 'comp:header',
                 id: `${id}-comp-header`,
                 layout: 'hbox',
+                layoutOptions: {
+                    hAlign: "center",
+                    hGap: 10,
+                    resizeContainer: true
+                },
                 children: [
+                    <SLabel>{
+                        type: 'label:id',
+                        id: `${id}-comp-header-id`,
+                        text: `${id}`,
+                    },
                     <SLabel>{
                         type: 'label:name',
                         id: `${id}-comp-header-name`,
