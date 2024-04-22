@@ -175,6 +175,7 @@ function createClass(title: string, id: string, attributes: NodeAttribute[]) {
                 layout: 'vbox',
                 layoutOptions: {
                     hAlign: 'left',
+                    paddingTop: 15,
                     resizeContainer: true
                 },
                 children: attributeElements
