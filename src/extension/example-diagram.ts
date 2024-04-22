@@ -202,6 +202,7 @@ function createEdge(edgeId: string, edgeLabel: string, fromId: string, toId: str
         id: `${edgeId}`,
         sourceId: `${fromId}`,
         targetId: `${toId}`,
+        routerKind: 'manhattan',
         children: [
             <SLabel & EdgeLayoutable>{
                 type: 'label:xref',
