@@ -33,7 +33,7 @@ export class ModelServerVisualServer {
     private initializeNotificationHandler() {
         this._webviewManager.messenger.onNotification(ActionNotification, (params, sender) => {
             if (params.action.kind == RequestModelAction.KIND) {
-                this.requestVisualizationData([], []);
+                this.updateModel();
             }
         });
     }
