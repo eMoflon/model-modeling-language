@@ -7,6 +7,10 @@ interface NodeAttribute {
     value: string;
 }
 
+interface ModelNodeSchema {
+    highlight: boolean;
+}
+
 export class ModelServerVisualBuilder {
     public static createModelRoot(id: string, nodes: SNode[], edges: SEdge[]): SModelRoot {
         return <SModelRoot>{
@@ -19,7 +23,7 @@ export class ModelServerVisualBuilder {
         }
     }
 
-    public static createNode(title: string, id: string, attributes: NodeAttribute[]): SNode {
+    public static createNode(title: string, id: string, attributes: NodeAttribute[], highlight: boolean): SNode {
         const attributeElements = attributes.map((value, index) =>
             <SLabel>{
                 type: 'label:attribute',
@@ -27,10 +31,11 @@ export class ModelServerVisualBuilder {
                 text: `${value.name} = ${value.value}`
             });
 
-        return <SNode>{
+        return <SNode & ModelNodeSchema>{
             type: 'node:class',
             id: `node-${id}`,
             layout: 'vbox',
+            highlight: highlight,
             children: [
                 <SCompartment>{
                     type: 'comp:header',
@@ -100,7 +105,8 @@ export class ModelServerVisualBuilder {
         });
         const nodeName: string = `node${visNode.nodeId}:${visNode.nodeType}`;
         const nodeId: string = visNode.nodeId.toString();
-        return ModelServerVisualBuilder.createNode(nodeName, nodeId, attributes);
+        const highlightNode: boolean = visNode.options != undefined && visNode.options.highlight;
+        return ModelServerVisualBuilder.createNode(nodeName, nodeId, attributes, highlightNode);
     }
 
     public static mapVisualizationEdge(visEdge: VisualizationEdge): SEdge {
