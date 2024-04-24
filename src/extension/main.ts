@@ -154,7 +154,7 @@ function prepareModelServerVisualization(context: vscode.ExtensionContext) {
         singleton: true
     });
 
-    modelServerVisualServer = new ModelServerVisualServer(webviewPanelManager, logger);
+    modelServerVisualServer = new ModelServerVisualServer(webviewPanelManager, modelServerConnector, logger);
 
     msg.onNotification(ActionNotification, (params, sender) => logger.appendLine(`[ReceivedNotification] ${params.action.kind}`));
 
