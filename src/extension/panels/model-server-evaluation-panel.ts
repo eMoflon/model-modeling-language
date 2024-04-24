@@ -21,6 +21,7 @@ import {
 import {PostEditRequest} from "../generated/de/nexus/modelserver/ModelServerEdits_pb.js";
 import {showUIMessage} from "../../shared/NotificationUtil.js";
 import {MessageType} from "../../shared/MmlNotificationTypes.js";
+import {ModelServerVisualServer} from "../model-server-visual-server.js";
 
 export class ModelServerEvaluationPanel {
 
@@ -32,10 +33,11 @@ export class ModelServerEvaluationPanel {
     private readonly _extensionUri: vscode.Uri;
     private readonly _extContext: vscode.ExtensionContext;
     private readonly _modelServerConnector: ModelServerConnector;
+    private readonly _visualServer: ModelServerVisualServer;
     private readonly _modelEvaluationLogger: vscode.OutputChannel;
     private _disposables: vscode.Disposable[] = [];
 
-    public static createOrShow(extContext: vscode.ExtensionContext, modelServerConnector: ModelServerConnector, evalLogger: vscode.OutputChannel) {
+    public static createOrShow(extContext: vscode.ExtensionContext, modelServerConnector: ModelServerConnector, visualServer: ModelServerVisualServer, evalLogger: vscode.OutputChannel) {
         const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
 
         // If we already have a panel, show it.
@@ -43,16 +45,17 @@ export class ModelServerEvaluationPanel {
         if (ModelServerEvaluationPanel.currentPanel) {
             ModelServerEvaluationPanel.currentPanel._panel.reveal(column);
         } else {
-            ModelServerEvaluationPanel.currentPanel = new ModelServerEvaluationPanel(extContext, column || vscode.ViewColumn.One, modelServerConnector, evalLogger);
+            ModelServerEvaluationPanel.currentPanel = new ModelServerEvaluationPanel(extContext, column || vscode.ViewColumn.One, modelServerConnector, visualServer, evalLogger);
         }
     }
 
     //temporarily setting extcontext to any type
-    private constructor(_extContext: vscode.ExtensionContext, column: vscode.ViewColumn, modelServerConnector: ModelServerConnector, evalLogger: vscode.OutputChannel) {
+    private constructor(_extContext: vscode.ExtensionContext, column: vscode.ViewColumn, modelServerConnector: ModelServerConnector, visualServer: ModelServerVisualServer, evalLogger: vscode.OutputChannel) {
         this._extContext = _extContext;
         this._extensionUri = this._extContext.extensionUri;
 
         this._modelServerConnector = modelServerConnector;
+        this._visualServer = visualServer;
         this._modelEvaluationLogger = evalLogger;
 
         // Create and show a new webview panel
@@ -121,6 +124,19 @@ export class ModelServerEvaluationPanel {
                                 data: reason
                             });
                         });
+                        break;
+                    case 'showHighlightedMatch':
+                        console.log('received: showHighlightedMatch');
+                        const highlightMatchNodes: number[] = msg.data;
+                        this._visualServer.openVisualization();
+                        this._visualServer.requestVisualizationData([], highlightMatchNodes);
+                        break;
+                    case 'showFilteredMatch':
+                        console.log('received: showFilteredMatch');
+                        const filterMatchNodes: number[] = msg.data;
+                        this._visualServer.openVisualization();
+                        this._visualServer.requestVisualizationData(filterMatchNodes, []);
+                        break;
                 }
             },
             null,

@@ -132,7 +132,7 @@ function registerCommands(context: vscode.ExtensionContext) {
     new ForceStopModelServerCommand(client, logger, modelServerStarter).register(context);
     new RefreshProjectResourcesCommand(client, logger, modelServerGeneratorViewContainer).register(context);
     new RemoveSelectedResourceCommand(client, logger, modelServerGeneratorViewContainer).register(context);
-    new ShowModelServerEvaluationViewCommand(client, logger, context, modelServerConnector, modelEvaluationLogger).register(context);
+    new ShowModelServerEvaluationViewCommand(client, logger, context, modelServerConnector, modelServerVisualServer, modelEvaluationLogger).register(context);
 }
 
 function registerGMNotebook(context: vscode.ExtensionContext) {
@@ -158,10 +158,6 @@ function prepareModelServerVisualization(context: vscode.ExtensionContext) {
 
     msg.onNotification(ActionNotification, (params, sender) => logger.appendLine(`[ReceivedNotification] ${params.action.kind}`));
 
-    new ModelServerVisualizationOpenCommand(client, logger, webviewPanelManager).register(context);
-    new ModelServerVisualizationFitCommand(client, logger, webviewPanelManager).register(context);
-    new ModelServerVisualizationCenterCommand(client, logger, webviewPanelManager).register(context);
-    new ModelServerVisualizationExportCommand(client, logger, webviewPanelManager).register(context);
     new ModelServerVisualizationOpenCommand(client, logger, modelServerVisualServer).register(context);
     new ModelServerVisualizationFitCommand(client, logger, modelServerVisualServer).register(context);
     new ModelServerVisualizationCenterCommand(client, logger, modelServerVisualServer).register(context);

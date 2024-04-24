@@ -69,6 +69,16 @@ export class ModelServerEvaluationCtxt {
         console.log("POST MESSAGE: performModelRepair")
         vscode.postMessage({command: 'performModelRepair', data: edit.toJsonString()});
     }
+
+    requestHighlightedMatchVisualization(nodeIds: number[]): void {
+        console.log("POST MESSAGE: showHighlightedMatch")
+        vscode.postMessage({command: 'showHighlightedMatch', data: nodeIds});
+    }
+
+    requestFilteredMatchVisualization(nodeIds: number[]): void {
+        console.log("POST MESSAGE: showFilteredMatch")
+        vscode.postMessage({command: 'showFilteredMatch', data: nodeIds});
+    }
 }
 
 export const useModelServerEvaluationContext = () => {
