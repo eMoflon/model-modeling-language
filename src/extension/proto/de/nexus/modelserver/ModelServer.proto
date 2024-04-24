@@ -11,6 +11,7 @@ import "de/nexus/modelserver/ModelServerManagement.proto";
 import "de/nexus/modelserver/ModelServerPatterns.proto";
 import "de/nexus/modelserver/ModelServerConstraints.proto";
 import "de/nexus/modelserver/ModelServerEdits.proto";
+import "de/nexus/modelserver/ModelServerVisualization.proto";
 
 service ModelServerManagement {
   rpc GetState(GetStateRequest) returns (GetStateResponse);
@@ -32,4 +33,8 @@ service ModelServerConstraints {
 
 service ModelServerEdits {
   rpc RequestEdit(PostEditRequest) returns (PostEditResponse);
+}
+
+service ModelServerVisualization {
+  rpc GetVisualization(GetModelVisualizationRequest) returns (GetModelVisualizationResponse);
 }

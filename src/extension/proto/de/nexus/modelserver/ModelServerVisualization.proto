@@ -1,0 +1,42 @@
+syntax = "proto3";
+package de.nexus.modelserver.proto;
+
+message GetModelVisualizationRequest {
+  VisualizationRequestOptions options = 1;
+}
+
+message VisualizationRequestOptions {
+  repeated uint32 filterNodes = 1;
+  repeated uint32 highlightNodes = 2;
+}
+
+message GetModelVisualizationResponse {
+  repeated VisualizationNode nodes = 1;
+  repeated VisualizationEdge edges = 2;
+}
+
+message VisualizationNode {
+  uint32 nodeId = 1;
+  string nodeType = 2;
+  repeated VisualizationNodeAttribute attributes = 3;
+  VisualizationOptions options = 4;
+}
+
+message VisualizationNodeAttribute {
+  string attributeName = 1;
+  string attributeValue = 2;
+  VisualizationOptions options = 3;
+}
+
+message VisualizationEdge {
+  uint32 fromNodeId = 1;
+  uint32 toNodeId = 2;
+  string edgeName = 3;
+  VisualizationOptions options = 4;
+}
+
+message VisualizationOptions {
+  bool highlight = 1;
+  bool styleCreation = 2;
+  bool styleDeletion = 3;
+}
