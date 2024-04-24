@@ -14,6 +14,12 @@ export class ModelServerVisualServer {
 
     private _model: SModelRoot;
 
+    private static readonly EMPTY_MODEL: SModelRoot = <SModelRoot>{
+        type: 'graph',
+        id: 'EMPTY_ROOT',
+        children: []
+    };
+
 
     constructor(webviewManager: WebviewPanelManager, modelServerConnector: ModelServerConnector, logger: vscode.OutputChannel) {
         this._webviewManager = webviewManager;
@@ -21,15 +27,7 @@ export class ModelServerVisualServer {
         this._logger = logger;
 
         this.initializeNotificationHandler();
-        this._model = this.initializeEmptyModel();
-    }
-
-    private initializeEmptyModel() {
-        return {
-            type: 'graph',
-            id: 'EMPTY_ROOT',
-            children: []
-        } as SModelRoot;
+        this._model = ModelServerVisualServer.EMPTY_MODEL;
     }
 
     private initializeNotificationHandler() {
@@ -86,7 +84,7 @@ export class ModelServerVisualServer {
             this.setModelAndUpdate(newRoot);
         }).catch(reason => {
             showUIMessage(MessageType.ERROR, `Could not load visualization: ${reason}`);
-            const emptyRoot: SModelRoot = this.initializeEmptyModel();
+            const emptyRoot: SModelRoot = ModelServerVisualServer.EMPTY_MODEL;
             this.setModelAndUpdate(emptyRoot);
         });
     }
