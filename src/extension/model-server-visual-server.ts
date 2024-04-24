@@ -40,6 +40,41 @@ export class ModelServerVisualServer {
         });
     }
 
+    public openVisualization() {
+        this._webviewManager.openDiagram(vscode.Uri.file("ModelServer"), {reveal: true});
+    }
+
+    public fitVisualization() {
+        const activeWebview = this._webviewManager.findActiveWebview();
+        if (activeWebview) {
+            activeWebview.sendAction({
+                kind: 'fit',
+                elementIds: [],
+                animate: true
+            });
+        }
+    }
+
+    public centerVisualization() {
+        const activeWebview = this._webviewManager.findActiveWebview();
+        if (activeWebview) {
+            activeWebview.sendAction({
+                kind: 'center',
+                elementIds: [],
+                animate: true
+            });
+        }
+    }
+
+    public exportVisualization() {
+        const activeWebview = this._webviewManager.findActiveWebview();
+        if (activeWebview) {
+            activeWebview.sendAction({
+                kind: 'requestExportSvg'
+            });
+        }
+    }
+
     public requestVisualizationData(filterNodes: number[], highlightNodes: number[]) {
         this._modelServerConnector.clients.visualizationClient.getVisualization({
             options: {

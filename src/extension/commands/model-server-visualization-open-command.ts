@@ -1,19 +1,18 @@
 import {ExtensionCommand} from "./command-utils.js";
 import {LanguageClient} from "vscode-languageclient/node.js";
 import vscode from "vscode";
-import {WebviewPanelManager} from "sprotty-vscode/lib";
+import {ModelServerVisualServer} from "../model-server-visual-server.js";
 
 export class ModelServerVisualizationOpenCommand extends ExtensionCommand {
-    private readonly webviewManager: WebviewPanelManager;
+    private readonly _visualServer: ModelServerVisualServer;
 
-    constructor(client: LanguageClient, logger: vscode.OutputChannel, webViewManager: WebviewPanelManager) {
+    constructor(client: LanguageClient, logger: vscode.OutputChannel, visualServer: ModelServerVisualServer) {
         super("model-modeling-language.msvis.diagram.open", client, logger);
-        this.webviewManager = webViewManager;
+        this._visualServer = visualServer;
     }
 
     execute(...args: any[]): any {
-        this.webviewManager.openDiagram(vscode.Uri.file("ModelServer"), {reveal: true})
-            .then(r => this.logger.appendLine(`[Opened] ${r == undefined ? "UNDEFINED" : "Received Endpoint"}`))
-            .catch(reason => this.logger.appendLine(`[Failed] Could not initialize WebViewEndpoint: ${reason}`));
+        this._visualServer.openVisualization();
+        this._visualServer.requestVisualizationData([], []);
     }
 }

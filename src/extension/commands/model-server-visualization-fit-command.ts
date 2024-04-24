@@ -1,25 +1,17 @@
 import {ExtensionCommand} from "./command-utils.js";
 import {LanguageClient} from "vscode-languageclient/node.js";
 import vscode from "vscode";
-import {WebviewPanelManager} from "sprotty-vscode/lib";
+import {ModelServerVisualServer} from "../model-server-visual-server.js";
 
 export class ModelServerVisualizationFitCommand extends ExtensionCommand {
-    private readonly webviewManager: WebviewPanelManager;
+    private readonly _visualServer: ModelServerVisualServer;
 
-    constructor(client: LanguageClient, logger: vscode.OutputChannel, webViewManager: WebviewPanelManager) {
+    constructor(client: LanguageClient, logger: vscode.OutputChannel, visualServer: ModelServerVisualServer) {
         super("model-modeling-language.msvis.diagram.fit", client, logger);
-        this.webviewManager = webViewManager;
+        this._visualServer = visualServer;
     }
 
     execute(...args: any[]): any {
-        const activeWebview = this.webviewManager.findActiveWebview();
-        this.logger.appendLine("Running Fit Command");
-        if (activeWebview) {
-            activeWebview.sendAction({
-                kind: 'fit',
-                elementIds: [],
-                animate: true
-            });
-        }
+        this._visualServer.fitVisualization();
     }
 }

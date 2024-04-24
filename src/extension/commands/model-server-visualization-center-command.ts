@@ -1,24 +1,17 @@
 import {ExtensionCommand} from "./command-utils.js";
 import {LanguageClient} from "vscode-languageclient/node.js";
 import vscode from "vscode";
-import {WebviewPanelManager} from "sprotty-vscode/lib";
+import {ModelServerVisualServer} from "../model-server-visual-server.js";
 
 export class ModelServerVisualizationCenterCommand extends ExtensionCommand {
-    private readonly webviewManager: WebviewPanelManager;
+    private readonly _visualServer: ModelServerVisualServer;
 
-    constructor(client: LanguageClient, logger: vscode.OutputChannel, webViewManager: WebviewPanelManager) {
+    constructor(client: LanguageClient, logger: vscode.OutputChannel, visualServer: ModelServerVisualServer) {
         super("model-modeling-language.msvis.diagram.center", client, logger);
-        this.webviewManager = webViewManager;
+        this._visualServer = visualServer;
     }
 
     execute(...args: any[]): any {
-        const activeWebview = this.webviewManager.findActiveWebview();
-        if (activeWebview) {
-            activeWebview.sendAction({
-                kind: 'center',
-                elementIds: [],
-                animate: true
-            });
-        }
+        this._visualServer.centerVisualization();
     }
 }

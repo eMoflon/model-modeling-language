@@ -162,5 +162,9 @@ function prepareModelServerVisualization(context: vscode.ExtensionContext) {
     new ModelServerVisualizationFitCommand(client, logger, webviewPanelManager).register(context);
     new ModelServerVisualizationCenterCommand(client, logger, webviewPanelManager).register(context);
     new ModelServerVisualizationExportCommand(client, logger, webviewPanelManager).register(context);
+    new ModelServerVisualizationOpenCommand(client, logger, modelServerVisualServer).register(context);
+    new ModelServerVisualizationFitCommand(client, logger, modelServerVisualServer).register(context);
+    new ModelServerVisualizationCenterCommand(client, logger, modelServerVisualServer).register(context);
+    new ModelServerVisualizationExportCommand(client, logger, modelServerVisualServer).register(context);
     new ModelServerVisualizationUpdateCommand(client, logger, modelServerVisualServer).register(context);
 }
