@@ -2,7 +2,6 @@ import {ExtensionCommand} from "./command-utils.js";
 import {LanguageClient} from "vscode-languageclient/node.js";
 import vscode from "vscode";
 import {ModelServerVisualServer} from "../model-server-visual-server.js";
-import {getTestClass2} from "../example-diagram.js";
 
 export class ModelServerVisualizationUpdateCommand extends ExtensionCommand {
     private readonly _visServer: ModelServerVisualServer;
@@ -13,6 +12,6 @@ export class ModelServerVisualizationUpdateCommand extends ExtensionCommand {
     }
 
     execute(...args: any[]): any {
-        this._visServer.setModelAndUpdate(getTestClass2());
+        this._visServer.requestVisualizationData([], []);
     }
 }
