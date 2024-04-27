@@ -27,7 +27,6 @@ import {
     isConstraintDocument,
     isConstraintPatternDeclaration,
     isCreateNodeAttributeAssignment,
-    isCReference,
     isEnumValueExpr,
     isFixCreateEdgeStatement,
     isFixCreateNodeStatement,
@@ -206,7 +205,7 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
                     if (outgoingNode.var.typing.type != undefined && outgoingNode.var.typing.type.ref != undefined) {
                         const outgoingTypeAbstractElement: AbstractElement = outgoingNode.var.typing.type.ref;
                         if (isInterface(outgoingTypeAbstractElement) || isClass(outgoingTypeAbstractElement)) {
-                            const outgoingReferences: CReference[] = (outgoingTypeAbstractElement as Class | Interface).body.filter(x => isCReference(x)).map(x => x as CReference);
+                            const outgoingReferences: CReference[] = ScopingUtils.getAllInheritedReferences(outgoingTypeAbstractElement)
                             return ScopingUtils.computeCustomScope(outgoingReferences, this.descriptions, x => x.name, x => x, this.createScope);
                         }
                     }
