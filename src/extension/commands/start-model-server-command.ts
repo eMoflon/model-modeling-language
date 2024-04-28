@@ -37,7 +37,11 @@ export class StartModelServerCommand extends ExtensionCommand {
                 xmi: selectedResources.xmi,
                 gc: selectedResources.gc
             };
-            this.modelServerStarter.startModelServer(config);
+            this.modelServerStarter.startModelServer(config).then(res => {
+                if (!res.success) {
+                    showUIMessage(MessageType.ERROR, res.message)
+                }
+            });
         }
     }
 
