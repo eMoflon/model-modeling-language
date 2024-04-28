@@ -8,6 +8,7 @@ import {createMmlAndGclServices} from "./main-module.js";
 import {GclSerializerRequest, GclSerializerResponse} from "../shared/GclConnectorTypes.js";
 import {serializeConstraintDocument} from "./constraints/gcl-serializer.js";
 import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
+import {DiagnosticSeverity} from "vscode-languageserver";
 
 // Create a connection to the client
 const connection = createConnection(ProposedFeatures.all);
@@ -57,8 +58,19 @@ connection.onRequest("graph-constraint-language-serialize-constraint-file", (par
                 filename: "",
                 parentDirPath: ""
             })
+            return;
         } else {
             const cLangiumDoc: LangiumDocument<AstNode> = shared.workspace.LangiumDocuments.getOrCreateDocument(castedUri);
+            if (cLangiumDoc.diagnostics != undefined && cLangiumDoc.diagnostics.filter(x => x.severity == DiagnosticSeverity.Error).length > 0) {
+                resolve({
+                    success: false,
+                    data: "The document contains errors and cannot be serialized!",
+                    filename: "",
+                    parentDirPath: ""
+                })
+                return;
+            }
+
             const cDoc: ConstraintDocument = cLangiumDoc.parseResult.value as ConstraintDocument;
             if (cDoc.model != undefined) {
                 const importedDocURI: URI | undefined = ModelModelingLanguageUtils.resolveRelativeModelImport(cDoc.model.path, cLangiumDoc.uri);
