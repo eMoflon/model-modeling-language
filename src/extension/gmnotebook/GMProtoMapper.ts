@@ -20,6 +20,8 @@ import {
     EditCreateNodeAttributeAssignment,
     EditCreateNodeRequest,
     EditCreateNodeResponse,
+    EditDeleteAllEdgesRequest,
+    EditDeleteAllEdgesResponse,
     EditDeleteEdgeRequest,
     EditDeleteEdgeResponse,
     EditDeleteNodeRequest,
@@ -248,6 +250,18 @@ export class GMProtoMapper {
             const editResponse: EditDeleteEdgeResponse = response.response.value;
             if (editResponse.state == EditState.SUCCESS) {
                 context.log(`[SUCCESS] Deleted ${editRequest.startNode?.nodeType.value} -${editRequest.referenceName}-> ${editRequest.targetNode?.nodeType.value}`);
+            } else if (editResponse.state == EditState.FAILURE) {
+                context.log(`[FAILED] ${editResponse.message}`);
+            } else {
+                throw new Error("UNKNOWN ERROR!");
+            }
+        } else if (request.request.case == "deleteAllEdgesRequest" && response.response.case == "deleteAllEdgesResponse") {
+            const editRequest: EditDeleteAllEdgesRequest = request.request.value;
+            const editResponse: EditDeleteAllEdgesResponse = response.response.value;
+            if (editResponse.state == EditState.SUCCESS) {
+                for (const deletedEdgeTarget of editResponse.removedTargets) {
+                    context.log(`[SUCCESS] Deleted ${editRequest.startNode?.nodeType.value} -${editRequest.referenceName}-> ${deletedEdgeTarget.nodeType.value}`);
+                }
             } else if (editResponse.state == EditState.FAILURE) {
                 context.log(`[FAILED] ${editResponse.message}`);
             } else {

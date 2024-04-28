@@ -28,6 +28,7 @@ message EditRequest {
     EditDeleteEdgeRequest deleteEdgeRequest = 3;
     EditDeleteNodeRequest deleteNodeRequest = 4;
     EditSetAttributeRequest setAttributeRequest = 5;
+    EditDeleteAllEdgesRequest deleteAllEdgesRequest = 6;
   }
 }
 
@@ -38,6 +39,7 @@ message EditResponse {
     EditDeleteEdgeResponse deleteEdgeResponse = 3;
     EditDeleteNodeResponse deleteNodeResponse = 4;
     EditSetAttributeResponse setAttributeResponse = 5;
+    EditDeleteAllEdgesResponse deleteAllEdgesResponse = 6;
   }
 }
 
@@ -78,6 +80,17 @@ message EditDeleteEdgeRequest {
 message EditDeleteEdgeResponse {
   EditState state = 1;
   string message = 2;
+}
+
+message EditDeleteAllEdgesRequest {
+  Node startNode = 1;
+  string referenceName = 3;
+}
+
+message EditDeleteAllEdgesResponse {
+  EditState state = 1;
+  string message = 2;
+  repeated Node removedTargets = 3;
 }
 
 message EditDeleteNodeRequest {

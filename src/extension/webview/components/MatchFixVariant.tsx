@@ -2,7 +2,7 @@ import {FixInfoStatement, FixVariant} from "../../generated/de/nexus/modelserver
 import React from "react";
 import {
     EditCreateEdgeRequest,
-    EditCreateNodeRequest,
+    EditCreateNodeRequest, EditDeleteAllEdgesRequest,
     EditDeleteEdgeRequest,
     EditDeleteNodeRequest,
     EditRequest,
@@ -166,6 +166,9 @@ function getEditRequestAsString(request: EditRequest, registry: TemporaryIdRegis
     } else if (request.request.case == "deleteEdgeRequest") {
         const req: EditDeleteEdgeRequest = request.request.value;
         return `Delete edge [${getNodeAsString(req.startNode, registry)}] -${req.referenceName}-> [${getNodeAsString(req.targetNode, registry)}]`;
+    } else if (request.request.case == "deleteAllEdgesRequest") {
+        const req: EditDeleteAllEdgesRequest = request.request.value;
+        return `Delete all edges [${getNodeAsString(req.startNode, registry)}] -${req.referenceName}-> [?]`;
     } else if (request.request.case == "createNodeRequest") {
         const req: EditCreateNodeRequest = request.request.value;
         return `Create new node [${registry.getTemporaryName(req.tempId)}:${req.nodeType}] (${req.assignments.map(x => `${x.attributeName} = ${x.attributeValue}`).join(", ")})`;
