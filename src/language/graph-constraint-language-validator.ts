@@ -18,7 +18,7 @@ import {
     EnableFixContainer,
     EnumValueExpr,
     FixCreateEdgeStatement,
-    FixSetStatement,
+    FixSetStatement, Interface,
     isAttribute,
     isClass,
     isConstraint,
@@ -51,6 +51,7 @@ import {
 } from "./generated/ast.js";
 import {ModelModelingLanguageUtils} from "./model-modeling-language-utils.js";
 import {ExprType, ExprUtils} from "./expr-utils.js";
+import {ScopingUtils} from "./scoping-utils.js";
 
 /**
  * Register custom validation checks.
@@ -244,7 +245,8 @@ export class GraphConstraintLanguageValidator {
             const patternObjVarType: VariableType = selectedPatternObjVar.typing;
             if (refClass != undefined && patternObjVarType.type != undefined && patternObjVarType.type.ref != undefined && isClass(patternObjVarType.type.ref)) {
                 const varTypeClass: Class = patternObjVarType.type.ref;
-                if (varTypeClass != refClass) {
+                const allowedAbstractElements:Set<(Class|Interface)> = ScopingUtils.getAllInheritedAbstractElements(varTypeClass);
+                if (!allowedAbstractElements.has(refClass)) {
                     accept('error', `${selectedPatternObjVar.name} [type: ${varTypeClass.name}] does not match reference [type: ${refClass.name}].`, {
                         node: pRef,
                         property: 'patternObj',
