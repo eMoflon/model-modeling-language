@@ -2,7 +2,8 @@ import {FixInfoStatement, FixVariant} from "../../generated/de/nexus/modelserver
 import React from "react";
 import {
     EditCreateEdgeRequest,
-    EditCreateNodeRequest, EditDeleteAllEdgesRequest,
+    EditCreateNodeRequest,
+    EditDeleteAllEdgesRequest,
     EditDeleteEdgeRequest,
     EditDeleteNodeRequest,
     EditRequest,
@@ -43,6 +44,7 @@ export function MatchFixVariant(props: {
     const infoStatementsAvailable: boolean = infoStatements.length > 0;
 
     const editStatements: EditRequest[] = variant.statements.filter(x => x.stmt.case == "edit").map(x => x.stmt.value as EditRequest);
+    const hasEditStatements: boolean = editStatements.length > 0;
 
     const allowExecution: boolean = isVariantExecutable(editStatements);
 
@@ -71,9 +73,9 @@ export function MatchFixVariant(props: {
                                     <i className="codicon codicon-run-all" style={{color: iconColor}}></i>
                                 </VSCodeButton>
                             )}
-                            <VSCodeButton appearance="icon" onClick={toggleDetails}>
+                            {hasEditStatements && <VSCodeButton appearance="icon" onClick={toggleDetails}>
                                 <i className={detailsIcon} style={{color: iconColor}}></i>
-                            </VSCodeButton>
+                            </VSCodeButton>}
                         </div>
                     </div>
                 </div>
