@@ -19,6 +19,7 @@ import {
     EnumValueExpr,
     FixCreateEdgeStatement,
     FixSetStatement,
+    isAttribute,
     isClass,
     isConstraint,
     isDescriptionAnnotation,
@@ -658,13 +659,38 @@ export class GraphConstraintLanguageValidator {
                         code: IssueCodes.FixSetStatementTypeDoesNotMatch
                     })
                 }
-            } else if (attr.type.ptype == undefined && attr.type.etype != undefined && attr.type.etype.ref != undefined && !ExprUtils.isEnumValueExpression(fxSet.val)) {
-                // attribute has enum type, not primitive type, but default value is no enum value
-                accept('error', `Value does not match specified attribute type (${ModelModelingLanguageUtils.getQualifiedClassName(attr.type.etype.ref, attr.type.etype.ref.name)})`, {
-                    node: fxSet,
-                    property: 'val',
-                    code: IssueCodes.FixSetStatementTypeDoesNotMatch
-                })
+            } else if (attr.type.ptype == undefined && attr.type.etype != undefined && attr.type.etype.ref != undefined) {
+                // attribute has enum type
+                if (ExprUtils.isEnumValueExpression(fxSet.val) && fxSet.val.val != undefined && fxSet.val.val.ref != undefined) {
+                    if (attr.type.etype.ref != fxSet.val.val.ref.$container) {
+                        accept('error', `Value does not match specified attribute type (${ModelModelingLanguageUtils.getQualifiedClassName(attr.type.etype.ref, attr.type.etype.ref.name)})`, {
+                            node: fxSet,
+                            property: 'val',
+                            code: IssueCodes.FixSetStatementTypeDoesNotMatch
+                        })
+                    }
+                } else if (ExprUtils.isAttributeInvocationVariableExpr(fxSet.val)) {
+                    // new value is another attribute
+                    if (fxSet.val.val != undefined && fxSet.val.val.ref != undefined && isAttribute(fxSet.val.val.ref)) {
+                        const attribute: Attribute = fxSet.val.val.ref as Attribute;
+                        const attributeIsPrimitive: boolean = attribute.type.ptype != undefined && attribute.type.etype == undefined;
+                        const attributeHasInvalidEnumType: boolean = attribute.type.ptype == undefined && attribute.type.etype != undefined && attribute.type.etype.ref != undefined && attribute.type.etype.ref != attr.type.etype.ref;
+                        if (attributeIsPrimitive || attributeHasInvalidEnumType) {
+                            accept('error', `Value does not match specified attribute type (${ModelModelingLanguageUtils.getQualifiedClassName(attr.type.etype.ref, attr.type.etype.ref.name)})`, {
+                                node: fxSet,
+                                property: 'val',
+                                code: IssueCodes.FixSetStatementTypeDoesNotMatch
+                            })
+                        }
+                    }
+                } else {
+                    // new value is no variable and no enum value
+                    accept('error', `Value does not match specified attribute type (${ModelModelingLanguageUtils.getQualifiedClassName(attr.type.etype.ref, attr.type.etype.ref.name)})`, {
+                        node: fxSet,
+                        property: 'val',
+                        code: IssueCodes.FixSetStatementTypeDoesNotMatch
+                    })
+                }
             }
         }
     }
