@@ -108,7 +108,8 @@ export function registerValidationChecks(services: GraphConstraintLanguageServic
             validator.checkFixSetTypes
         ],
         FixCreateEdgeStatement: [
-            validator.checkFixCreateEdgeTargetType
+            validator.checkFixCreateEdgeTargetType,
+            validator.checkCreateEdgeStatementTempNodeIdDeclarationBeforeUsage
         ],
         CreateNodeAttributeAssignment: [
             validator.checkFixCreateNodeAttributeTypes
@@ -155,6 +156,7 @@ export namespace IssueCodes {
     export const MultipleConstraintDescriptionsDefined = "multiple-constraint-descriptions-defined";
     export const FixSetStatementTypeDoesNotMatch = "fix-set-statement-type-does-not-match";
     export const FixCreateEdgeStatementReferenceTypeDoesNotMatch = "fix-create-edge-statement-reference-type-does-not-match";
+    export const FixCreateEdgeStatementReferencesTemporaryNodeIdBeforeDeclaration = "fix-create-edge-statement-references-temp-id-beforedeclaration";
     export const FixCreateNodeStatementAttributeTypeDoesNotMatch = "fix-create-node-statement-attribute-type-does-not-match";
     export const DisableFixContainerHasEmptyModifier = "disable-fix-container-has-empty-modifier";
     export const EnableFixContainerIsUnboundAndNotEmpty = "enable-fix-container-is-unbound-and-not-empty";
@@ -813,6 +815,36 @@ export class GraphConstraintLanguageValidator {
                     }
                 }
             })
+        }
+    }
+
+    checkCreateEdgeStatementTempNodeIdDeclarationBeforeUsage(fxCreateEdge: FixCreateEdgeStatement, accept: ValidationAcceptor) {
+        if (fxCreateEdge.fromNode != undefined && fxCreateEdge.fromNode.ref != undefined && isFixCreateNodeStatement(fxCreateEdge.fromNode.ref.$container)) {
+            // fromNode uses temporary node id
+            const createEdgeStatementIdx: number = fxCreateEdge.$containerIndex!;
+            const createNodeStatementIdx: number = fxCreateEdge.fromNode.ref.$container.$containerIndex!;
+
+            if (createEdgeStatementIdx < createNodeStatementIdx) {
+                accept('error', `You cannot yet create an edge from this node, as the node will only be created later!`, {
+                    node: fxCreateEdge,
+                    property: 'fromNode',
+                    code: IssueCodes.FixCreateEdgeStatementReferencesTemporaryNodeIdBeforeDeclaration
+                })
+            }
+        }
+
+        if (fxCreateEdge.toNode != undefined && fxCreateEdge.toNode.ref != undefined && isFixCreateNodeStatement(fxCreateEdge.toNode.ref.$container)) {
+            // toNode uses temporary node id
+            const createEdgeStatementIdx: number = fxCreateEdge.$containerIndex!;
+            const createNodeStatementIdx: number = fxCreateEdge.toNode.ref.$container.$containerIndex!;
+
+            if (createEdgeStatementIdx < createNodeStatementIdx) {
+                accept('error', `You cannot yet create an edge to this node, as the node will only be created later!`, {
+                    node: fxCreateEdge,
+                    property: 'toNode',
+                    code: IssueCodes.FixCreateEdgeStatementReferencesTemporaryNodeIdBeforeDeclaration
+                })
+            }
         }
     }
 }
