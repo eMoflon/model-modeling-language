@@ -341,7 +341,7 @@ export class FixContainerEntity {
 
     constructor(fixContainer: FixContainer, resolver: GclReferenceStorage) {
         this.isEnableContainer = isEnableFixContainer(fixContainer) && !isDisableFixContainer(fixContainer)
-        this.fixTitle = fixContainer.fixTitle ?? `QuickFix ${fixContainer.$containerIndex! + 1 ?? "UNKNOWN"}`;
+        this.fixTitle = fixContainer.fixTitle ?? `QuickFix ${fixContainer.$containerIndex! + 1}`;
         this.isEmptyMatchFix = fixContainer.emptyFix;
         this.statements = fixContainer.fixStatements.map(x => {
             if (isFixInfoStatement(x)) {
