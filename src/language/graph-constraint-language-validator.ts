@@ -18,7 +18,8 @@ import {
     EnableFixContainer,
     EnumValueExpr,
     FixCreateEdgeStatement,
-    FixSetStatement, Interface,
+    FixSetStatement,
+    Interface,
     isAttribute,
     isClass,
     isConstraint,
@@ -245,7 +246,7 @@ export class GraphConstraintLanguageValidator {
             const patternObjVarType: VariableType = selectedPatternObjVar.typing;
             if (refClass != undefined && patternObjVarType.type != undefined && patternObjVarType.type.ref != undefined && isClass(patternObjVarType.type.ref)) {
                 const varTypeClass: Class = patternObjVarType.type.ref;
-                const allowedAbstractElements:Set<(Class|Interface)> = ScopingUtils.getAllInheritedAbstractElements(varTypeClass);
+                const allowedAbstractElements: Set<(Class | Interface)> = ScopingUtils.getAllInheritedAbstractElements(varTypeClass);
                 if (!allowedAbstractElements.has(refClass)) {
                     accept('error', `${selectedPatternObjVar.name} [type: ${varTypeClass.name}] does not match reference [type: ${refClass.name}].`, {
                         node: pRef,
@@ -700,9 +701,9 @@ export class GraphConstraintLanguageValidator {
     checkFixCreateEdgeTargetType(fxCreateEdge: FixCreateEdgeStatement, accept: ValidationAcceptor) {
         if (fxCreateEdge.reference != undefined && fxCreateEdge.reference.ref != undefined && fxCreateEdge.reference.ref.type.ref != undefined && fxCreateEdge.toNode != undefined && fxCreateEdge.toNode.ref != undefined && fxCreateEdge.toNode.ref.typing.type != undefined && fxCreateEdge.toNode.ref.typing.type.ref != undefined) {
             const reference: CReference = fxCreateEdge.reference.ref;
-            const target: AbstractElement = fxCreateEdge.toNode.ref.typing.type.ref as AbstractElement;
-
-            if (reference.type.ref != undefined && target != reference.type.ref) {
+            const target: Class | Interface = fxCreateEdge.toNode.ref.typing.type.ref as Class | Interface;
+            const providedSupertypes: Set<(Class | Interface)> = ScopingUtils.getAllInheritedAbstractElements(target);
+            if (reference.type.ref != undefined && !providedSupertypes.has(reference.type.ref)) {
                 accept('error', `${fxCreateEdge.toNode.ref.name} [type: ${target.name}] does not match reference [type: ${reference.type.ref.name}].`, {
                     node: fxCreateEdge,
                     property: 'toNode',
