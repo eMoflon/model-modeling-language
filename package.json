@@ -296,7 +296,7 @@
       "view/item/context": [
         {
           "command": "model-modeling-language.removeSelectedResource",
-          "when": "view == model-server-selected-resources && viewItem != DIRECTORY",
+          "when": "view == model-server-selected-resources && viewItem != DIRECTORY && !model-modeling-language.isModelServerRunning",
           "group": "inline"
         }
       ]
