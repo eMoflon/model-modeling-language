@@ -4,12 +4,15 @@ import {FixMatch, FixVariant, MatchNode} from "../../generated/de/nexus/modelser
 import React from "react";
 import {VSCodeButton, VSCodeDivider, VSCodeTag} from "@vscode/webview-ui-toolkit/react";
 import {MatchFixVariant} from "./MatchFixVariant.js";
+    import {ModelServerEvaluationCtxt, useModelServerEvaluationContext} from "./ModelServerEvaluationContext.js";
 
 export function MatchInstance(props: {
     match: FixMatch; matchIdx: number; selectVariantCb: Function;
     selectVariantForAllCb: Function;
 }) {
     let {match, matchIdx, selectVariantCb, selectVariantForAllCb} = props;
+
+    const evalContext: ModelServerEvaluationCtxt = useModelServerEvaluationContext();
 
     const [matchDetailsExpanded, setMatchDetailsExpanded] = React.useState(false);
     const [detailsIcon, setDetailsIcon] = React.useState("codicon codicon-diff-added");
@@ -26,6 +29,18 @@ export function MatchInstance(props: {
             setMatchDetailsExpanded(true);
             setDetailsIcon("codicon codicon-diff-removed");
         }
+    }
+
+    const highlightMatchInDiagram = () => {
+        console.log("POST MESSAGE: highlightMatchInDiagram");
+        const matchNodeIds: number[] = match.nodes.map(x => x.nodeId)
+        evalContext.requestHighlightedMatchVisualization(matchNodeIds);
+    }
+
+    const filterMatchInDiagram = () => {
+        console.log("POST MESSAGE: filterMatchInDiagram");
+        const matchNodeIds: number[] = match.nodes.map(x => x.nodeId)
+        evalContext.requestFilteredMatchVisualization(matchNodeIds);
     }
 
     const innerSelectVariantCb = (variantIdx: number) => {
@@ -60,9 +75,17 @@ export function MatchInstance(props: {
                     </div>
                     <div className="ms-match-instance-header-button-wrapper wrapper-column">
                         {!match.emptyMatch && (
-                            <VSCodeButton appearance="icon" onClick={toggleDetails}>
-                                <i className={detailsIcon} style={{color: iconColor}}></i>
-                            </VSCodeButton>
+                            <div>
+                                <VSCodeButton appearance="icon" onClick={highlightMatchInDiagram}>
+                                    <i className="codicon codicon-eye" style={{color: iconColor}}></i>
+                                </VSCodeButton>
+                                <VSCodeButton appearance="icon" onClick={filterMatchInDiagram}>
+                                    <i className="codicon codicon-search" style={{color: iconColor}}></i>
+                                </VSCodeButton>
+                                <VSCodeButton appearance="icon" onClick={toggleDetails}>
+                                    <i className={detailsIcon} style={{color: iconColor}}></i>
+                                </VSCodeButton>
+                            </div>
                         )}
                     </div>
                 </div>

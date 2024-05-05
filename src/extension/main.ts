@@ -1,6 +1,7 @@
 import type {LanguageClientOptions, ServerOptions} from 'vscode-languageclient/node.js';
 import {LanguageClient, TransportKind} from 'vscode-languageclient/node.js';
 import * as vscode from 'vscode';
+import {Uri} from 'vscode';
 import * as path from 'node:path';
 import {SerializeToFileCommand} from "./commands/serialize-to-file-command.js";
 import {SerializeToEmfCommand} from "./commands/serialize-to-emf-command.js";
@@ -18,6 +19,15 @@ import {ModelServerStarter} from "./model-server-starter.js";
 import {StopModelServerCommand} from "./commands/stop-model-server-command.js";
 import {ForceStopModelServerCommand} from "./commands/force-stop-model-server-command.js";
 import {ShowModelServerEvaluationViewCommand} from "./commands/show-model-server-evaluation-view-command.js";
+import {WebviewPanelManager} from "sprotty-vscode/lib";
+import {Messenger} from "vscode-messenger";
+import {ModelServerVisualizationOpenCommand} from "./commands/model-server-visualization-open-command.js";
+import {ModelServerVisualizationFitCommand} from "./commands/model-server-visualization-fit-command.js";
+import {ModelServerVisualizationCenterCommand} from "./commands/model-server-visualization-center-command.js";
+import {ModelServerVisualizationExportCommand} from "./commands/model-server-visualization-export-command.js";
+import {ActionNotification} from "sprotty-vscode";
+import {ModelServerVisualServer} from "./model-server-visual-server.js";
+import {ModelServerVisualizationUpdateCommand} from "./commands/model-server-visualization-update-command.js";
 
 let client: LanguageClient;
 let logger: vscode.OutputChannel;
@@ -26,6 +36,8 @@ let modelEvaluationLogger: vscode.OutputChannel;
 let modelServerConnector: ModelServerConnector;
 let modelServerGeneratorViewContainer: ModelServerGeneratorViewContainer;
 let modelServerStarter: ModelServerStarter;
+let webviewPanelManager: WebviewPanelManager;
+let modelServerVisualServer: ModelServerVisualServer;
 
 
 // This function is called when the extension is activated.
@@ -37,6 +49,7 @@ export function activate(context: vscode.ExtensionContext): void {
     modelServerConnector = new ModelServerConnector(modelServerLogger);
     modelServerStarter = new ModelServerStarter(modelServerLogger, client, modelServerConnector);
     modelServerGeneratorViewContainer = new ModelServerGeneratorViewContainer();
+    prepareModelServerVisualization(context);
     registerCommands(context);
     registerGMNotebook(context);
 }
@@ -119,7 +132,7 @@ function registerCommands(context: vscode.ExtensionContext) {
     new ForceStopModelServerCommand(client, logger, modelServerStarter).register(context);
     new RefreshProjectResourcesCommand(client, logger, modelServerGeneratorViewContainer).register(context);
     new RemoveSelectedResourceCommand(client, logger, modelServerGeneratorViewContainer).register(context);
-    new ShowModelServerEvaluationViewCommand(client, logger, context, modelServerConnector, modelEvaluationLogger).register(context);
+    new ShowModelServerEvaluationViewCommand(client, logger, context, modelServerConnector, modelServerVisualServer, modelEvaluationLogger).register(context);
 }
 
 function registerGMNotebook(context: vscode.ExtensionContext) {
@@ -129,4 +142,25 @@ function registerGMNotebook(context: vscode.ExtensionContext) {
         ),
         new GMNotebookKernel(modelServerConnector)
     );
+}
+
+function prepareModelServerVisualization(context: vscode.ExtensionContext) {
+    const msg: Messenger = new Messenger();
+
+    webviewPanelManager = new WebviewPanelManager({
+        extensionUri: Uri.joinPath(context.extensionUri, "out", "extension"),
+        defaultDiagramType: 'modelServerVisualizationView',
+        messenger: msg,
+        singleton: true
+    });
+
+    modelServerVisualServer = new ModelServerVisualServer(webviewPanelManager, modelServerConnector, logger);
+
+    msg.onNotification(ActionNotification, (params, sender) => logger.appendLine(`[ReceivedNotification] ${params.action.kind}`));
+
+    new ModelServerVisualizationOpenCommand(client, logger, modelServerVisualServer).register(context);
+    new ModelServerVisualizationFitCommand(client, logger, modelServerVisualServer).register(context);
+    new ModelServerVisualizationCenterCommand(client, logger, modelServerVisualServer).register(context);
+    new ModelServerVisualizationExportCommand(client, logger, modelServerVisualServer).register(context);
+    new ModelServerVisualizationUpdateCommand(client, logger, modelServerVisualServer).register(context);
 }

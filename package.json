@@ -31,7 +31,9 @@
     "chalk": "~5.3.0",
     "commander": "~11.1.0",
     "react": "~18.2.0",
-    "react-dom": "~18.2.0"
+    "react-dom": "~18.2.0",
+    "sprotty": "~1.0.0",
+    "sprotty-vscode": "~1.0.0"
   },
   "devDependencies": {
     "@types/react": "~18.2.64",
@@ -195,6 +197,34 @@
         "command": "model-modeling-language.showModelServerEvaluationView",
         "title": "Open ModelServer evaluation",
         "category": "Model Modeling Language"
+      },
+      {
+        "command": "model-modeling-language.msvis.diagram.open",
+        "title": "Open Model Visualization",
+        "category": "Model Server Visualization"
+      },
+      {
+        "command": "model-modeling-language.msvis.diagram.fit",
+        "title": "Fit Model Visualization",
+        "category": "Model Server Visualization",
+        "icon": "$(screen-full)"
+      },
+      {
+        "command": "model-modeling-language.msvis.diagram.center",
+        "title": "Center Model Visualization",
+        "category": "Model Server Visualization",
+        "icon": "$(type-hierarchy)"
+      },
+      {
+        "command": "model-modeling-language.msvis.diagram.export",
+        "title": "Export Model Visualization",
+        "category": "Model Server Visualization"
+      },
+      {
+        "command": "model-modeling-language.msvis.diagram.update",
+        "title": "Update Model Visualization",
+        "category": "Model Server Visualization",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
@@ -251,6 +281,23 @@
         {
           "when": "resourceExtname == .gc",
           "command": "model-modeling-language.serializeConstraintFileToFile",
+          "group": "navigation"
+        }
+      ],
+      "editor/title": [
+        {
+          "when": "activeWebviewPanelId == 'modelServerVisualizationView'",
+          "command": "model-modeling-language.msvis.diagram.update",
+          "group": "navigation"
+        },
+        {
+          "when": "activeWebviewPanelId == 'modelServerVisualizationView'",
+          "command": "model-modeling-language.msvis.diagram.fit",
+          "group": "navigation"
+        },
+        {
+          "when": "activeWebviewPanelId == 'modelServerVisualizationView'",
+          "command": "model-modeling-language.msvis.diagram.center",
           "group": "navigation"
         }
       ],

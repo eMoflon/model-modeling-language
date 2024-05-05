@@ -3,7 +3,8 @@ import {
     ModelServerConstraints,
     ModelServerEdits,
     ModelServerManagement,
-    ModelServerPattern
+    ModelServerPattern,
+    ModelServerVisualization
 } from "./generated/de/nexus/modelserver/ModelServer_connect.js";
 import {createGrpcTransport} from "@connectrpc/connect-node";
 import * as vscode from "vscode";
@@ -11,8 +12,9 @@ import * as vscode from "vscode";
 export type ClientCollection = {
     managementClient: PromiseClient<typeof ModelServerManagement>,
     patternClient: PromiseClient<typeof ModelServerPattern>,
-    constraintClient: PromiseClient<typeof ModelServerConstraints>
-    editClient: PromiseClient<typeof ModelServerEdits>
+    constraintClient: PromiseClient<typeof ModelServerConstraints>,
+    editClient: PromiseClient<typeof ModelServerEdits>,
+    visualizationClient: PromiseClient<typeof ModelServerVisualization>
 }
 
 export class ModelServerConnector {
@@ -34,7 +36,8 @@ export class ModelServerConnector {
             managementClient: createPromiseClient(ModelServerManagement, transport),
             patternClient: createPromiseClient(ModelServerPattern, transport),
             constraintClient: createPromiseClient(ModelServerConstraints, transport),
-            editClient: createPromiseClient(ModelServerEdits, transport)
+            editClient: createPromiseClient(ModelServerEdits, transport),
+            visualizationClient: createPromiseClient(ModelServerVisualization, transport)
         } as ClientCollection
     }
 
