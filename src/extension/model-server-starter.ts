@@ -62,7 +62,7 @@ export class ModelServerStarter {
             return {success: false, message: gclResponse.data};
         }
 
-        const connectorCommand: string[] = ['-jar', connectorPath, 'hipegen', config.workspace.fsPath, config.ecore.fsPath, config.xmi.fsPath, '--run-model-server', '--run-model-extender'];
+        const connectorCommand: string[] = ['-jar', connectorPath, 'modelserver', config.workspace.fsPath, config.ecore.fsPath, config.xmi.fsPath, '--run-model-server', '--run-model-extender'];
         const connectorMessage = gclResponse.data;
 
         this._logger.clear();
