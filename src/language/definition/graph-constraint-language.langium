@@ -7,7 +7,7 @@ entry ConstraintDocument:
     (constraints+=Constraint)*;
 
 ReferencedModelStatement:
-    'model' path=STRING ';';
+    'metamodel' path=STRING ';';
 
 Annotation:
     EnforceAnnotation |
