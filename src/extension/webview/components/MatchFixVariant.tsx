@@ -13,6 +13,7 @@ import {
 import {VSCodeButton, VSCodeTag} from "@vscode/webview-ui-toolkit/react";
 import {TemporaryIdRegistry} from "../utils/TemporaryIdRegistry.js";
 import "./MatchFixVariant.css"
+import {ModelServerEvaluationCtxt, useModelServerEvaluationContext} from "./ModelServerEvaluationContext.js";
 
 export function MatchFixVariant(props: {
     idx: number;
@@ -22,6 +23,8 @@ export function MatchFixVariant(props: {
     selectVariantForAllCb: Function;
 }) {
     let {idx, variant, variantForEmptyMatch, selectVariantCb, selectVariantForAllCb} = props;
+
+    const evalContext: ModelServerEvaluationCtxt = useModelServerEvaluationContext();
 
     const [fixVariantDetailsExpanded, setFixVariantDetailsExpanded] = React.useState(false);
     const [detailsIcon, setDetailsIcon] = React.useState("codicon codicon-diff-added");
@@ -63,12 +66,12 @@ export function MatchFixVariant(props: {
                     <div className="ms-match-fix-variant-header-button-wrapper wrapper-column">
                         <div className="wrapper-row">
                             {allowExecution && (
-                                <VSCodeButton appearance="icon" onClick={() => selectVariantCb(idx)}>
+                                <VSCodeButton appearance="icon" disabled={evalContext.loadState == "loading"} onClick={() => selectVariantCb(idx)}>
                                     <i className="codicon codicon-run" style={{color: iconColor}}></i>
                                 </VSCodeButton>
                             )}
                             {!variantForEmptyMatch && allowExecution && (
-                                <VSCodeButton appearance="icon"
+                                <VSCodeButton appearance="icon" disabled={evalContext.loadState == "loading"}
                                               onClick={() => selectVariantForAllCb(idx)}>
                                     <i className="codicon codicon-run-all" style={{color: iconColor}}></i>
                                 </VSCodeButton>
