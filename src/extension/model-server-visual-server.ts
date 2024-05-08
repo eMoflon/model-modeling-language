@@ -80,8 +80,13 @@ export class ModelServerVisualServer {
                 highlightNodes: highlightNodes
             }
         }).then(res => {
-            const newRoot: SModelRoot = this.translateModel(res);
-            this.setModelAndUpdate(newRoot);
+            if (res.nodes.length > 8000) {
+                showUIMessage(MessageType.ERROR, "Visualization could not be rendered because the model is too large.");
+                this.setModelAndUpdate(ModelServerVisualServer.EMPTY_MODEL);
+            } else {
+                const newRoot: SModelRoot = this.translateModel(res);
+                this.setModelAndUpdate(newRoot);
+            }
         }).catch(reason => {
             showUIMessage(MessageType.ERROR, `Could not load visualization: ${reason}`);
             const emptyRoot: SModelRoot = ModelServerVisualServer.EMPTY_MODEL;
