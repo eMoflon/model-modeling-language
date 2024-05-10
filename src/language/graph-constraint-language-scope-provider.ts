@@ -38,6 +38,7 @@ import {
     isNodeConstraintAnnotation,
     isPattern,
     isPatternAttributeConstraint,
+    isPatternObject,
     isPatternObjectReference,
     isQualifiedValueExpr,
     isTemplateLiteral,
@@ -201,13 +202,21 @@ export class GraphConstraintLanguageScopeProvider extends DefaultScopeProvider {
                     const varsInScope: TypedVariable[] = patternObjVars.concat(createdNodeVars);
                     return ScopingUtils.computeCustomScope(varsInScope, this.descriptions, x => x.name, x => x, this.createScope);
                 } else if (context.property == 'reference' && context.container.fromNode.ref != undefined) {
-                    const outgoingNode: PatternObject = context.container.fromNode.ref.$container as PatternObject;
-                    if (outgoingNode.var.typing.type != undefined && outgoingNode.var.typing.type.ref != undefined) {
-                        const outgoingTypeAbstractElement: AbstractElement = outgoingNode.var.typing.type.ref;
-                        if (isInterface(outgoingTypeAbstractElement) || isClass(outgoingTypeAbstractElement)) {
-                            const outgoingReferences: CReference[] = ScopingUtils.getAllInheritedReferences(outgoingTypeAbstractElement)
-                            return ScopingUtils.computeCustomScope(outgoingReferences, this.descriptions, x => x.name, x => x, this.createScope);
+                    let outgoingTypeAbstractElement: AbstractElement | undefined = undefined;
+                    if (isPatternObject(context.container.fromNode.ref.$container)) {
+                        const outgoingNode: PatternObject = context.container.fromNode.ref.$container as PatternObject;
+                        if (outgoingNode.var.typing.type != undefined && outgoingNode.var.typing.type.ref != undefined) {
+                            outgoingTypeAbstractElement = outgoingNode.var.typing.type.ref;
                         }
+                    } else if (isFixCreateNodeStatement(context.container.fromNode.ref.$container)) {
+                        const outgoingNode: FixCreateNodeStatement = context.container.fromNode.ref.$container as FixCreateNodeStatement;
+                        if (outgoingNode.nodeVar.typing.type != undefined && outgoingNode.nodeVar.typing.type.ref != undefined) {
+                            outgoingTypeAbstractElement = outgoingNode.nodeVar.typing.type.ref;
+                        }
+                    }
+                    if (isInterface(outgoingTypeAbstractElement) || isClass(outgoingTypeAbstractElement)) {
+                        const outgoingReferences: CReference[] = ScopingUtils.getAllInheritedReferences(outgoingTypeAbstractElement)
+                        return ScopingUtils.computeCustomScope(outgoingReferences, this.descriptions, x => x.name, x => x, this.createScope);
                     }
                 }
             }
