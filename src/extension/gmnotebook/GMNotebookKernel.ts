@@ -53,8 +53,8 @@ export class GMNotebookKernel {
         }
 
         try {
-            await log(text) // TODO: REMOVE
-            await log(`EXECUTION ORDER: ${execution.executionOrder}`)
+            //await log(text) // TODO: REMOVE
+            //await log(`EXECUTION ORDER: ${execution.executionOrder}`)
             await this._interpreter.runInterpreter(text, {log})
                 .then(x => execution.end(true, Date.now()))
                 .catch(reason => {
