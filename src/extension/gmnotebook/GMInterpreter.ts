@@ -2,6 +2,7 @@ import {EmptyFileSystem, interruptAndCheck, LangiumDocument, MaybePromise, URI} 
 import {
     GMStatement,
     GraphManipulationDocument,
+    isDisplayStatement,
     isExportStatement,
     isGMChainStatement,
     TargetNode
@@ -15,18 +16,21 @@ import {PostEditRequest} from "../generated/de/nexus/modelserver/ModelServerEdit
 import {EditChainRequest, EditRequest, Node} from "../generated/de/nexus/modelserver/ModelServerEditStatements_pb.js";
 import {GMProtoMapper} from "./GMProtoMapper.js";
 import {ExportModelRequest} from "../generated/de/nexus/modelserver/ModelServerManagement_pb.js";
+import {ModelServerVisualServer} from "../model-server-visual-server.js";
 
 
 export class GMInterpreter {
     private _services: GraphManipulationLanguageServices;
     private _modelServerConnector: ModelServerConnector;
+    private readonly _visualServer: ModelServerVisualServer;
     // after 5 seconds, the interpreter will be interrupted and call onTimeout
     private static readonly TIMEOUT_MS = 1000 * 5;
 
 
-    constructor(modelServerConnector: ModelServerConnector) {
+    constructor(modelServerConnector: ModelServerConnector, visualServer: ModelServerVisualServer) {
         this._services = createMmlAndGclServices(EmptyFileSystem).gmlServices;
         this._modelServerConnector = modelServerConnector;
+        this._visualServer = visualServer;
     }
 
     async runInterpreter(program: string, context: InterpreterContext): Promise<void> {
@@ -104,6 +108,9 @@ export class GMInterpreter {
                 }
 
                 return this._modelServerConnector.clients.managementClient.exportModel(fullReq).then(response => GMProtoMapper.processExportResponse(fullReq, response, context));
+            } else if (isDisplayStatement(element)) {
+                this._visualServer.openVisualization();
+                this._visualServer.requestVisualizationData(element.nodeIds, []);
             } else {
                 const req: EditRequest = GMProtoMapper.mapEditRequest(element) as EditRequest;
                 const fullReq: PostEditRequest = new PostEditRequest(

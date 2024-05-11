@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 import {GMInterpreter} from "./GMInterpreter.js";
 import {ModelServerConnector} from "../model-server-connector.js";
+import {ModelServerVisualServer} from "../model-server-visual-server.js";
 
 export class GMNotebookKernel {
     readonly id = 'gm-kernel';
@@ -13,7 +14,7 @@ export class GMNotebookKernel {
 
     private readonly _interpreter: GMInterpreter;
 
-    constructor(modelServerConnector: ModelServerConnector) {
+    constructor(modelServerConnector: ModelServerConnector, visualServer: ModelServerVisualServer) {
 
         this._controller = vscode.notebooks.createNotebookController(this.id,
             'gm-notebook',
@@ -23,7 +24,7 @@ export class GMNotebookKernel {
         this._controller.supportsExecutionOrder = true;
         this._controller.executeHandler = this._executeAll.bind(this);
 
-        this._interpreter = new GMInterpreter(modelServerConnector);
+        this._interpreter = new GMInterpreter(modelServerConnector, visualServer);
     }
 
     dispose(): void {

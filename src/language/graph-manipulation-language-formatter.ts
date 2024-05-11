@@ -4,6 +4,7 @@ import {
     isCreateNodeStatement,
     isDeleteEdgeStatement,
     isDeleteNodeStatement,
+    isDisplayStatement,
     isExportStatement,
     isGMChainStatement,
     isGraphManipulationDocument,
@@ -76,6 +77,13 @@ export class GraphManipulationLanguageFormatter extends AbstractFormatter {
             formatter.keywords(',').prepend(Formatting.noSpace()).append(Formatting.oneSpace());
             formatter.keywords('=').surround(Formatting.noSpace());
             formatter.keyword('(').append(Formatting.noSpace());
+            formatter.keyword(')').prepend(Formatting.noSpace());
+            formatter.keyword(';').prepend(Formatting.noSpace());
+        } else if (isDisplayStatement(node)) {
+            const formatter = this.getNodeFormatter(node);
+            formatter.keyword('display').append(Formatting.noSpace())
+            formatter.keyword('(').append(Formatting.noSpace());
+            formatter.keywords(',').prepend(Formatting.noSpace()).append(Formatting.oneSpace());
             formatter.keyword(')').prepend(Formatting.noSpace());
             formatter.keyword(';').prepend(Formatting.noSpace());
         }

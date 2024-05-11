@@ -5,6 +5,7 @@ import {
     isCreateNodeStatement,
     isDeleteEdgeStatement,
     isDeleteNodeStatement,
+    isDisplayStatement,
     isExportStatement,
     isGMChainStatement,
     isSetAttributeStatement,
@@ -69,6 +70,12 @@ export class GraphManipulationLanguageSemanticTokenProvider extends AbstractSema
             if (node.exportName != undefined) {
                 acceptor({node, keyword: "name", type: SemanticTokenTypes.property});
                 acceptor({node, keyword: "=", type: SemanticTokenTypes.operator});
+            }
+        } else if (isDisplayStatement(node)) {
+            acceptor({node, keyword: "export", type: SemanticTokenTypes.keyword});
+
+            for (let i = 0; i < node.nodeIds.length; i++) {
+                acceptor({node, property: "nodeIds", index: i, type: SemanticTokenTypes.property});
             }
         }
     }
