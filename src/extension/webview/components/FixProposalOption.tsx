@@ -18,6 +18,7 @@ export function FixProposalOption(props: { proposal: FixProposal; }) {
 
     const [proposalExpanded, setProposalExpanded] = React.useState(false);
     const [foldIcon, setFoldIcon] = React.useState("codicon codicon-chevron-right");
+    const [maxShownMatches, setMaxShownMatches] = React.useState(10);
 
     const toggleExpand = () => {
         if (proposalExpanded) {
@@ -27,6 +28,12 @@ export function FixProposalOption(props: { proposal: FixProposal; }) {
             setProposalExpanded(true);
             setFoldIcon("codicon codicon-chevron-down");
         }
+    }
+
+    const showMoreMatches = () => {
+        const newShownMatches: number = maxShownMatches + 10;
+        console.log(`Increase maximum shown matches: ${maxShownMatches} => ${newShownMatches}`);
+        setMaxShownMatches(newShownMatches);
     }
 
     const computedStyle: CSSStyleDeclaration = getComputedStyle(document.documentElement);
@@ -89,7 +96,8 @@ export function FixProposalOption(props: { proposal: FixProposal; }) {
                               selectVariantForAllCb={executeFixVariantForAllMatches}/>
     }
 
-    const matchInstances = proposal.matches.map((x, idx) => matchInstanceProvider(x, idx));
+    const matchInstances = proposal.matches.slice(0, maxShownMatches).map((x, idx) => matchInstanceProvider(x, idx));
+    const hiddenMatchesRemaining: boolean = proposal.matches.length > maxShownMatches;
 
     return (
         <>
@@ -115,6 +123,9 @@ export function FixProposalOption(props: { proposal: FixProposal; }) {
                     <div className="ms-fix-proposal-opt-content-visualbox"/>
                     <div className="ms-fix-proposal-opt-content">
                         {matchInstances}
+                        {hiddenMatchesRemaining && (
+                            <VSCodeButton onClick={showMoreMatches}>Show more...</VSCodeButton>
+                        )}
                     </div>
                 </div>)}
             </div>
