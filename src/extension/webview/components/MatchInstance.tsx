@@ -4,7 +4,7 @@ import {FixMatch, FixVariant, MatchNode} from "../../generated/de/nexus/modelser
 import React from "react";
 import {VSCodeButton, VSCodeDivider, VSCodeTag} from "@vscode/webview-ui-toolkit/react";
 import {MatchFixVariant} from "./MatchFixVariant.js";
-    import {ModelServerEvaluationCtxt, useModelServerEvaluationContext} from "./ModelServerEvaluationContext.js";
+import {ModelServerEvaluationCtxt, useModelServerEvaluationContext} from "./ModelServerEvaluationContext.js";
 
 export function MatchInstance(props: {
     match: FixMatch; matchIdx: number; selectVariantCb: Function;
@@ -49,13 +49,13 @@ export function MatchInstance(props: {
 
     const variantProvider = (variant: FixVariant, idx: number, maxIdx: number) => {
         return (
-            <>
-                <MatchFixVariant idx={idx} key={`variant-${idx}`}
+            <div key={`variant-${idx}`}>
+                <MatchFixVariant idx={idx}
                                  variant={variant} variantForEmptyMatch={match.emptyMatch}
                                  selectVariantCb={innerSelectVariantCb} selectVariantForAllCb={selectVariantForAllCb}/>
                 {idx < maxIdx && (
-                    <VSCodeDivider className="ms-match-instance-variant-divider" key={`variant-divider-${idx}`}/>)}
-            </>
+                    <VSCodeDivider className="ms-match-instance-variant-divider"/>)}
+            </div>
         )
     }
 
