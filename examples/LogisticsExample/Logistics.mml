@@ -1,0 +1,179 @@
+package Logistics {
+    class Warehouse {
+        attribute int warehouseId;
+        attribute string warehouseName;
+        reference Logistics.Order[*] places;
+        reference Logistics.Item[*] contains;
+        reference Logistics.StorageUnit[*] has;
+    }
+    class StorageUnit {
+        attribute int unitId;
+        attribute Logistics.OccupancyState state;
+    }
+    enum OccupancyState {
+        EMPTY = 1,
+        OCCUPIED = 2
+    }
+    class Item {
+        attribute int itemId;
+        attribute int minQuantity;
+        attribute int maxQuantity;
+        attribute int quantity;
+        attribute double pricePerUnit;
+        reference Logistics.StorageUnit[1] storedIn;
+    }
+    class Order {
+        attribute int orderId;
+        attribute double totalPrice;
+        attribute string orderDate;
+        attribute string deliveryDate;
+        attribute Logistics.OrderState state;
+        reference Logistics.PartialOrder[+] consistsOf;
+        reference Logistics.Carrier[1] deliveredBy;
+    }
+    enum OrderState {
+        ORDERED = 1,
+        DELIVERED = 2
+    }
+    class PartialOrder {
+        attribute int quantity;
+        attribute Logistics.OrderState state;
+        reference Logistics.Route[1] via;
+        reference Logistics.Item[1] item;
+    }
+    class Carrier {
+        attribute int carrierId;
+        attribute string carrierName;
+        attribute double pricePerKm;
+        reference Logistics.Route[*] operates;
+    }
+    class Route {
+        attribute int routeId;
+        attribute double distance;
+        reference Logistics.Warehouse[1] start;
+        reference Logistics.Warehouse[1] destination;
+    }
+}
+
+macro CreateWarehouse[int whId, string wName] {
+    Logistics.Warehouse wh {
+        warehouseId = whId
+        warehouseName = wName
+    }
+}
+
+macro CreateStorageUnit[Logistics.Warehouse wh, int uId] {
+    Logistics.StorageUnit su {
+        unitId = uId
+        state = Logistics.OccupancyState::EMPTY
+    }
+    wh {
+        has -> su
+    }
+}
+
+macro CreateFloatingStorageUnit[int uId] {
+    Logistics.StorageUnit su {
+        unitId = uId
+        state = Logistics.OccupancyState::EMPTY
+    }
+}
+
+macro CreateItem[Logistics.Warehouse wh, Logistics.StorageUnit su, int iId, int minQ, int maxQ, int currentQ, double price]{
+    Logistics.Item item {
+        itemId = iId
+        minQuantity = minQ
+        maxQuantity = maxQ
+        quantity = currentQ
+        pricePerUnit = price
+        storedIn -> su
+    }
+    wh {
+        contains -> item
+    }
+    su {
+        state = Logistics.OccupancyState::OCCUPIED
+    }
+}
+
+macro CreateItemWithoutSUnitUpdate[Logistics.Warehouse wh, Logistics.StorageUnit su, int iId, int minQ, int maxQ, int currentQ, double price]{
+    Logistics.Item item {
+        itemId = iId
+        minQuantity = minQ
+        maxQuantity = maxQ
+        quantity = currentQ
+        pricePerUnit = price
+        storedIn -> su
+    }
+    wh {
+        contains -> item
+    }
+}
+
+macro CreateItemWithoutSUnit[Logistics.Warehouse wh, int iId, int minQ, int maxQ, int currentQ, double price]{
+    Logistics.Item item {
+        itemId = iId
+        minQuantity = minQ
+        maxQuantity = maxQ
+        quantity = currentQ
+        pricePerUnit = price
+    }
+    wh {
+        contains -> item
+    }
+}
+
+instance LogisticsModel1 {
+    /// This model is totally correct
+    Logistics.Warehouse warehouse = CreateWarehouse[1,"Darmstadt Warehouse"].wh
+    Logistics.StorageUnit su1 = CreateStorageUnit[warehouse,1].su
+    Logistics.StorageUnit su2 = CreateStorageUnit[warehouse,2].su
+    Logistics.StorageUnit su3 = CreateStorageUnit[warehouse,3].su
+    Logistics.StorageUnit su4 = CreateStorageUnit[warehouse,4].su
+    Logistics.Item item1 = CreateItem[warehouse,su1,1,250,3000,300,1.20].item
+    Logistics.Item item2 = CreateItem[warehouse,su2,2,250,3000,300,1.20].item
+    Logistics.Item item3 = CreateItem[warehouse,su3,3,250,3000,300,1.20].item
+    Logistics.Item item4 = CreateItem[warehouse,su4,4,250,3000,300,1.20].item
+}
+
+instance LogisticsModel2 {
+    /// This model has storage units with negative ids
+    Logistics.Warehouse warehouse = CreateWarehouse[1,"Darmstadt Warehouse"].wh
+    Logistics.StorageUnit su1 = CreateStorageUnit[warehouse,1].su
+    Logistics.StorageUnit su2 = CreateStorageUnit[warehouse,-2].su
+    Logistics.StorageUnit su3 = CreateStorageUnit[warehouse,3].su
+    Logistics.StorageUnit su4 = CreateStorageUnit[warehouse,-53].su
+    Logistics.Item item1 = CreateItem[warehouse,su1,1,250,3000,300,1.20].item
+    Logistics.Item item2 = CreateItem[warehouse,su2,2,250,3000,300,1.20].item
+    Logistics.Item item3 = CreateItem[warehouse,su3,3,250,3000,300,1.20].item
+    Logistics.Item item4 = CreateItem[warehouse,su4,4,250,3000,300,1.20].item
+}
+
+instance LogisticsModel3 {
+    /// This model has storage units with negative ids and items with flipped min and max quantities
+    Logistics.Warehouse warehouse = CreateWarehouse[1,"Darmstadt Warehouse"].wh
+    Logistics.StorageUnit su1 = CreateStorageUnit[warehouse,1].su
+    Logistics.StorageUnit su2 = CreateStorageUnit[warehouse,-2].su
+    Logistics.StorageUnit su3 = CreateStorageUnit[warehouse,3].su
+    Logistics.StorageUnit su4 = CreateStorageUnit[warehouse,-53].su
+    Logistics.StorageUnit su5 = CreateStorageUnit[warehouse,5].su
+    Logistics.StorageUnit su6 = CreateStorageUnit[warehouse,6].su
+    Logistics.Item item1 = CreateItem[warehouse,su1,1,250,3000,300,1.20].item
+    Logistics.Item item2 = CreateItem[warehouse,su2,2,1234,50,300,1.20].item
+    Logistics.Item item3 = CreateItem[warehouse,su3,3,1337,42,300,1.20].item
+    Logistics.Item item4 = CreateItem[warehouse,su4,4,321,123,300,1.20].item
+    Logistics.Item item5 = CreateItemWithoutSUnitUpdate[warehouse,su5,5,250,3000,300,1.20].item
+    Logistics.Item item6 = CreateItemWithoutSUnitUpdate[warehouse,su6,6,250,3000,300,1.20].item
+}
+
+instance RunningExample {
+    Logistics.Warehouse wh = CreateWarehouse[1, "Example Warehouse"].wh
+    Logistics.StorageUnit su1 = CreateStorageUnit[wh,1].su
+    Logistics.StorageUnit su2 = CreateStorageUnit[wh,2].su
+    Logistics.StorageUnit su3 = CreateFloatingStorageUnit[3].su
+    Logistics.StorageUnit su4 = CreateStorageUnit[wh,-42].su
+    Logistics.Item item1 = CreateItem[wh,su1,1,250,3000,1500,1.50].item
+    Logistics.Item item2 = CreateItem[wh,su1,2,3000,250,1500,1.50].item
+    Logistics.Item item3 = CreateItemWithoutSUnitUpdate[wh,su2,3,125,2500,750,0.99].item
+    Logistics.Item item4 = CreateItemWithoutSUnit[wh,4,1250,775,990,2.49].item
+}
