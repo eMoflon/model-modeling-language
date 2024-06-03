@@ -8,45 +8,31 @@
   "files": [
     "bin"
   ],
-  "type": "module",
-  "scripts": {
-    "build": "tsc -b tsconfig.json && node esbuild.mjs",
-    "watch": "concurrently -n tsc,esbuild -c blue,yellow \"tsc -b tsconfig.json --watch\" \"node esbuild.mjs --watch\"",
-    "lint": "eslint src --ext ts",
-    "langium:generate": "langium generate",
-    "langium:watch": "langium generate --watch",
-    "vscode:prepublish": "npm run build && npm run lint",
-    "package": "vsce package",
-    "fullbuild": "npm run langium:generate && vsce package"
-  },
-  "dependencies": {
-    "@types/uuid": "^9.0.0",
-    "uuid": "^9.0.1",
-    "langium": "~2.1.3",
-    "vscode-languageclient": "~9.0.1",
-    "vscode-languageserver": "~9.0.1",
-    "chalk": "~5.3.0",
-    "commander": "~11.1.0"
-  },
-  "devDependencies": {
-    "@types/node": "~20.10.4",
-    "@types/vscode": "~1.67.0",
-    "@typescript-eslint/parser": "~6.14.0",
-    "@typescript-eslint/eslint-plugin": "~6.14.0",
-    "@vscode/vsce": "^2.21.0",
-    "eslint": "~8.55.0",
-    "langium-cli": "~2.1.0",
-    "typescript": "~5.3.3",
-    "concurrently": "~8.2.2",
-    "esbuild": "~0.19.9",
-    "vitest": "~1.0.4"
-  },
+  "private": true,
+  "engineStrict": true,
   "engines": {
     "vscode": "^1.67.0",
     "node": ">=16.0.0"
   },
   "categories": [
     "Programming Languages"
+  ],
+  "scripts": {
+    "build:langium": "npm run build:dependencies --workspace packages/mml-langium",
+    "build:sprotty": "npm run build --workspace packages/mml-sprotty",
+    "vscode:prepublish": "npm run vscode:prepublish --workspace packages/mml-langium",
+    "package": "vsce package",
+    "build": "npm run build:sprotty && npm run build:langium && npm run package"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "~2.26.1",
+    "uuid": "~9.0.1",
+    "chalk": "~5.3.0",
+    "commander": "~11.0.0"
+  },
+  "workspaces": [
+    "packages/mml-langium",
+    "packages/mml-sprotty"
   ],
   "contributes": {
     "languages": [
@@ -59,14 +45,57 @@
         "extensions": [
           ".mml"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./packages/mml-langium/language-configuration.json"
+      },
+      {
+        "id": "graph-constraint-language",
+        "aliases": [
+          "Graph-Constraint Language",
+          "graph-constraint-language"
+        ],
+        "extensions": [
+          ".gc"
+        ],
+        "configuration": "./packages/mml-langium/language-configuration.json"
+      },
+      {
+        "id": "graph-manipulation-language",
+        "aliases": [
+          "Graph Manipulation Language",
+          "graph-manipulation-language"
+        ],
+        "extensions": [
+          ".gm"
+        ],
+        "configuration": "./packages/mml-langium/language-configuration.json"
       }
     ],
     "grammars": [
       {
         "language": "model-modeling-language",
         "scopeName": "source.model-modeling-language",
-        "path": "syntaxes/model-modeling-language.tmLanguage.json"
+        "path": "./packages/mml-langium/syntaxes/model-modeling-language.tmLanguage.json"
+      },
+      {
+        "language": "graph-constraint-language",
+        "scopeName": "source.graph-constraint-language",
+        "path": "./packages/mml-langium/syntaxes/graph-constraint-language.tmLanguage.json"
+      },
+      {
+        "language": "graph-manipulation-language",
+        "scopeName": "source.graph-manipulation-language",
+        "path": "./packages/mml-langium/syntaxes/graph-manipulation-language.tmLanguage.json"
+      }
+    ],
+    "notebooks": [
+      {
+        "type": "gm-notebook",
+        "displayName": "Graph Manipulation Notebook",
+        "selector": [
+          {
+            "filenamePattern": "*.gmnb"
+          }
+        ]
       }
     ],
     "configuration": {
@@ -94,6 +123,79 @@
         "command": "model-modeling-language.deserializeEcoreToMML",
         "title": "Translate Ecore Model to MML",
         "category": "Model Modeling Language"
+      },
+      {
+        "command": "model-modeling-language.serializeConstraintFileToFile",
+        "title": "Serialize constraint file",
+        "category": "Model Modeling Language"
+      },
+      {
+        "command": "model-modeling-language.testModelServer",
+        "title": "Test Model Server",
+        "category": "Model Modeling Language"
+      },
+      {
+        "command": "model-modeling-language.startModelServer",
+        "title": "Build and start ModelServer",
+        "category": "Model Modeling Language",
+        "icon": "$(run)"
+      },
+      {
+        "command": "model-modeling-language.stopModelServer",
+        "title": "Terminate ModelServer",
+        "category": "Model Modeling Language",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "model-modeling-language.forceStopModelServer",
+        "title": "Terminate ModelServer forcibly",
+        "category": "Model Modeling Language",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "model-modeling-language.refreshProjectResources",
+        "title": "Refresh all Project Resources",
+        "category": "Model Modeling Language",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "model-modeling-language.removeSelectedResource",
+        "title": "Unselect a selected Project Resource",
+        "category": "Model Modeling Language",
+        "icon": "$(close)"
+      },
+      {
+        "command": "model-modeling-language.showModelServerEvaluationView",
+        "title": "Open ModelServer evaluation",
+        "category": "Model Modeling Language"
+      },
+      {
+        "command": "model-modeling-language.msvis.diagram.open",
+        "title": "Open Model Visualization",
+        "category": "Model Server Visualization"
+      },
+      {
+        "command": "model-modeling-language.msvis.diagram.fit",
+        "title": "Fit Model Visualization",
+        "category": "Model Server Visualization",
+        "icon": "$(screen-full)"
+      },
+      {
+        "command": "model-modeling-language.msvis.diagram.center",
+        "title": "Center Model Visualization",
+        "category": "Model Server Visualization",
+        "icon": "$(type-hierarchy)"
+      },
+      {
+        "command": "model-modeling-language.msvis.diagram.export",
+        "title": "Export Model Visualization",
+        "category": "Model Server Visualization"
+      },
+      {
+        "command": "model-modeling-language.msvis.diagram.update",
+        "title": "Update Model Visualization",
+        "category": "Model Server Visualization",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
@@ -108,6 +210,26 @@
         },
         {
           "command": "model-modeling-language.deserializeEcoreToMML",
+          "when": "false"
+        },
+        {
+          "command": "model-modeling-language.serializeConstraintFileToFile",
+          "when": "false"
+        },
+        {
+          "command": "model-modeling-language.startModelServer",
+          "when": "false"
+        },
+        {
+          "command": "model-modeling-language.stopModelServer",
+          "when": "false"
+        },
+        {
+          "command": "model-modeling-language.refreshProjectResources",
+          "when": "false"
+        },
+        {
+          "command": "model-modeling-language.removeSelectedResource",
           "when": "false"
         }
       ],
@@ -126,6 +248,28 @@
           "when": "resourceExtname == .ecore",
           "command": "model-modeling-language.deserializeEcoreToMML",
           "group": "navigation"
+        },
+        {
+          "when": "resourceExtname == .gc",
+          "command": "model-modeling-language.serializeConstraintFileToFile",
+          "group": "navigation"
+        }
+      ],
+      "editor/title": [
+        {
+          "when": "activeWebviewPanelId == 'modelServerVisualizationView'",
+          "command": "model-modeling-language.msvis.diagram.update",
+          "group": "navigation"
+        },
+        {
+          "when": "activeWebviewPanelId == 'modelServerVisualizationView'",
+          "command": "model-modeling-language.msvis.diagram.fit",
+          "group": "navigation"
+        },
+        {
+          "when": "activeWebviewPanelId == 'modelServerVisualizationView'",
+          "command": "model-modeling-language.msvis.diagram.center",
+          "group": "navigation"
         }
       ],
       "editor/context": [
@@ -143,12 +287,75 @@
           "when": "resourceExtname == .ecore && resourceScheme == file",
           "command": "model-modeling-language.deserializeEcoreToMML",
           "group": "navigation"
+        },
+        {
+          "when": "resourceLangId == graph-constraint-language",
+          "command": "model-modeling-language.serializeConstraintFileToFile",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "model-modeling-language.startModelServer",
+          "when": "view == model-server-selected-resources && !model-modeling-language.isModelServerRunning",
+          "group": "navigation"
+        },
+        {
+          "command": "model-modeling-language.stopModelServer",
+          "when": "view == model-server-selected-resources && model-modeling-language.isModelServerRunning",
+          "group": "navigation"
+        },
+        {
+          "command": "model-modeling-language.refreshProjectResources",
+          "when": "view == model-server-file-explorer",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "model-modeling-language.removeSelectedResource",
+          "when": "view == model-server-selected-resources && viewItem != DIRECTORY && !model-modeling-language.isModelServerRunning",
+          "group": "inline"
         }
       ]
-    }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "model-server-generator",
+          "title": "Model Server Generator",
+          "icon": "$(coffee)"
+        }
+      ]
+    },
+    "views": {
+      "model-server-generator": [
+        {
+          "id": "model-server-file-explorer",
+          "name": "Project Resources"
+        },
+        {
+          "id": "model-server-selected-resources",
+          "name": "Selected Resources"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "model-server-file-explorer",
+        "contents": "No viable ProjectResources in current workspace!\nCreate a ProjectResource in the Explorer to access it here."
+      },
+      {
+        "view": "model-server-selected-resources",
+        "contents": "Trying to load selected ProjectResources!"
+      }
+    ]
   },
   "activationEvents": [
-    "onLanguage:model-modeling-language"
+    "onLanguage:model-modeling-and-constraint-language",
+    "onLanguage:model-modeling-language",
+    "onLanguage:graph-constraint-language",
+    "onLanguage:graph-manipulation-language"
   ],
   "main": "./out/extension/main.cjs",
   "bin": {

@@ -1,0 +1,100 @@
+syntax = "proto3";
+package de.nexus.modelserver.proto;
+
+import "de/nexus/modelserver/ModelServerEditStatements.proto";
+
+message GetConstraintsRequest{
+}
+
+message GetConstraintsResponse{
+  repeated Constraint constraints = 1;
+}
+
+message GetConstraintRequest{
+  string constraintName = 1;
+}
+
+message GetConstraintResponse{
+  Constraint constraint = 1;
+}
+
+message ListConstraintsRequest{
+}
+
+message ListConstraintsResponse{
+  repeated string constraints = 1;
+}
+
+message Constraint {
+  string title = 1;
+  string description = 2;
+  string name = 3;
+  bool violated = 4;
+  repeated ConstraintAssertion assertions = 5;
+}
+
+message ConstraintAssertion {
+  bool violated = 1;
+  string expression = 2;
+  FixProposalContainer proposalContainer = 3;
+}
+
+message FixProposalContainer {
+  FixProposalContainerType type = 1;
+  repeated FixProposal proposals = 2;
+  repeated FixProposalContainer proposalContainers = 3;
+}
+
+message FixProposal {
+  FixProposalType type = 1;
+  string patternName = 2;
+  repeated FixMatch matches = 3;
+}
+
+message FixMatch {
+  repeated FixVariant variants = 1;
+  repeated MatchNode nodes = 2;
+  bool emptyMatch = 3;
+}
+
+message MatchNode {
+  uint32 nodeId = 1;
+  string nodeName = 2;
+  string nodeType = 3;
+  repeated MatchNodeAttribute nodeAttributes = 4;
+}
+
+message MatchNodeAttribute {
+  string attributeName = 1;
+  string attributeValue = 2;
+}
+
+message FixVariant {
+  string variantTitle = 1;
+  repeated FixStatement statements = 2;
+}
+
+message FixStatement {
+  oneof stmt {
+    FixInfoStatement infoStatement = 1;
+    EditRequest edit = 2;
+  }
+}
+
+message FixInfoStatement {
+  string msg = 1;
+}
+
+enum FixProposalType {
+  UNKNOWN_PROPOSAL_TYPE = 0;
+  ENABLE_PATTERN = 1;
+  DISABLE_PATTERN = 2;
+}
+
+enum FixProposalContainerType {
+  UNKNOWN_CONTAINER_TYPE = 0;
+  SINGLE_FIX = 1;
+  FIX_ONE = 2;
+  FIX_ALL = 3;
+  UNRESOLVABLE_CASE = 4;
+}

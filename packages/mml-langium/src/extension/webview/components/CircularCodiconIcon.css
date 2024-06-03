@@ -1,0 +1,15 @@
+.svg-circicon-wrapper {
+    position: relative;
+}
+
+.svg-circicon {
+    transform: rotate(-90deg); /* Fix the orientation */
+}
+
+.svg-circicon-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}

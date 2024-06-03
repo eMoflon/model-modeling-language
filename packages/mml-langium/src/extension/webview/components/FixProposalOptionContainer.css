@@ -1,0 +1,44 @@
+.ms-fix-proposal-opt-container-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.ms-fix-proposal-opt-container-header {
+    display: flex;
+    flex-direction: row;
+    padding-left: 0.25em;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+}
+
+.ms-fix-proposal-opt-container-header-button-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.ms-fix-proposal-opt-container-header-text-wrapper {
+    display: flex;
+    flex-direction: column;
+    margin-left: 0.5em;
+}
+
+.ms-fix-proposal-opt-container-content-wrapper {
+    display: flex;
+    flex-direction: row;
+}
+
+.ms-fix-proposal-opt-container-content-visualbox {
+    display: flex;
+    flex-direction: column;
+    width: 0.5em;
+    margin-left: 0.85em;
+    margin-right: 0.5em;
+    /*noinspection CssUnresolvedCustomProperty*/
+    background-color: var(--vscode-focusBorder);
+}
+
+.ms-fix-proposal-opt-container-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}

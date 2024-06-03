@@ -1,0 +1,26 @@
+{
+    "projectName": "ModelModelingLanguage",
+    "languages": [{
+        "id": "model-modeling-language",
+        "grammar": "src/language/definition/model-modeling-language.langium",
+        "fileExtensions": [".mml"],
+        "textMate": {
+            "out": "syntaxes/model-modeling-language.tmLanguage.json"
+        }
+    },{
+        "id": "graph-constraint-language",
+        "grammar": "src/language/definition/graph-constraint-language.langium",
+        "fileExtensions": [".gc"],
+        "textMate": {
+            "out": "syntaxes/graph-constraint-language.tmLanguage.json"
+        }
+    },{
+        "id": "graph-manipulation-language",
+        "grammar": "src/language/definition/graph-manipulation-language.langium",
+        "fileExtensions": [".gm"],
+        "textMate": {
+            "out": "syntaxes/graph-manipulation-language.tmLanguage.json"
+        }
+    }],
+    "out": "src/language/generated"
+}

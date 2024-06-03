@@ -1,0 +1,196 @@
+metamodel "./Logistics.mml";
+
+pattern StorageUnitWithNegativeId {
+    Logistics.StorageUnit su {
+    }
+    #su.unitId < 0
+}
+
+pattern ItemWithNegativeId {
+    Logistics.Item item {
+    }
+    #item.itemId < 0
+}
+
+pattern ItemWithIncorrectQuantityBounds {
+    Logistics.Item item {
+    }
+    #item.minQuantity > item.maxQuantity
+}
+
+pattern ItemWithQuantityOutOfRange {
+    Logistics.Item item {
+    }
+    #item.quantity < item.minQuantity || item.quantity > item.maxQuantity || item.quantity < 0
+}
+
+pattern AttachedStorageUnit {
+    Logistics.Warehouse wh {
+        has -> su
+    }
+    Logistics.StorageUnit su {
+    }
+}
+
+@Forbid(AttachedStorageUnit, [su=su])
+pattern FloatingStorageUnit {
+    Logistics.StorageUnit su {
+    }
+}
+
+pattern ItemInStorageUnit {
+    Logistics.Warehouse wh {
+        has -> su
+        contains -> item
+    }
+    Logistics.StorageUnit su {
+    }
+    Logistics.Item item {
+        storedIn -> su
+    }
+}
+
+@Enforce(ItemInStorageUnit, [su=su, item=item])
+pattern ItemStoredInSUnitWithStateEmpty {
+    Logistics.StorageUnit su {
+    }
+    Logistics.Item item {
+        storedIn -invalid-> su
+    }
+    #su.state == Logistics.OccupancyState::EMPTY
+}
+
+@Forbid(ItemInStorageUnit, [wh=wh, item=item])
+pattern UnassignedItem {
+    Logistics.Warehouse wh {
+        contains -itemRef-> item
+    }
+    Logistics.Item item {
+    }
+}
+
+@Forbid(AttachedStorageUnit, [wh=wh])
+pattern HasEmptyWarehouse {
+    Logistics.Warehouse wh {
+    }
+}
+
+@title("Check that all IDs are positive")
+@description("We require that all IDs are greater or equal 0")
+constraint NoNegativeIds {
+    specification StorageUnitWithNegativeId negativeUnitId {
+        disable {
+            info "The StorageUnit has a negative Id";
+            set su.unitId;
+        }
+    }
+    specification ItemWithNegativeId negativeItemId {
+        disable {
+            info "The Item has a negative Id";
+            set item.itemId;
+        }
+    }
+    assert !negativeUnitId;
+    assert !negativeItemId;
+}
+
+
+@title("Verify that quantity limits are correctly assigned")
+@description("The minQuantity of an item should always be greater than the maxQuantity")
+constraint ValidItemQuantityBounds {
+    specification ItemWithIncorrectQuantityBounds incorrectItemQuantityBounds {
+        disable("Swap the minimum and maximum quantity") {
+            info "The Item has a maxQuantity that is greater than the minQuantity";
+            info 'minQuantity({item.minQuantity}) > maxQuantity({item.maxQuantity}) == {item.minQuantity > item.maxQuantity}';
+            set item.minQuantity = item.maxQuantity;
+            set item.maxQuantity = item.minQuantity;
+        }
+    }
+    assert !incorrectItemQuantityBounds;
+}
+
+@title("Verify that all quantities are within the allowed range")
+@description("The quantity of an item should always be between minQuantity and maxQuantity")
+constraint ValidItemQuantitiesInRange {
+    specification ItemWithQuantityOutOfRange incorrectItemQuantity {
+        disable("Set the quantity to the minimum value") {
+            info "The items quantity is not between the minimum and maximum limits.";
+            info 'Quantity must be greater than zero: {item.quantity} > 0 == {item.quantity > 0}';
+            info 'Quantity must be in range: {item.minQuantity} <= {item.quantity} <= {item.maxQuantity} == {item.minQuantity <= item.quantity && item.quantity <= item.maxQuantity}';
+            set item.quantity = item.minQuantity;
+        }
+    }
+    assert !incorrectItemQuantity;
+}
+
+
+@title("Check that there are no floating storage units")
+@description("Every StorageUnit should be assigned to a Warehouse")
+constraint NoFloatingStorageUnits {
+    specification FloatingStorageUnit floatingSUnit {
+        disable("Assign the item to a warehouse") {
+            info "This StorageUnit is not assigned to any Warehouse";
+        }
+    }
+    assert !floatingSUnit;
+}
+
+@title("Check that the StorageUnit Occupancy State is correct")
+@description("Each StorageUnit containing an item should be in the occupied state")
+constraint NoInvalidSUnitState {
+    specification ItemStoredInSUnitWithStateEmpty invalidSUnit {
+        disable("Update occupancy status") {
+            info "The StorageUnit's occupancy state is incorrect and should be updated";
+            set su.state = Logistics.OccupancyState::OCCUPIED;
+        }
+        disable("Remove Item from the StorageUnit") {
+            info "The Item should not be assigned to this StorageUnit";
+            delete edge invalid;
+        }
+    }
+    assert !invalidSUnit;
+}
+
+
+@title("Check for unassigned items")
+@description("Each Item contained in a warehouse should be assigned to a specific StorageUnit")
+constraint NoUnassignedItems {
+    specification UnassignedItem unassignedItem {
+        disable("Create a new StorageUnit and add the item") {
+            info "This Item is stored in the warehouse but not assigned to a StorageUnit";
+            create node Logistics.StorageUnit suu(state = Logistics.OccupancyState::OCCUPIED);
+            create edge item -storedIn-> suu;
+            create edge wh -has-> suu;
+        }
+        disable("Remove the item") {
+            info "This Item is stored in the Warehouse, but was previously removed from the StorageUnit.";
+            info "Delete the reference from the warehouse and the item itself";
+            delete edge itemRef;
+            delete node item;
+        }
+    }
+    assert !unassignedItem;
+}
+
+@title("Check that the model has at least one usable storage unit")
+@description("The model should have at least one usable StorageUnit after it has been initialized")
+constraint ModelEmptyOrWithUsableStorageUnit {
+    specification HasEmptyWarehouse hasEmptyWarehouse{
+        disable("Delete unusable Warehouse") {
+            info "The warehouse does not contain a storage unit and therefore cannot be used";
+            delete node wh;
+        }
+    }
+    specification AttachedStorageUnit hasAttachedStorageUnit{
+        empty enable("Create a new warehouse with storage unit"){
+            info "No usable warehouse was found";
+            info "Create a new warehouse with a single storage unit";
+            create node Logistics.Warehouse whouse();
+            create node Logistics.StorageUnit sUnit();
+            create edge whouse -has-> sUnit;
+        }
+    }
+
+    assert !hasEmptyWarehouse || hasAttachedStorageUnit;
+
+}

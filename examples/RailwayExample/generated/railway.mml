@@ -1,0 +1,59 @@
+package railway {
+    enum Position {
+        FAILURE = 0,
+        STRAIGHT = 1,
+        DIVERGING = 2
+    }
+    enum Signal {
+        FAILURE = 0,
+        STOP = 1,
+        GO = 2
+    }
+    abstract class RailwayElement {
+        attribute int xid {!unique};
+    }
+    class RailwayContainer {
+        reference railway.Route[*] routes {!resolve containment};
+        reference railway.Region[*] regions {!resolve containment};
+    }
+    class Region extends railway.RailwayElement {
+        reference railway.Sensor[*] sensors {!resolve containment};
+        reference railway.TrackElement[*] elements {!resolve containment};
+    }
+    class Route extends railway.RailwayElement {
+        attribute bool active {!unique};
+        @opposite railway.SwitchPosition::route
+        reference railway.SwitchPosition[*] follows {!resolve containment};
+        reference railway.Sensor[2..*] requires;
+        reference railway.Semaphore entry;
+        reference railway.Semaphore exit;
+    }
+    class Sensor extends railway.RailwayElement {
+        @opposite railway.TrackElement::monitoredBy
+        reference railway.TrackElement[*] monitors;
+    }
+    abstract class TrackElement extends railway.RailwayElement {
+        @opposite railway.Sensor::monitors
+        reference railway.Sensor[*] monitoredBy;
+        reference railway.TrackElement[*] connectsTo;
+    }
+    class Segment extends railway.TrackElement {
+        attribute int length {!unique};
+        reference railway.Semaphore[*] semaphores {!resolve containment};
+    }
+    class Switch extends railway.TrackElement {
+        attribute railway.Position currentPosition {!unique};
+        @opposite railway.SwitchPosition::target
+        reference railway.SwitchPosition[*] positions;
+    }
+    class SwitchPosition extends railway.RailwayElement {
+        attribute railway.Position position {!unique};
+        @opposite railway.Route::follows
+        reference railway.Route route;
+        @opposite railway.Switch::positions
+        reference railway.Switch target;
+    }
+    class Semaphore extends railway.RailwayElement {
+        attribute railway.Signal signal {!unique};
+    }
+}

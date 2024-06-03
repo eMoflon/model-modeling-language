@@ -1,0 +1,18 @@
+syntax = "proto3";
+package de.nexus.modelserver.proto;
+
+import "de/nexus/modelserver/ModelServerEditStatements.proto";
+
+message PostEditRequest {
+  oneof request {
+    EditRequest edit = 1;
+    EditChainRequest editChain = 2;
+  }
+}
+
+message PostEditResponse {
+  oneof response {
+    EditResponse edit = 1;
+    EditChainResponse editChain = 2;
+  }
+}

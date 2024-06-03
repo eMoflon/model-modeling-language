@@ -1,0 +1,130 @@
+syntax = "proto3";
+package de.nexus.modelserver.proto;
+
+enum EditState {
+  UNKNOWN_EDIT_STATE = 0;
+  SUCCESS = 1;
+  FAILURE = 2;
+}
+
+enum ImplicitlyRemovedEdgeType {
+  UNDEFINED_EDGE = 0;
+  OUTGOING_EDGE = 1;
+  INCOMING_EDGE = 2;
+}
+
+message EditChainRequest {
+  repeated EditRequest edits = 1;
+}
+
+message EditChainResponse {
+  repeated EditResponse edits = 1;
+}
+
+message EditRequest {
+  oneof request {
+    EditCreateEdgeRequest createEdgeRequest = 1;
+    EditCreateNodeRequest createNodeRequest = 2;
+    EditDeleteEdgeRequest deleteEdgeRequest = 3;
+    EditDeleteNodeRequest deleteNodeRequest = 4;
+    EditSetAttributeRequest setAttributeRequest = 5;
+    EditDeleteAllEdgesRequest deleteAllEdgesRequest = 6;
+  }
+}
+
+message EditResponse {
+  oneof response {
+    EditCreateEdgeResponse createEdgeResponse = 1;
+    EditCreateNodeResponse createNodeResponse = 2;
+    EditDeleteEdgeResponse deleteEdgeResponse = 3;
+    EditDeleteNodeResponse deleteNodeResponse = 4;
+    EditSetAttributeResponse setAttributeResponse = 5;
+    EditDeleteAllEdgesResponse deleteAllEdgesResponse = 6;
+  }
+}
+
+message EditCreateEdgeRequest {
+  Node startNode = 1;
+  Node targetNode = 2;
+  string referenceName = 3;
+}
+
+message EditCreateEdgeResponse {
+  EditState state = 1;
+  string message = 2;
+}
+
+message EditCreateNodeAttributeAssignment {
+  string attributeName = 1;
+  string attributeValue = 2;
+}
+
+message EditCreateNodeRequest {
+  string nodeType = 1;
+  string tempId = 2;
+  repeated EditCreateNodeAttributeAssignment assignments = 3;
+}
+
+message EditCreateNodeResponse {
+  EditState state = 1;
+  string message = 2;
+  int32 createdNodeId = 3;
+}
+
+message EditDeleteEdgeRequest {
+  Node startNode = 1;
+  Node targetNode = 2;
+  string referenceName = 3;
+}
+
+message EditDeleteEdgeResponse {
+  EditState state = 1;
+  string message = 2;
+}
+
+message EditDeleteAllEdgesRequest {
+  Node startNode = 1;
+  string referenceName = 3;
+}
+
+message EditDeleteAllEdgesResponse {
+  EditState state = 1;
+  string message = 2;
+  repeated Node removedTargets = 3;
+}
+
+message EditDeleteNodeRequest {
+  Node node = 1;
+}
+
+message ImplicitlyRemovedEdge {
+  ImplicitlyRemovedEdgeType type = 1;
+  Node fromNode = 2;
+  Node toNode = 3;
+  string reference = 4;
+}
+
+message EditDeleteNodeResponse {
+  EditState state = 1;
+  string message = 2;
+  repeated ImplicitlyRemovedEdge removedEdges = 3;
+}
+
+message EditSetAttributeRequest {
+  Node node = 1;
+  string attributeName = 2;
+  string attributeValue = 3;
+  bool unsetAttributeValue = 4;
+}
+
+message EditSetAttributeResponse {
+  EditState state = 1;
+  string message = 2;
+}
+
+message Node {
+  oneof nodeType {
+    int32 nodeId = 1;
+    string tempId = 2;
+  }
+}

@@ -1,0 +1,326 @@
+metamodel "./generated/railway.mml";
+
+
+pattern SegmentWithNegativeLength {
+    railway.Segment segment {
+    }
+
+    #segment.length <= 0
+}
+
+pattern SwitchWithSensor {
+    railway.Switch sw {
+        monitoredBy -> sensor
+    }
+
+    railway.Sensor sensor {
+
+    }
+}
+
+@Forbid(SwitchWithSensor, [sw=sw])
+pattern SwitchWithoutSensor {
+    railway.Switch sw {
+    }
+}
+
+pattern RouteWithoutSensor {
+    railway.Route route {
+        requires -> sensor
+    }
+
+    railway.Sensor sensor {
+
+    }
+}
+
+@Forbid(RouteWithoutSensor,[route=route,sensor=sensor])
+pattern RouteSensorAssociation {
+    railway.Route route{
+        follows -> swP
+    }
+
+    railway.Sensor sensor{
+
+    }
+
+    railway.SwitchPosition swP {
+        target -> sw
+    }
+
+    railway.Switch sw {
+        monitoredBy -> sensor
+    }
+}
+
+pattern SwitchUnalignedWithRoute {
+    railway.Route route{
+        follows -> swP
+        entry -> semaphore
+    }
+
+    railway.Semaphore semaphore{
+    }
+
+    railway.SwitchPosition swP {
+        target -> sw
+    }
+
+    railway.Switch sw {
+    }
+
+    #route.active == true
+    #semaphore.signal == railway.Signal::GO
+    #sw.currentPosition != swP.position
+}
+
+@DisableDefaultNodeConstraints
+pattern SensorWithSixSegments {
+    railway.Sensor sensor {
+
+    }
+
+    railway.Segment segment1 {
+        monitoredBy -> sensor
+        connectsTo -> segment2
+    }
+
+    railway.Segment segment2 {
+        monitoredBy -> sensor
+        connectsTo -> segment3
+    }
+
+    railway.Segment segment3 {
+        monitoredBy -> sensor
+        connectsTo -> segment4
+    }
+
+    railway.Segment segment4 {
+        monitoredBy -> sensor
+        connectsTo -> segment5
+    }
+
+    railway.Segment segment5 {
+        monitoredBy -> sensor
+        connectsTo -> segment6
+    }
+
+    railway.Segment segment6 {
+        monitoredBy -> sensor
+    }
+}
+
+pattern RouteWithEntrySemaphore {
+    railway.Route route{
+        entry -> semaphore
+    }
+
+    railway.Semaphore semaphore {
+
+    }
+}
+
+@DisableDefaultNodeConstraints
+@NodeConstraint(route1 != route2)
+@Forbid(RouteWithEntrySemaphore, [route=route2, semaphore=semaphore])
+pattern ConnectedRouteWithoutSameSemaphore {
+    railway.Semaphore semaphore {
+    }
+
+    railway.Route route1 {
+        exit -> semaphore
+        requires -> sensor1
+    }
+
+    railway.Route route2 {
+        requires -> sensor2
+    }
+
+    railway.Sensor sensor1 {
+    }
+
+    railway.Sensor sensor2 {
+    }
+
+    railway.TrackElement te1 {
+        monitoredBy -> sensor1
+        connectsTo -> te2
+    }
+
+    railway.TrackElement te2 {
+        monitoredBy -> sensor2
+    }
+}
+
+
+/// Inject Patterns
+pattern FindSegment {
+    railway.Segment segment {
+    }
+}
+
+pattern FindSwitch {
+    railway.Switch sw {
+    }
+}
+
+pattern FindSwitchAndSensor {
+    railway.Switch sw {
+        monitoredBy -> sensor
+    }
+
+    railway.Sensor sensor {
+    }
+}
+
+@DisableDefaultNodeConstraints
+pattern FindSegmentTuple {
+    railway.Region region {
+        sensors -> sensor
+        ///elements -> segment1
+        ///elements -> segment3
+    }
+
+    railway.Segment segment1{
+        monitoredBy -> sensor
+        connectsTo -> segment3
+    }
+
+    railway.Segment segment3{
+        monitoredBy -> sensor
+    }
+
+    railway.Sensor sensor {
+    }
+}
+
+pattern FindRouteAndSemaphore {
+    railway.Route route{
+        entry -> semaphore
+    }
+
+    railway.Semaphore semaphore{
+    }
+}
+
+pattern FindRouteAndSensor {
+    railway.Route route {
+        requires -> sensor
+    }
+
+    railway.Sensor sensor {
+    }
+}
+
+/// Batch Constraints
+constraint PosLength {
+    specification SegmentWithNegativeLength negSeg{
+        disable {
+            set segment.length = -1 * segment.length + 1;
+        }
+    }
+    assert !negSeg;
+}
+
+constraint SwitchMonitored {
+    specification SwitchWithoutSensor swWithoutSensor{
+        disable {
+            create node railway.Sensor newSensor();
+            create edge sw -monitoredBy-> newSensor;
+        }
+    }
+    assert !swWithoutSensor;
+}
+
+constraint RouteSensor {
+    specification RouteSensorAssociation routeSensorNotAssociated{
+        disable {
+            create edge route -requires-> sensor;
+        }
+    }
+    assert !routeSensorNotAssociated;
+}
+
+constraint SwitchSet {
+    specification SwitchUnalignedWithRoute unalignedSwitch{
+        disable {
+            set sw.currentPosition = swP.position;
+        }
+    }
+    assert !unalignedSwitch;
+}
+
+constraint ConnectedSegments {
+    specification SensorWithSixSegments overloadedSwitch{
+        disable {
+            delete node segment2;
+            create edge segment1 -connectsTo-> segment3;
+        }
+    }
+    assert !overloadedSwitch;
+}
+
+constraint SemaphoreNeighbor {
+    specification ConnectedRouteWithoutSameSemaphore diffSemaphore{
+        disable {
+            create edge route2 -entry-> semaphore;
+        }
+    }
+    assert !diffSemaphore;
+}
+
+
+/// Inject Constraints
+constraint PosLengthInject {
+    specification FindSegment p{
+        disable {
+            info "PosLengthInject Match";
+        }
+    }
+    assert !p;
+}
+
+constraint SwitchMonitoredInject {
+    specification FindSwitchAndSensor p{
+        disable {
+            info "SwitchMonitoredInject Match";
+        }
+    }
+    assert !p;
+}
+
+constraint RouteSensorInject {
+    specification FindRouteAndSensor p{
+        disable {
+            info "RouteSensorInject Match";
+        }
+    }
+    assert !p;
+}
+
+constraint SwitchSetInject {
+    specification FindSwitch p{
+        disable {
+            info "SwitchSetInject Match";
+        }
+    }
+    assert !p;
+}
+
+constraint ConnectedSegmentsInject {
+    specification FindSegmentTuple p{
+        disable {
+            info "ConnectedSegmentsInject Match";
+        }
+    }
+    assert !p;
+}
+
+constraint SemaphoreNeighborInject {
+    specification FindRouteAndSemaphore p{
+        disable {
+            info "SemaphoreNeighborInject Match";
+        }
+    }
+    assert !p;
+}

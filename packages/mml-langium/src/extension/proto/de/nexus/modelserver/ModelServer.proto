@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package de.nexus.modelserver.proto;
+
+option java_multiple_files = true;
+option java_package = "de.nexus.modelserver.proto";
+option java_outer_classname = "ModelServerProto";
+option objc_class_prefix = "MS";
+
+import "de/nexus/modelserver/ModelServerManagement.proto";
+import "de/nexus/modelserver/ModelServerPatterns.proto";
+import "de/nexus/modelserver/ModelServerConstraints.proto";
+import "de/nexus/modelserver/ModelServerEdits.proto";
+import "de/nexus/modelserver/ModelServerVisualization.proto";
+
+service ModelServerManagement {
+  rpc GetState(GetStateRequest) returns (GetStateResponse);
+  rpc TerminateServer(TerminateServerRequest) returns (TerminateServerResponse);
+  rpc ExportModel(ExportModelRequest) returns (ExportModelResponse);
+}
+
+service ModelServerPattern {
+  rpc GetPatterns(GetPatternsRequest) returns (GetPatternsResponse);
+  rpc GetPattern(GetPatternRequest) returns (GetPatternResponse);
+  rpc ListPatterns(ListPatternsRequest) returns (ListPatternsResponse);
+}
+
+service ModelServerConstraints {
+  rpc GetConstraints(GetConstraintsRequest) returns (GetConstraintsResponse);
+  rpc GetConstraint(GetConstraintRequest) returns (GetConstraintResponse);
+  rpc ListConstraints(ListConstraintsRequest) returns (ListConstraintsResponse);
+}
+
+service ModelServerEdits {
+  rpc RequestEdit(PostEditRequest) returns (PostEditResponse);
+}
+
+service ModelServerVisualization {
+  rpc GetVisualization(GetModelVisualizationRequest) returns (GetModelVisualizationResponse);
+}
