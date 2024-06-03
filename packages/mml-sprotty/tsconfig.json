@@ -1,0 +1,25 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "downlevelIteration": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "strictPropertyInitialization": false,
+    "rootDir": "src",
+    "outDir": "out",
+    "jsx": "react",
+    "types": [],
+    "lib": [
+      "es6",
+      "dom"
+    ],
+    "declaration": false,
+    "declarationMap": false,
+  },
+  "include": [
+    "src"
+  ],
+}

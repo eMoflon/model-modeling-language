@@ -19,13 +19,14 @@
   ],
   "scripts": {
     "build:langium": "npm run build:dependencies --workspace packages/mml-langium",
-    "build:sprotty": "npm run fullbuild --workspace packages/mml-sprotty",
+    "build:sprotty": "npm run build --workspace packages/mml-sprotty",
     "vscode:prepublish": "npm run vscode:prepublish --workspace packages/mml-langium",
     "package": "vsce package",
-    "build": "npm run build:langium && npm run package"
+    "build": "npm run build:sprotty && npm run build:langium && npm run package"
   },
   "devDependencies": {
     "@vscode/vsce": "~2.26.1",
+    "uuid": "~9.0.1",
     "chalk": "~5.3.0",
     "commander": "~11.0.0"
   },

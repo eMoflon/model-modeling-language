@@ -24,7 +24,7 @@
     "commander": "~11.0.0",
     "react": "~18.2.0",
     "react-dom": "~18.2.0",
-    "sprotty": "~1.0.0",
+    "sprotty": "~1.2.0",
     "sprotty-vscode": "~1.0.0"
   },
   "devDependencies": {

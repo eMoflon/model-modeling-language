@@ -9,9 +9,6 @@
     "jsx": "react",
     "skipLibCheck": true,
   },
-  "include": [
-    "**/src/**/*"
-  ],
   "exclude": [
     "**/out/**/*",
     "**/node_modules/**/*"
