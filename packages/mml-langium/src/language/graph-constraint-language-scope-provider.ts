@@ -28,7 +28,6 @@ import {
     isConstraintDocument,
     isConstraintPatternDeclaration,
     isCreateNodeAttributeAssignment,
-    isCReference,
     isEnforceAnnotation,
     isEnumValueExpr,
     isFixCreateEdgeStatement,
