@@ -8,60 +8,31 @@
   "files": [
     "bin"
   ],
-  "type": "module",
-  "scripts": {
-    "build": "tsc -b tsconfig.json && node esbuild.mjs",
-    "watch": "concurrently -n tsc,esbuild -c blue,yellow \"tsc -b tsconfig.json --watch\" \"node esbuild.mjs --watch\"",
-    "lint": "eslint src --ext ts",
-    "langium:generate": "langium generate",
-    "langium:watch": "langium generate --watch",
-    "vscode:prepublish": "npm run build && npm run lint",
-    "buf:generate": "cd src/extension/proto && buf generate",
-    "package": "vsce package",
-    "fullbuild": "npm run langium:generate && npm run buf:generate && vsce package"
-  },
-  "dependencies": {
-    "@types/uuid": "^9.0.0",
-    "@vscode/webview-ui-toolkit": "~1.4.0",
-    "@vscode/codicons": "~0.0.35",
-    "uuid": "^9.0.1",
-    "langium": "~2.1.3",
-    "vscode-languageclient": "~9.0.1",
-    "vscode-languageserver": "~9.0.1",
-    "chalk": "~5.3.0",
-    "commander": "~11.1.0",
-    "react": "~18.2.0",
-    "react-dom": "~18.2.0",
-    "sprotty": "~1.0.0",
-    "sprotty-vscode": "~1.0.0"
-  },
-  "devDependencies": {
-    "@types/react": "~18.2.64",
-    "@types/react-dom": "~18.2.21",
-    "@types/node": "~20.10.4",
-    "@types/vscode": "~1.67.0",
-    "@typescript-eslint/parser": "~6.14.0",
-    "@typescript-eslint/eslint-plugin": "~6.14.0",
-    "@vscode/vsce": "~2.23.0",
-    "@bufbuild/protobuf": "~1.7.0",
-    "@bufbuild/protoc-gen-es": "~1.7.0",
-    "@bufbuild/buf": "~1.29.0",
-    "@connectrpc/connect": "~1.3.0",
-    "@connectrpc/connect-node": "~1.3.0",
-    "@connectrpc/protoc-gen-connect-es": "~1.3.0",
-    "eslint": "~8.55.0",
-    "langium-cli": "~2.1.0",
-    "typescript": "~5.3.3",
-    "concurrently": "~8.2.2",
-    "esbuild": "~0.19.9",
-    "vitest": "~1.4.0"
-  },
+  "private": true,
+  "engineStrict": true,
   "engines": {
     "vscode": "^1.67.0",
     "node": ">=16.0.0"
   },
   "categories": [
     "Programming Languages"
+  ],
+  "scripts": {
+    "build:langium": "npm run build:dependencies --workspace packages/mml-langium",
+    "build:sprotty": "npm run build --workspace packages/mml-sprotty",
+    "vscode:prepublish": "npm run vscode:prepublish --workspace packages/mml-langium",
+    "package": "vsce package",
+    "build": "npm run build:sprotty && npm run build:langium && npm run package"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "~2.26.1",
+    "uuid": "~9.0.1",
+    "chalk": "~5.3.0",
+    "commander": "~11.0.0"
+  },
+  "workspaces": [
+    "packages/mml-langium",
+    "packages/mml-sprotty"
   ],
   "contributes": {
     "languages": [
@@ -74,7 +45,7 @@
         "extensions": [
           ".mml"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./packages/mml-langium/language-configuration.json"
       },
       {
         "id": "graph-constraint-language",
@@ -85,7 +56,7 @@
         "extensions": [
           ".gc"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./packages/mml-langium/language-configuration.json"
       },
       {
         "id": "graph-manipulation-language",
@@ -96,24 +67,24 @@
         "extensions": [
           ".gm"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./packages/mml-langium/language-configuration.json"
       }
     ],
     "grammars": [
       {
         "language": "model-modeling-language",
         "scopeName": "source.model-modeling-language",
-        "path": "syntaxes/model-modeling-language.tmLanguage.json"
+        "path": "./packages/mml-langium/syntaxes/model-modeling-language.tmLanguage.json"
       },
       {
         "language": "graph-constraint-language",
         "scopeName": "source.graph-constraint-language",
-        "path": "syntaxes/graph-constraint-language.tmLanguage.json"
+        "path": "./packages/mml-langium/syntaxes/graph-constraint-language.tmLanguage.json"
       },
       {
         "language": "graph-manipulation-language",
         "scopeName": "source.graph-manipulation-language",
-        "path": "syntaxes/graph-manipulation-language.tmLanguage.json"
+        "path": "./packages/mml-langium/syntaxes/graph-manipulation-language.tmLanguage.json"
       }
     ],
     "notebooks": [

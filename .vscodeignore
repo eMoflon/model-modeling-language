@@ -1,4 +1,6 @@
 .vscode/**
 .vscode-test/**
 .gitignore
-langium-quickstart.md
+.git/**
+packages/**/*.ts
+examples/**

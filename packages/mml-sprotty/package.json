@@ -1,0 +1,29 @@
+{
+  "name": "model-modeling-language-sprotty",
+  "version": "0.0.1",
+  "files": [
+    "lib",
+    "src",
+    "css"
+  ],
+  "dependencies": {
+    "reflect-metadata": "~0.2.2",
+    "sprotty": "~1.2.0",
+    "sprotty-vscode-webview": "~1.0.0",
+    "sprotty-elk": "~1.2.0"
+  },
+  "devDependencies": {
+    "css-loader": "~7.1.1",
+    "file-loader": "~6.2.0",
+    "source-map-loader": "~5.0.0",
+    "style-loader": "~4.0.0",
+    "ts-loader": "~9.5.1",
+    "webpack": "~5.91.0",
+    "webpack-cli": "~5.1.4"
+  },
+  "scripts": {
+    "build": "webpack --mode=development",
+    "watch": "webpack --mode=development --watch"
+  },
+  "private": true
+}

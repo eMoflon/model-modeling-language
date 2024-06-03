@@ -1,0 +1,96 @@
+.sprotty-label {
+    /*noinspection CssUnresolvedCustomProperty*/
+    fill: var(--vscode-button-foreground);
+    stroke-width: 0;
+}
+
+.sprotty-button {
+    /*noinspection CssUnresolvedCustomProperty*/
+    fill: var(--vscode-editorActiveLineNumber-foreground);
+}
+
+.sprotty-edge .sprotty-label {
+    /*noinspection CssUnresolvedCustomProperty*/
+    fill: var(--vscode-editorActiveLineNumber-foreground);
+}
+
+.sprotty-edge {
+    fill: none;
+    /*noinspection CssUnresolvedCustomProperty*/
+    stroke: var(--vscode-editorActiveLineNumber-foreground);
+    stroke-width: 2px;
+}
+
+.sprotty-edge-arrow {
+    /*noinspection CssUnresolvedCustomProperty*/
+    fill: var(--vscode-editorActiveLineNumber-foreground);
+}
+
+.sprotty-edge > .sprotty-routing-handle {
+    /*noinspection CssUnresolvedCustomProperty*/
+    fill: var(--vscode-editor-selectionBackground);
+    stroke: none;
+    z-index: 1000;
+}
+
+.sprotty-edge > .sprotty-routing-handle[data-kind='line'] {
+    opacity: 0.35;
+}
+
+.sprotty-edge > .sprotty-routing-handle.selected {
+    /*noinspection CssUnresolvedCustomProperty*/
+    fill: var(--vscode-editor-selectionHighlightBackground);
+}
+
+.sprotty-edge > .sprotty-routing-handle.mouseover {
+    /*noinspection CssUnresolvedCustomProperty*/
+    stroke: var(--vscode-editor-symbolHighlightBackground);
+    stroke-width: 1;
+}
+
+.sprotty-edge.mouseover:not(.selected) {
+    stroke-width: 3px;
+}
+
+.sprotty-hidden {
+    width: 0;
+    height: 0;
+}
+
+.sprotty-label-id-background {
+    /*noinspection CssUnresolvedCustomProperty*/
+    fill: var(--vscode-button-foreground);
+}
+
+.sprotty-label-id-foreground {
+    /*noinspection CssUnresolvedCustomProperty*/
+    fill: var(--vscode-button-background)
+}
+
+.sprotty-label-class-name {
+    font-weight: bold;
+}
+
+.sprotty-node {
+    /*noinspection CssUnresolvedCustomProperty*/
+    fill: var(--vscode-button-background)
+}
+
+.sprotty-node.selected {
+    stroke-width: 4;
+    /*noinspection CssUnresolvedCustomProperty*/
+    stroke: var(--vscode-minimap-findMatchHighlight);
+}
+
+.sprotty-node-highlight .sprotty-node {
+    /*noinspection CssUnresolvedCustomProperty*/
+    fill: var(--vscode-symbolIcon-constructorForeground);
+}
+
+.sprotty-node-highlight .sprotty-label-id-foreground {
+    /*noinspection CssUnresolvedCustomProperty*/
+    fill: var(--vscode-symbolIcon-constructorForeground);
+}
+
+
+

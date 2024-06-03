@@ -29,7 +29,7 @@ const plugins = [{
 const ctx = await esbuild.context({
     // Entry points for the vscode extension and the language server
     entryPoints: ['src/extension/main.ts', 'src/language/main.ts'],
-    outdir: 'out',
+    outdir: '../../out',
     bundle: true,
     target: "ES2017",
     // VSCode's extension host is still using cjs, so we need to transform the code
@@ -48,7 +48,7 @@ const ctx = await esbuild.context({
 
 const webViewCtx = await esbuild.context({
     entryPoints: ['./src/extension/webview/index.tsx'],
-    outfile: 'out/extension/webview/index.wv.js',
+    outfile: '../../out/extension/webview/index.wv.js',
     platform: 'browser',
     bundle: true,
     format: 'cjs',
