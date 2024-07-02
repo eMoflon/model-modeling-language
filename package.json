@@ -25,7 +25,7 @@
     "build": "npm run build:sprotty && npm run build:langium && npm run package"
   },
   "devDependencies": {
-    "@vscode/vsce": "~2.26.1",
+    "@vscode/vsce": "~2.29.0",
     "uuid": "~9.0.1",
     "chalk": "~5.3.0",
     "commander": "~11.0.0"
